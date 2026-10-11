@@ -7,6 +7,8 @@ roads and markets, and you can read all of it as you go.
 
 Current version: **Alpha 2**.
 
+Online demo: https://je-bt.github.io/azrpg/
+
 ## Play
 
 A built world is a single HTML file. Open it in a recent browser (Chrome, Firefox, Safari or Edge);
