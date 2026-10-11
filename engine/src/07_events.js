@@ -86,7 +86,7 @@ AZ.travellerKinds = function (w, jr) {
     kinds.push({ id: "factor", label: "Trading factor", wt: 1.2, culture: oCul, faith: oRel, homes: [oB], cargo: +cargo,
       blurb: `${gName} from ${oB.name} for the market of ${dB.name}.`,
       trades: ["factor of a trading house", "supercargo", "merchant's son"],
-      why: () => `you travel with a consignment of ${gName.toLowerCase()}, which ${oB.name} sells and ${buys[cargo] ? `${dB.name} buys` : "you hope to sell"}; the pilgrimage is real, and so is the profit`,
+      why: () => `you travel with a consignment of ${gName.toLowerCase()}, which ${oB.name} sells and ${buys[cargo] ? `${dB.name} buys` : "you hope to sell"}; a shrewd eye for prices along the way could make a pretty profit`,
       thread: () => ({ title: `${gName} for ${dB.name}`, steps: [{ text: `Deliver the ${gName.toLowerCase()} to the merchant in ${dB.name}`, goal: { burg: dB.i, role: "Merchant" }, reward: { coin: 15 }, needs: "cargo" }] }), purse: 20 });
   }
   if (oB.port && (P.military.some(u => u.naval && u.state === oB.state) || (oB.production || {})[P.goods.find(g => /ship/i.test(g.name))?.i])) {
@@ -230,7 +230,7 @@ AZ.Events = class {
     else if (r < 0.8 || !/pirate/.test(m.type)) { text = `${U.esc(v.captain)} holds his course, and nothing comes of it.`; fx = null; }
     else { text = "Pirates board her at dusk. They take the passengers' purses as well as the cargo."; fx = { coin: -Math.min(this.s.purse, U.rn(this.s.purse * 0.4, 1)), time: 12, flag: "boarded" }; }
     const out = this.fx(fx, `${U.esc(m.name)}: the captain's choice.`);
-    return g.ui.say(`${head}<br>You are a passenger; the captain decides. ${text}${out} ${AZ.T("mixed")}`);
+    return g.ui.say(`${head}<br>The captain decides: ${text}${out} ${AZ.T("mixed")}`);
   }
   async zone(z) { const T = AZ.ZONES[z.type] || AZ.ZONES._default; await T(this, z, `<b class="hook">${AZ.U.esc(z.name)}</b> (${z.type.toLowerCase()} zone) ${AZ.T("data")}`); }
   // a choice scene: options [{label, fx, text, if}]

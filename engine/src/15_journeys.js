@@ -121,7 +121,7 @@ AZ.TRAITS = {
     this.jr = this.mode === "sandbox" ? null : this.jr0;
     this._start = opts.start;
     fresh15.call(this, seed, kindId, doy0);
-    Object.assign(this.s, { mode: this.mode, start: opts.start ?? null, static: !!opts.static, party: [], foodTaken: {} });
+    Object.assign(this.s, { mode: this.mode, start: opts.start ?? null, static: !!opts.static, carefree: !!opts.carefree, party: [], foodTaken: {} });
     if (opts.static) { this.sim = AZ.sim = null; }
     if (this.mode === "sandbox" && opts.start != null) { const b = this.w.P.burgs[opts.start]; this.s.c = b.t[0]; this.s.r = b.t[1]; this.s.cp = 0; this.reveal(); }
     if (this.tv.boat && this.mode === "sandbox") { const b = this.w.P.burgs[opts.start], h = b && this.w.harbour(b, "boat"); if (h) this.s.vessel = { mode: "owned", kind: "Sailing boat", cls: "boat", speed: 6, hpd: 12, crew: 3, morale: 80, c: h.t[0], r: h.t[1], wage: AZ.Prices.wage(this.w, b), hire: 0, home: b.i }; }
@@ -158,9 +158,9 @@ AZ.TRAITS = {
       if (a !== "journey" && a !== "sandbox") continue;
       const opts = { mode: a };
       if (a === "sandbox") {
-        const world = await this.pickList(`${head}<div class="sub">The world</div>`, [{ id: "dyn", html: `Changing<div class="dim small">Markets, lines, disease and war change over time</div>` }, { id: "static", html: `Fixed<div class="dim small">The world as the map was saved</div>` }, { id: "back", html: "Back" }]);
+        const world = await this.pickList(`${head}<div class="sub">The world</div>`, [{ id: "dyn", html: `Changing<div class="dim small">Markets, lines, disease and war change over time</div>` }, { id: "static", html: `Fixed<div class="dim small">The world as the map was saved</div>` }, { id: "free", html: `Free roam<div class="dim small">A fixed world with no night, sleep or hunger</div>` }, { id: "back", html: "Back" }]);
         if (world === "back" || world === null) continue;
-        opts.static = world === "static";
+        opts.static = world === "static" || world === "free"; opts.carefree = world === "free";
         const towns = w.P.burgs.filter(b => b && !b.removed).sort((x, y) => y.population - x.population).slice(0, 8);
         const st = await this.pickList(`${head}<div class="sub">Where do you start?</div>`, [{ id: "rnd", html: "Let chance decide" }, ...towns.map(b => ({ id: b.i, html: `${U.esc(b.name)} <span class="dim small">${U.esc(b.group)}, ${U.esc(w.P.states[b.state]?.name || "unclaimed")}, ${U.si(b.population * 1000)}</span>` })), { id: "back", html: "Back" }]);
         if (st === "back" || st === null) continue;
@@ -178,7 +178,7 @@ AZ.TRAITS = {
       for (;;) {
         const tv = AZ.makeTraveller(w, jrX, seed, kind === "__random" ? null : kind, opts.start);
         AZ.Clock.doy0 = doys[di];
-        const card = `<div class="card win"><div class="who">${U.esc(tv.kindLabel)} ${T("new")}</div><b>${U.esc(tv.name)}</b>, ${tv.age}, ${U.esc(tv.trade)} · ${U.esc(w.P.cultures[tv.culture].name)} · ${U.esc(w.P.religions[tv.faith]?.name || "no faith")}<br>${U.cap(U.esc(tv.why))}.<br><span class="dim">Purse 🟡 ${tv.purse} · ${U.esc(AZ.TRAITS[tv.trait].label)}: ${U.esc(AZ.TRAITS[tv.trait].text)}${tv.thread ? ` · side story: <span class="side">${U.esc(tv.thread.title)}</span>` : ""}${a === "sandbox" ? ` · ${opts.static ? "fixed world" : "changing world"}` : ""}</span></div>`;
+        const card = `<div class="card win"><div class="who">${U.esc(tv.kindLabel)} ${T("new")}</div><b>${U.esc(tv.name)}</b>, ${tv.age}, ${U.esc(tv.trade)} · ${U.esc(w.P.cultures[tv.culture].name)} · ${U.esc(w.P.religions[tv.faith]?.name || "no faith")}<br>${U.cap(U.esc(tv.why))}.<br><span class="dim">Purse 🟡 ${tv.purse} · ${U.esc(AZ.TRAITS[tv.trait].label)}: ${U.esc(AZ.TRAITS[tv.trait].text)}${tv.thread ? ` · side story: <span class="side">${U.esc(tv.thread.title)}</span>` : ""}${a === "sandbox" ? ` · ${opts.carefree ? "free roam" : opts.static ? "fixed world" : "changing world"}` : ""}</span></div>`;
         const items = [{ id: "begin", html: "Begin" }, { id: "roll", html: "Another traveller like this" },
           { id: "season", html: `Start: ${AZ.Clock.season(lat0, 6)} (${Math.round(AZ.Clock.dayLength(lat0, doys[di]))} h of daylight) ◀ ▶`, cycle: d => { di = (di + d + 4) % 4; } }, { id: "back", html: "Back" }];
         const r = await this.pickList(head + card, items, "", this._sel || 0);
@@ -189,7 +189,7 @@ AZ.TRAITS = {
         if (r === "begin") {
           this.ui.closeModal(); this.fresh(seed, tv.kind, doys[di], opts); this.started(); this.saveGame();
           if (this.jr) await this.ui.say(this.know.intro(this));
-          else await this.ui.say([`<b>Sandbox</b> · ${opts.static ? "a fixed world" : "a changing world"} ${T("mixed")}`, `You are ${U.esc(this.tv.name)}, ${this.tv.age}, ${U.esc(this.tv.trade)}. ${U.cap(U.esc(this.tv.why))} ${T("new")}.`, `You stand in ${U.esc(w.P.burgs[opts.start].name)}. Every town has a market, an inn and a notice board; ports have a harbour, and many towns a coach office (Space).`]);
+          else await this.ui.say([`<b>Sandbox</b> · ${opts.carefree ? "free roam: no night, sleep or hunger" : opts.static ? "a fixed world" : "a changing world"} ${T("mixed")}`, `You are ${U.esc(this.tv.name)}, ${this.tv.age}, ${U.esc(this.tv.trade)}. ${U.cap(U.esc(this.tv.why))} ${T("new")}.`, `You stand in ${U.esc(w.P.burgs[opts.start].name)}. Every town has a market, an inn and a notice board; ports have a harbour, and many towns a coach office (Space).`]);
           if (this.tv.thread) this.ui.toast(`Side story: <b class="side">${U.esc(this.tv.thread.title)}</b>`, "teal");
           return;
         }
