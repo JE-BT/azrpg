@@ -113,7 +113,7 @@ Object.assign(AZ.Game.prototype, {
   worldMap() {
     const w = this.w, s = this.s, U = AZ.U, ui = this.ui;
     const maxW = Math.min(window.innerWidth - 40, 1600), sc = Math.min(maxW / w.cols, (window.innerHeight - 140) / w.rows);
-    ui.modal(`<div class="mapwrap"><div class="maphead"><b>World map</b> · ${U.esc(w.P.world.name)} · lens: <span id="mlens">${AZ.LENSES[this.lensIdx].name}</span> · click: set a teal waypoint · L: lens · M/Esc: close<br><span class="dim">Lines you know (N to show or hide): blue by sea, tan by road, red dashes where the line was last heard to be stopped</span></div><canvas id="wmap" width="${Math.round(w.cols * sc)}" height="${Math.round(w.rows * sc)}"></canvas><div id="minfo" class="dim">Brighter ground is ground you have seen.</div></div>`);
+    ui.modal(`<div class="mapwrap"><div class="maphead"><b>World map</b> · ${U.esc(w.P.world.name)} · lens: <span id="mlens">${AZ.LENSES[this.lensIdx].name}</span> · click: set a teal waypoint · L: lens · M/Esc: close<br><span class="dim">Lines you know (N to show or hide): blue by sea, tan by road, red dashes where the line was last heard to be stopped</span><div class="mapbtns"><button type="button" data-mk="l">Lens ▸</button><button type="button" data-mk="n">Lines</button></div></div><canvas id="wmap" width="${Math.round(w.cols * sc)}" height="${Math.round(w.rows * sc)}"></canvas><div id="minfo" class="dim">Brighter ground is ground you have seen.</div></div>`);
     const cv = document.getElementById("wmap"), ctx = cv.getContext("2d");
     const draw = () => {
       ctx.imageSmoothingEnabled = false;
@@ -154,7 +154,8 @@ Object.assign(AZ.Game.prototype, {
       const lensNow = AZ.LENSES[this.lensIdx], lensWord = lensNow.id !== "none" ? `<b>${lensNow.name}</b>: ${U.esc(lensNow.label(w, cell, c, r) ?? "")} · ` : "";
       document.getElementById("minfo").innerHTML = lensWord + `Waypoint: ${w.isLand(c, r) ? U.esc(w.P.biomes[w.C.biome[cell]].name) + " in " + U.esc(this.know.regionName(cell)) : U.esc(w.waterName(c, r))}${b ? " · near " + U.esc(b.o.name) : ""} · ${this.know.dirDist(s.c, s.r, [c, r]).txt} of you`;
       draw(); this.dirty = true;
-    };
+    };	
+	ui.el.modal.querySelectorAll("[data-mk]").forEach(b => (b.onclick = ev => { ev.stopPropagation(); ui.modalKey({ key: b.dataset.mk, shiftKey: false }); }));
     ui.modalKey = e => {
       if (e.key === "l" || e.key === "L") { this.lensIdx = (this.lensIdx + (e.shiftKey ? -1 : 1) + AZ.LENSES.length) % AZ.LENSES.length; document.getElementById("mlens").textContent = AZ.LENSES[this.lensIdx].name; draw(); this.dirty = true; }
       else if (e.key === "n" || e.key === "N") { this._showLines = this._showLines === false; draw(); }
@@ -271,6 +272,7 @@ AZ.boot = async function (packText) {
     });
     document.querySelectorAll("[data-key]").forEach(btn => btn.addEventListener("click", e => {
       e.preventDefault();
+      if (btn.dataset.key === "zoom") { if (!ui.busy()) { ren.zoom = ren.zoom >= 4 ? 1 : ren.zoom + 1; g.dirty = true; } return; }
       window.dispatchEvent(new KeyboardEvent("keydown", { key: btn.dataset.key }));
     }));
     g.title();

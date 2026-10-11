@@ -83,9 +83,9 @@ AZ.UI = class {
     clearTimeout(this._bt); this._bt = setTimeout(() => b.classList.remove("on"), 3200);
   }
   modal(html, onKey) {
-    this.el.modal.innerHTML = html;
+    this.el.modal.innerHTML = `<button class="mclose" type="button" aria-label="Close">✕</button>` + html;
+    this.el.modal.querySelector(".mclose").onclick = e => { e.stopPropagation(); this.closeModal(); };
     this.el.modal.classList.add("on");
-    this.modalKey = onKey || (e => { if (["Escape", "x", "X", "Enter", " "].includes(e.key)) this.closeModal(); });
   }
   closeModal() { this.el.modal.classList.remove("on"); this.el.modal.innerHTML = ""; this.modalKey = null; if (this.onModalClose) { const f = this.onModalClose; this.onModalClose = null; f(); } }
 };
