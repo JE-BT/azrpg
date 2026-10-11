@@ -76,6 +76,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .choices .small, .small { font-size: 13px; }
 .lead { cursor: pointer; padding: 2px 0; } .lead:hover { text-decoration: underline; }
 .title { max-height: calc(100vh - 40px); overflow-y: auto; }
+.mclose { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); z-index: 31; width: 40px; height: 40px;
+  border-radius: 8px; border: 2px solid var(--edge); background: rgba(20,28,80,.9); color: #fff; font-family: var(--font); font-size: 18px; cursor: pointer; }
+#modal .mapwrap, #modal .sheet { margin-top: calc(56px + env(safe-area-inset-top, 0px)); }
+.mapbtns { margin-top: 6px; display: flex; gap: 8px; justify-content: center; }
+.mapbtns button { min-height: 36px; padding: 4px 12px; border-radius: 6px; border: 2px solid var(--edge); background: rgba(20,28,80,.8); color: #fff; font-family: var(--font); font-size: 14px; cursor: pointer; }
 #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--dim); }
 #touch { display: none; }
 @media (pointer: coarse) {
@@ -83,12 +88,24 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
   #pad { position: fixed; left: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; z-index: 15; }
   #pad button, #btns button { position: absolute; width: 44px; height: 44px; border-radius: 8px; border: 2px solid var(--edge); background: rgba(20,28,80,.7); color: #fff; font-family: var(--font); font-size: 15px; touch-action: none; }
   #pad [data-pad=up] { left: 44px; top: 0; } #pad [data-pad=down] { left: 44px; top: 88px; } #pad [data-pad=left] { left: 0; top: 44px; } #pad [data-pad=right] { left: 88px; top: 44px; }
-  #btns { position: fixed; right: 14px; bottom: calc(130px + env(safe-area-inset-bottom, 0px)); width: 150px; height: 100px; z-index: 15; }
-  #btns [data-key=" "] { right: 0; top: 0; width: 56px; height: 56px; } #btns [data-key=Escape] { right: 64px; top: 12px; }
-  #btns [data-key=f] { right: 0; top: 62px; } #btns [data-key=i] { right: 50px; top: 62px; } #btns [data-key=m] { right: 100px; top: 62px; }
-  #toasts { bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
-  #hud-loc, #hud-trip { font-size: 12px; } #hud-loc .big { font-size: 15px; }
-  #miniwrap { display: none; }
+  #btns { position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 150px; height: 156px; z-index: 15; }
+  #btns [data-key=zoom] { right: 50px; top: 0; } #btns [data-key=r] { right: 0; top: 0; }
+  #btns [data-key=" "] { right: 0; top: 50px; width: 56px; height: 56px; } #btns [data-key=Escape] { right: 64px; top: 62px; }
+  #btns [data-key=f] { right: 0; top: 112px; } #btns [data-key=i] { right: 50px; top: 112px; } #btns [data-key=m] { right: 100px; top: 112px; }
+  #pad { left: calc(14px + env(safe-area-inset-left, 0px)); }
+  #toasts { bottom: calc(180px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 20px); }
+  #panel { left: 10px; right: 10px; width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); bottom: calc(184px + env(safe-area-inset-bottom, 0px)); z-index: 16; font-size: 13px; }
+  .tag { font-size: 10.5px; }
+  .choices li { padding: 8px 6px; }
+  .maphead { font-size: 13px; }
+}
+@media (pointer: coarse) and (max-height: 500px) {
+  #panel { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: calc(156px + env(safe-area-inset-left, 0px)); right: calc(236px + env(safe-area-inset-right, 0px)); }
+  #btns { width: 210px; height: 106px; }
+  #btns [data-key=" "] { top: 0; } #btns [data-key=Escape] { top: 12px; } #btns [data-key=r] { right: 114px; top: 12px; } #btns [data-key=zoom] { right: 164px; top: 12px; }
+  #btns [data-key=f], #btns [data-key=i], #btns [data-key=m] { top: 62px; }
+  #toasts { bottom: calc(160px + env(safe-area-inset-bottom, 0px)); max-width: min(360px, calc(100vw - 260px)); }
+  .maphead .dim { display: none; }
 }
 </style>
 </head>
@@ -106,7 +123,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 <div id="modal"></div>
 <div id="touch">
   <div id="pad"><button data-pad="up">▲</button><button data-pad="left">◀</button><button data-pad="right">▶</button><button data-pad="down">▼</button></div>
-  <div id="btns"><button data-key=" ">A</button><button data-key="Escape">☰</button><button data-key="f">F</button><button data-key="i">I</button><button data-key="m">M</button></div>
+  <div id="btns"><button data-key=" ">A</button><button data-key="Escape">☰</button><button data-key="f">F</button><button data-key="i">I</button><button data-key="m">M</button><button data-key="r" aria-label="Camp or wait">R</button><button data-key="zoom" aria-label="Zoom">⊕</button></div>
 </div>
 <script id="pack" type="application/octet-stream">__PACK__</script>
 <script>
