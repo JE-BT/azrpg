@@ -52,6 +52,7 @@ AZ.whyDest = function (w, jr) {
     if (!h) return this.ui.say(`There is no water here a ${U.esc(leg.transport.toLowerCase())} can use.`);
     const tr = w.W.transports.find(t => t.name === leg.transport) || { speed: leg.speed, hoursPerDay: leg.hoursPerDay };
     const crew = Math.max(3, (s.party || []).length);
+    if (s.vessel) this.takeHold();
     if (s.vessel && s.vessel.mode === "hired") this.log(`Returned the hired boat in ${U.esc(b.name)}.`);
     s.vessel = { mode: "company", kind: leg.transport, cls, speed: leg.speed || tr.speed, hpd: leg.hoursPerDay || tr.hoursPerDay, crew, morale: 80, c: h.t[0], r: h.t[1], wage: 0, hire: 0, home: b.i };
     s.aboard = true; s.c = h.t[0]; s.r = h.t[1]; if (s.voyage) s.voyage.boarded = false;

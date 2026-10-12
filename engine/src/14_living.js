@@ -16,6 +16,8 @@
   AZ.Prices.goodPrice = function (w, b, gid) { const M = AZ.sim && AZ.sim.mk.get(b.market); return M && M.base[gid] != null ? AZ.sim.price(M, gid) * (1 + AZ.Prices.tax(w, b)) : null; };
 
   const fresh0 = G.fresh, load0 = G.loadGame, save0 = G.saveGame, tick0 = G.tick, after0 = G.afterStep, depart0 = G.depart, step0 = G.voyageStep, quest0 = G.questOffers, tile0 = G.stepTile;
+  // a fixed world has no simulation: its harbours, markets and quotes are the map's own
+  const harbour0 = G.harbour, market0 = G.market, quote0 = G.goodQuote;
   G.fresh = function (...a) { fresh0.apply(this, a); this.sim = AZ.sim = new AZ.Sim(this.w, this.jr); Object.assign(this.s, { known: [], lineSeen: {}, priceBook: {} }); this.sim.advanceTo(this.s.clock); };
   G.loadGame = function () { const ok = load0.call(this); if (!ok) return false; this.sim = AZ.sim = new AZ.Sim(this.w, this.jr); this.sim.load(this.s.simState); for (const k of ["known", "lineSeen", "priceBook"]) this.s[k] = this.s[k] || (k === "known" ? [] : {}); return true; };
   G.saveGame = function () { if (this.sim && this.s) this.s.simState = this.sim.save(); return save0.call(this); };
@@ -72,6 +74,7 @@
   // ---------------------------------------------------------------- harbour and coach office
   G.fareFor = function (L, b) { const w = this.w; const A = w.P.burgs[L.from], B = w.P.burgs[L.to]; const miles = L.mode === "sea" ? Math.hypot(B.t[0] - A.t[0], B.t[1] - A.t[1]) * w.miles * 1.15 : L.miles; return L.mode === "sea" ? AZ.Prices.fare(w, b, miles) : U.rn(Math.max(0.5, miles * 0.006) * (1 + AZ.Prices.tax(w, b)), 2); };
   G.harbour = async function (b) {
+    if (!this.sim) return harbour0.call(this, b);
     const s = this.s, w = this.w, P = AZ.Prices, sim = this.sim;
     if (s.vessel && s.vessel.crew && this.vesselHere(b) && this.doAct("book")) this.ui.toast(`<span class="hook">★ Your ${U.esc(s.vessel.kind.toLowerCase())} and crew are ready: passage arranged.</span>`, "gold");
     for (;;) {
@@ -119,7 +122,7 @@
         continue;
       }
       if (o.act === "crewup") { const cost = U.rn(3 * P.wage(w, b) * 3, 2); s.purse = U.rn(s.purse - cost, 2); s.vessel.crew = 3; s.vessel.morale = 70; s.vessel.strikes = 0; this.ui.toast("Three hands sign on."); continue; }
-      if (o.act === "payoff") { s.purse = U.rn(Math.max(0, s.purse - (s.vessel.owed || 0)), 2); this.log(`Returned the hired boat in ${U.esc(b.name)}.`); s.vessel = null; s.aboard = false; s.c = b.t[0]; s.r = b.t[1]; this.ui.toast("The crew is paid off and the boat returned."); this.dirty = true; return; }
+      if (o.act === "payoff") { this.takeHold(); s.purse = U.rn(Math.max(0, s.purse - (s.vessel.owed || 0)), 2); this.log(`Returned the hired boat in ${U.esc(b.name)}.`); s.vessel = null; s.aboard = false; s.c = b.t[0]; s.r = b.t[1]; this.ui.toast("The crew is paid off and the boat returned."); this.dirty = true; return; }
     }
   };
   // a booked passage may be cancelled at the last moment; a coach takes the roads
@@ -155,6 +158,7 @@
   };
   // ---------------------------------------------------------------- markets from the simulation
   G.goodQuote = function (b, gid) {
+    if (!this.sim) return quote0.call(this, b, gid);
     const sim = this.sim, M = sim && sim.mk.get(b.market);
     if (!M || M.base[gid] == null) return null;
     const p = sim.price(M, gid), tax = AZ.Prices.tax(this.w, b), stock = Math.floor(M.stock[gid] || 0);
@@ -164,6 +168,7 @@
     return { buy: U.rn(p * (1 + tax) * (hg ? 0.9 : 1), 2), sell: U.rn(p * 0.85 * (hg ? 1.1 : 1), 2), stock, canBuy: makes && stock >= 1, mk: M, rec };
   };
   G.market = async function (b) {
+    if (!this.sim) return market0.call(this, b);
     const s = this.s, w = this.w, sim = this.sim;
     for (;;) {
       this.notePrices(b);

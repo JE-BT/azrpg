@@ -131,7 +131,7 @@ AZ.Game.prototype.rest = async function () {
   if (o.id === "no") return;
   if (o.id === "fish" || o.id === "forage") return this.provide(o.id);
   const t0 = s.clock;
-  if (o.id === "two") { this.events.fx({ time: 48, cure: ["fever", "gravely", "hurt"] }, "Rested two days."); this.slept(); this.ui.toast("Two days' rest. You feel yourself again."); return; }
+  if (o.id === "two") { this.events.fx({ time: 48, sleep: true, cure: ["fever", "gravely", "hurt"] }, "Rested two days."); this.slept(); this.ui.toast("Two days' rest. You feel yourself again."); return; }
   if (o.id === "dawn" && !s.aboard) return this.campNight();
   if (o.id === "dawn") {
     s.clock = AZ.Clock.nextDawn(s.clock, this.lat());

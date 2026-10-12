@@ -185,10 +185,10 @@ Object.assign(AZ.Game.prototype, {
     const fFeat = fb ? w.C.feature[fb.cell] : null, tFeat = tb ? w.C.feature[tb.cell] : null;
     if (fb && tb && to.at) {
       if (fFeat !== tFeat) out.push(`No land joins ${U.esc(fb.name)} (${U.esc(P.features[fFeat]?.name || "")}) and ${U.esc(tb.name)} (${U.esc(P.features[tFeat]?.name || "")}): it has to be by water ${T("data")}.`);
-      else out.push(`${U.esc(fb.name)} and ${U.esc(tb.name)} share ${U.esc(P.features[tFeat]?.name || "one landmass")}; ${U.num(Math.round(Math.hypot(fb.t[0] - tb.t[0], fb.t[1] - tb.t[1]) * w.miles))} mi as the crow flies, but the plan goes by water ${T("mixed")}.`);
+      else out.push(`${U.esc(fb.name)} and ${U.esc(tb.name)} share ${U.esc(P.features[tFeat]?.name || "one landmass")}; ${U.num(Math.round(Math.hypot(fb.t[0] - tb.t[0], fb.t[1] - tb.t[1]) * w.miles))} mi as the crow flies${seg.domain === "land" ? `, ${U.num(seg.miles)} mi by the plan's way` : ", and the plan goes by water"} ${T("mixed")}.`);
     }
     const days = seg.hoursPerDay >= 24 ? seg.travelHours / 24 : seg.travelHours / seg.hoursPerDay;
-    out.push(`${U.esc(seg.transport)}: ${seg.speed} mph for ${seg.hoursPerDay} hours a day, ${U.num(seg.miles)} mi, about ${Math.round(days)} days ${T("data")}. ${AZ.vesselClass(seg.transport) === "ship" ? "A ship keeps the sea day and night and is booked as a passenger." : "A boat is hired with its crew; it sails by day, anchors at night, and reaches small ports and rivers."}`);
+    out.push(`${U.esc(seg.transport)}: ${seg.speed} mph for ${seg.hoursPerDay} hours a day, ${U.num(seg.miles)} mi, about ${Math.round(days)} days ${T("data")}. ${seg.domain === "land" ? "Overland: walk it, ride, or take a coach where one runs; any road will do." : AZ.isTeleport && AZ.isTeleport(seg.transport) ? "A teleport circle crosses it at once." : AZ.vesselClass(seg.transport) === "air" ? "The company's own craft flies it, over land and sea alike." : AZ.vesselClass(seg.transport) === "ship" ? "A ship keeps the sea day and night and is booked as a passenger." : "A boat is hired with its crew; it sails by day, anchors at night, and reaches small ports and rivers."}`);
     if (tb && to.at) {
       const lanes = new Set();
       const h = w.harbour(tb, seg.cls || "boat");

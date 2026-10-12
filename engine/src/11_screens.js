@@ -28,7 +28,7 @@ Object.assign(AZ.Game.prototype, {
     }
     const v = s.voyage, bo = s.vessel;
     if (v) trip += `<div>${s.aboard ? "Aboard" : "Booked on"} ${U.esc(v.ship)} (${v.role}) → ${U.esc(v.stops[v.leg]?.name || "")}${v.state === "port" ? ` · sails ${AZ.Clock.fmt(v.departAt)}` : ""}${s.voyPause ? " · ⏸ holding (P)" : this.fast ? " · ⏩ (F)" : ""}</div>`;
-    else if (bo) trip += `<div>${s.aboard ? "Aboard" : "Ashore; your boat waits"}: ${U.esc(bo.kind)} (${bo.mode})${bo.crew ? ` · crew ${bo.crew}, morale ${Math.round(bo.morale)}${bo.strikes ? `, strikes ${bo.strikes}/3` : ""}` : " · no crew"}${s.auto ? ' · <b class="hook">autopilot</b>' : ""}</div>`;
+    else if (bo) trip += `<div>${s.aboard ? "Aboard" : this.withVessel() ? "In harbour here" : "Ashore; your vessel waits"}: ${U.esc(bo.kind)} (${bo.mode})${bo.crew ? ` · crew ${bo.crew}, morale ${Math.round(bo.morale)}${bo.strikes ? `, strikes ${bo.strikes}/3` : ""}` : " · no crew"}${!this.withVessel() && bo.hold ? ` · hold ${bo.hold.food} rations` : ""}${s.watchBelow && s.aboard ? " · asleep below" : ""}${s.auto ? ' · <b class="hook">autopilot</b>' : ""}</div>`;
     else if (s.auto) trip += `<div class="dim">walking to the waypoint · F to stop</div>`;
     if (!this.jr) trip = `<div class="hook">Sandbox · ${this.sim ? "changing world" : "fixed world"}</div>` + trip;
     if (s.party && s.party.length) trip += `<div class="dim">With ${s.party.map(p => U.esc(p.name)).join(", ")}</div>`;

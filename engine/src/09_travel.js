@@ -7,7 +7,12 @@
 //   cost to morale. Low morale ends in mutiny.
 //   Days: everyone eats once a day. Hunger slows you;
 //   in the end you collapse and wake somewhere else, poorer and later.
+//   Your own vessel has a hold. What you cannot carry on foot stays in it when you leave her, and
+//   the hands who stay aboard eat from it while you are away. They wait as long as the food (and
+//   their patience) allows, keeping enough for the run to the nearest harbour; then they sail.
+//   Crews that sail round the clock keep watches: aboard, you sleep below while the watch sails.
 // ---------------------------------------------------------------------------------------------
+AZ.CARRY = { foot: { food: 20, goods: 6 }, passage: { food: 60, goods: 10 }, vessel: { food: 220, goods: 30 } };
 Object.assign(AZ.COND, {
   hungry: { on: "you are hungry", off: "you have eaten", slow: 1.2, label: "hungry" },
   starving: { on: "you are starving", off: "you have eaten", slow: 1.5, label: "starving" },
@@ -15,8 +20,84 @@ Object.assign(AZ.COND, {
 });
 
 Object.assign(AZ.Game.prototype, {
-  eaters() { const v = this.s.vessel; if (!v || !v.crew || this.riding()) return 1; return 1 + (v.mode === "company" ? Math.max(0, v.crew - (this.s.party || []).length) : v.crew); }, // companions carry their own food
-  capacity() { const s = this.s, ride = this.riding(); return { food: s.vessel && !ride ? 220 : ride || s.voyage ? 60 : 20, goods: s.vessel && !ride ? 30 : ride || s.voyage ? 10 : 6 }; },
+  // the hands your vessel feeds: companions in the party carry their own food
+  crewFed(v = this.s.vessel) { if (!v || !v.crew) return 0; return v.mode === "company" ? Math.max(0, v.crew - (this.s.party || []).length) : v.crew; },
+  // with your vessel: aboard her, or in the town whose harbour she lies in
+  withVessel() {
+    const s = this.s, v = s.vessel;
+    if (!v || this.riding()) return false;
+    if (s.aboard) return true;
+    const b = this.w.burgAt.get(this.w.idx(s.c, s.r));
+    return !!(b && this.vesselHere(b));
+  },
+  eaters() { return 1 + (this.withVessel() ? this.crewFed() : 0); },
+  // what you can carry follows how you travel: your vessel's hold, a passenger's baggage, or your back
+  capacity() { const s = this.s, ride = this.riding(); return { ...(!ride && this.withVessel() ? AZ.CARRY.vessel : ride || s.voyage ? AZ.CARRY.passage : AZ.CARRY.foot) }; },
+  holdOf(v) { v.hold = v.hold || { food: 0, goods: {} }; v.hold.goods = v.hold.goods || {}; return v.hold; },
+  // the harbour (or, for an air craft, the town) where a vessel lies, if any
+  vesselInPort(v) { const w = this.w, i = w.idx(v.c, v.r); return (v.cls === "air" ? w.burgAt.get(i) : this.harbourAt.get(i)) || null; },
+  // how long hands left aboard will wait: longer when morale is high, longer still for the company's own
+  patienceOf(v) { const m = v.morale ?? 70, d = m >= 70 ? 21 : m >= 40 ? 10 : 4; return v.mode === "company" ? Math.round(d * 1.5) : d; },
+  // the run from where the vessel lies to the nearest harbour she can reach, by her own course over
+  // the water (the four nearest harbours as the crow flies are tried), and the food it takes
+  runToPort(v) {
+    const w = this.w, n = Math.max(1, this.crewFed(v)), here = [v.c, v.r], key = `${v.c},${v.r},${v.cls}`;
+    let best = v._run && v._run.key === key ? v._run.best : undefined;
+    if (best === undefined) {
+      const cands = [];
+      for (const b of w.P.burgs) {
+        if (!b || !(b.port || v.cls === "air")) continue;
+        const h = w.harbour(b, v.cls);
+        if (h && w.sameWater(here, h.t, v.cls)) cands.push({ port: b, h: h.t, d: Math.hypot(h.t[0] - v.c, h.t[1] - v.r) });
+      }
+      best = null;
+      for (const c of cands.sort((a, b) => a.d - b.d).slice(0, 4)) {
+        const p = v.cls === "air" || c.d < 0.5 ? null : w.waterPath(here, c.h, v.cls);
+        const miles = p ? (p.length - 1) * (p.mps || w.miles) : c.d * w.miles;
+        if (!best || miles < best.miles) best = { port: c.port, h: c.h, miles };
+      }
+      Object.defineProperty(v, "_run", { value: { key, best }, enumerable: false, writable: true, configurable: true });
+    }
+    if (!best) return null;
+    // a crew that stops at night sails only the daylight hours of the season; weather costs a fifth more
+    const sun = AZ.Clock.sun(this.s.clock, w.latlon(v.c, v.r)[0]), hpd = v.hpd || 12;
+    const hours = hpd >= 24 ? 24 : Math.max(4, Math.min(hpd, (sun.dl ?? 12) + 0.75));
+    const days = Math.max(1, Math.ceil((best.miles * 1.2) / ((v.speed || 6) * hours)));
+    return { port: best.port, h: best.h, miles: Math.round(best.miles), days, food: days * n };
+  },
+  // each dawn while you are away from your vessel: the hands aboard eat from the hold, or sail
+  crewAway(v) {
+    const s = this.s, w = this.w, U = AZ.U, n = this.crewFed(v);
+    if (!n || s.carefree) return;
+    const hold = this.holdOf(v), port = this.vesselInPort(v);
+    v.waited = (v.waited || 0) + 1;
+    const patience = v.patience ?? this.patienceOf(v);
+    if (!port) {
+      const run = this.runToPort(v);
+      if (run && hold.food - n < run.food) return this.crewSailsOff(v, run, "food");
+      if (v.waited > patience || v.morale < 20) return this.crewSailsOff(v, run, "waited");
+    } else if (v.morale < 20) return this.crewSailsOff(v, null, "unpaid");
+    if (hold.food >= n) { hold.food -= n; return; }
+    const short = n - hold.food; hold.food = 0;
+    if (port) { // in harbour the hands eat ashore, at your cost
+      const cost = U.rn(short * AZ.Prices.ration(w, port), 2);
+      if (s.purse >= cost) s.purse = U.rn(s.purse - cost, 2); else { v.owed = U.rn((v.owed || 0) + cost, 2); v.morale -= 10; }
+    } else v.morale -= 15;
+  },
+  async crewSailsOff(v, run, why) {
+    const s = this.s, w = this.w, U = AZ.U, kind = U.esc(v.kind.toLowerCase()), hold = this.holdOf(v);
+    const port = run ? run.port : this.vesselInPort(v);
+    const when = why === "food" ? "while they still had food enough for the run" : why === "unpaid" ? "unpaid and out of patience" : why === "refused" ? "as soon as you were ashore" : `after ${v.waited} days of waiting`;
+    if (run) { hold.food = Math.max(0, hold.food - run.food); v.c = run.h[0]; v.r = run.h[1]; }
+    v.anchored = true; v.waited = 0; v.patience = null;
+    let text;
+    if (v.mode === "hired") { s.vessel = null; text = `the crew of your hired ${kind} sailed her back to her owner ${when}. The boat is gone, with whatever was aboard`; }
+    else if (v.mode === "owned") { v.crew = 0; v.owed = 0; v.strikes = 0; v.morale = 70; text = port ? `the crew of your ${kind} brought her into ${U.esc(port.name)} ${when}, took their wages and left. She waits there without a crew` : `the crew of your ${kind} walked off ${when}. She lies where you left her, without a crew`; }
+    else text = port ? `the company's hands took the ${kind} into ${U.esc(port.name)} ${when}. They wait for you there` : `the company's hands are still aboard the ${kind}, hungry and angry`;
+    this.log(`${U.cap(text)}.`, "hook");
+    this.ui.toast(`Word reaches you: ${text} ${AZ.T("mixed")}.`);
+    this.dirty = true;
+  },
   refill() { /* only food is tracked */ },
   tick() {
     const s = this.s, w = this.w, U = AZ.U;
@@ -40,6 +121,14 @@ Object.assign(AZ.Game.prototype, {
       const sun = AZ.Clock.sun(s.clock, this.lat()), key = Math.floor((s.clock + 12) / 24);
       if (sun.dl < 24 && (sun.hour >= sun.set + 0.75 || sun.hour < sun.rise) && v.nightKey !== key) { v.nightKey = key; return this.crewCall(); }
     }
+    // a crew that sails round the clock keeps watches: you turn in below and the watch sails on
+    if (v && s.aboard && !this.riding() && v.crew && (v.hpd || 0) >= 24 && !s.watchBelow && !this.vesselInPort(v)) {
+      const night = AZ.Clock.light(s.clock, this.lat()).phase === "night";
+      if ((s.awake || 0) >= 20 || ((s.awake || 0) >= 16 && night)) {
+        this.slept(); s.watchBelow = s.clock + 8;
+        this.ui.toast(`You turn in below. The watch keeps the ${U.esc(v.kind.toLowerCase())} on her course for eight hours ${AZ.T("mixed")}.`);
+      }
+    }
     void U;
   },
   newDay() {
@@ -47,7 +136,7 @@ Object.assign(AZ.Game.prototype, {
     const eat = this.eaters();
     s.sup.food -= eat;
     if (this.riding()) { if (s.voyage.role === "crew") s.sup.food += eat; this.slept(); } // the ship feeds its crew; passengers sleep aboard
-    if (s.sup.food < 0) { s.sup.food = 0; s.hunger++; if (v && v.crew) v.morale -= 15; } else s.hunger = 0;
+    if (s.sup.food < 0) { s.sup.food = 0; s.hunger++; if (v && v.crew && this.withVessel()) v.morale -= 15; } else s.hunger = 0;
     delete s.cond.hungry; delete s.cond.starving; delete s.cond.thirsty;
     if (s.hunger >= 3) s.cond.starving = true; else if (s.hunger >= 1) s.cond.hungry = true;
     if (v && v.crew && (v.mode === "hired" || v.mode === "owned" || v.mode === "company")) {
@@ -57,6 +146,7 @@ Object.assign(AZ.Game.prototype, {
       if (v.promise && s.clock > v.promise.by) { v.morale -= 10; this.ui.toast(`You promised the crew ${U.esc(v.promise.name)} and have not made it.`); v.promise = null; }
       if ((v.strikes || 0) > 0 && v.morale > 60) { v.calm = (v.calm || 0) + 1; if (v.calm >= 10) { v.strikes--; v.calm = 0; this.ui.toast("The crew's grievances fade. One strike forgiven."); } } else v.calm = 0;
     }
+    if (v && v.crew && !this.withVessel()) this.crewAway(v);
     if (s.voyage && s.voyage.role === "crew") s.voyage.earned = U.rn((s.voyage.earned || 0) + AZ.Prices.wage(this.w, null), 2);
     // fever runs its course unless treated: gravely ill on the third day, collapse on the sixth
     if (s.cond.fever || s.cond.gravely) {
@@ -76,6 +166,7 @@ Object.assign(AZ.Game.prototype, {
   // ------------------------------------------------------------------ sleep
   awakeTick(h) {
     const s = this.s;
+    if (s.watchBelow) { if (s.clock < s.watchBelow && s.aboard && s.vessel && !this.riding()) return; delete s.watchBelow; }
     s.awake = (s.awake || 0) + h;
     if (s.awake >= 44 && !this.ui.busy()) {
       this.ui.toast("You fall asleep where you stand, and wake ten hours later.");
@@ -94,18 +185,28 @@ Object.assign(AZ.Game.prototype, {
     for (const b of w.P.burgs) if (b && b.port) { const h = w.harbour(b, cls || "boat"); if (!h) continue; const d = Math.hypot(h.t[0] - s.c, h.t[1] - s.r); if (d < bd) { bd = d; best = b; } }
     return best;
   },
+  // collapse: aboard your own vessel, the crew (or a passing boat) brings her into the nearest
+  // harbour; she waits there with her damage. Ashore, you wake in the nearest town.
   async collapse(cause) {
-    const s = this.s, w = this.w, U = AZ.U;
-    const b = w.near(s.c, s.r, 200).find(n => n.kind === "burg")?.o || this.nearestPort("boat");
+    const s = this.s, w = this.w, U = AZ.U, v = s.vessel;
+    const afloat = !!(v && s.aboard && !this.riding());
+    let b = null, boat = "";
+    if (afloat) {
+      const run = this.runToPort(v), kind = U.esc(v.kind.toLowerCase());
+      b = run ? run.port : this.nearestPort(v.cls);
+      if (run) s.clock += run.miles / (v.speed || 6);
+      if (v.mode === "hired") { s.vessel = null; boat = `${v.crew ? "The crew brought you in" : "A fishing boat found you adrift and towed you in"}, and the ${kind} has gone back to her owner.`; }
+      else { if (run) { v.c = run.h[0]; v.r = run.h[1]; } v.anchored = true; boat = `${v.crew ? "The crew brought" : "A fishing boat towed"} your ${kind} into ${U.esc(b.name)} harbour, where she waits${v.damaged ? ", still damaged" : ""}.`; }
+    }
+    b = b || w.near(s.c, s.r, 200).find(n => n.kind === "burg")?.o || this.nearestPort("boat");
     const lost = U.rn(s.purse / 2, 2);
     s.purse = U.rn(s.purse - lost, 2); s.clock += 72; s.hunger = 0; s.feverDays = 0; s.sup.food = Math.max(s.sup.food, 1);
     for (const k of ["hungry", "starving", "thirsty", "fever", "gravely"]) delete s.cond[k];
     this.slept();
     s.voyage = null; s.aboard = false; s.auto = false;
-    if (s.vessel && s.vessel.mode === "hired") s.vessel = null;
     s.c = b.t[0]; s.r = b.t[1]; this.anim = null;
     this.log(`Collapsed from ${cause || "hunger"}; woke in ${U.esc(b.name)}.`, "hook");
-    await this.ui.say([`You collapse${cause === "fever" ? " in the fever" : ""}. Days later you wake in ${U.esc(b.name)}, in a stranger's bed. Someone has been paid for your keep: 🟡 ${lost} is gone from your purse ${AZ.T("mixed")}.`]);
+    await this.ui.say([`You collapse${cause === "fever" ? " in the fever" : ""}. Days later you wake in ${U.esc(b.name)}, in a stranger's bed. Someone has been paid for your keep: 🟡 ${lost} is gone from your purse ${AZ.T("mixed")}.`, boat]);
     this.afterStep();
   },
   async mutiny() {
@@ -277,6 +378,7 @@ Object.assign(AZ.Game.prototype, {
       if (o.act === "crewup") { const cost = U.rn(3 * P.wage(w, b) * 3, 2); s.purse = U.rn(s.purse - cost, 2); s.vessel.crew = 3; s.vessel.morale = 70; this.ui.toast("Three hands sign on."); continue; }
       if (o.act === "payoff") {
         const owed = s.vessel.owed || 0;
+        this.takeHold();
         s.purse = U.rn(Math.max(0, s.purse - owed), 2);
         this.log(`Returned the hired boat in ${U.esc(b.name)}.`);
         s.vessel = null; s.aboard = false; s.c = b.t[0]; s.r = b.t[1];
@@ -284,7 +386,7 @@ Object.assign(AZ.Game.prototype, {
       }
     }
   },
-  vesselHere(b) { const v = this.s.vessel; if (!v) return false; return ["boat", "ship"].some(cls => { const h = this.w.harbour(b, cls); return h && h.t[0] === v.c && h.t[1] === v.r; }); },
+  vesselHere(b) { const v = this.s.vessel; if (!v) return false; if (v.cls === "air") return v.c === b.t[0] && v.r === b.t[1]; return ["boat", "ship"].some(cls => { const h = this.w.harbour(b, cls); return h && h.t[0] === v.c && h.t[1] === v.r; }); },
   boardOptions(b) {
     const s = this.s, U = AZ.U, opts = [];
     const v = s.voyage;
@@ -295,7 +397,7 @@ Object.assign(AZ.Game.prototype, {
     }
     if (s.vessel && this.vesselHere(b)) {
       if (!s.aboard || this.riding()) opts.push({ label: `Board your ${U.esc(s.vessel.kind.toLowerCase())}${s.vessel.crew ? "" : " (no crew!)"}`, act: { go: async () => { if (s.voyage) s.voyage.boarded = false; s.aboard = true; s.c = s.vessel.c; s.r = s.vessel.r; this.afterStep(); } } });
-      else opts.push({ label: `Go ashore and walk (the ${U.esc(s.vessel.kind.toLowerCase())} waits in harbour)`, act: { go: async () => { s.aboard = false; s.c = b.t[0]; s.r = b.t[1]; this.afterStep(); } } });
+      else opts.push({ label: `Go ashore and walk (the ${U.esc(s.vessel.kind.toLowerCase())} waits ${s.vessel.cls === "air" ? "at her mooring" : "in harbour"})`, act: { go: async () => { s.aboard = false; s.c = b.t[0]; s.r = b.t[1]; this.afterStep(); } } });
     }
     return opts;
   },

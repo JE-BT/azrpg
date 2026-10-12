@@ -52,12 +52,14 @@
     if (AZ.isTeleport(leg.transport)) {
       const next = this.cpNext(), hours = Math.max(0.5, leg.miles / (leg.speed || 10000));
       this.doAct("board");
+      if (s.vessel) this.takeHold();
       s.aboard = false; s.vessel = null; s.c = next.tile[0]; s.r = next.tile[1]; s.clock += hours; this.anim = null;
       this.log(`Teleported from ${U.esc(b.name)} to ${U.esc(next.place.name)}.`, "hook");
       await this.ui.say([`The circle in ${U.esc(b.name)} flares white${s.party?.length ? ", and the company steps through with you" : ""} ${T("mixed")}.`, `You stand in ${U.esc(next.place.name)}, ${U.num(leg.miles)} miles away ${T("data")}.`]);
       this.afterStep();
       return;
     }
+    if (s.vessel) this.takeHold();
     s.vessel = { mode: "company", kind: leg.transport, cls: "air", speed: leg.speed, hpd: leg.hoursPerDay, crew: Math.max(2, (s.party || []).length), morale: 80, c: b.t[0], r: b.t[1], wage: 0, hire: 0, home: b.i };
     s.aboard = true; s.c = b.t[0]; s.r = b.t[1];
     this.doAct("board");
@@ -72,7 +74,7 @@
     const s = this.s, w = this.w, v = s.vessel;
     if (s.aboard && v && v.cls === "air" && !this.riding() && !this.burgHere() && w.isLand(s.c, s.r)) {
       const k = await this.ui.choose(`Set down here? The ${U.esc(v.kind.toLowerCase())} waits.`, [{ label: "Set down and step out" }, { label: "Look around" }, { label: "Stay aboard" }], { cancel: 2 });
-      if (k === 0) { s.aboard = false; s.auto = false; v.anchored = true; this.afterStep(); return; }
+      if (k === 0) return this.goAshore(null, true);
       if (k === 1) return this.ui.say([this.know.describe(s.c, s.r, true).join(" ")], "Look");
       return;
     }
