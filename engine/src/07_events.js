@@ -175,7 +175,13 @@ AZ.Events = class {
   fx(e, note) {
     const g = this.g, s = this.s, U = AZ.U, bits = [];
     if (!e) return "";
-    if (e.time) { s.clock += e.time; bits.push(`${AZ.Clock.span(e.time)} pass`); }
+    // hours spent doing something are hours awake; a stretch of 20 hours or more includes a night's sleep
+    if (e.time) {
+      s.clock += e.time; bits.push(`${AZ.Clock.span(e.time)} pass`);
+      if (e.sleep) g.slept();
+      else if (e.time >= 20) { g.slept(); g.awakeTick(e.time - 20); }
+      else g.awakeTick(e.time);
+    }
     if (e.coin) { const before = s.purse; s.purse = U.rn(Math.max(0, s.purse + e.coin), 2); const d = U.rn(s.purse - before, 2); bits.push(`🟡 ${d >= 0 ? "+" : ""}${d}`); }
     for (const [k, id, n] of e.stand || []) {
       const tab = k === "f" ? s.stand.f : s.stand.s;
@@ -183,8 +189,13 @@ AZ.Events = class {
       const nm = k === "f" ? this.w.P.religions[id]?.name : this.w.P.states[id]?.name;
       bits.push(`standing with ${nm} ${n > 0 ? "+" : ""}${n}`);
     }
-    if (e.cond) { s.cond[e.cond] = true; bits.push(AZ.COND[e.cond].on); }
-    for (const c of e.cure || []) if (s.cond[c]) { delete s.cond[c]; bits.push(AZ.COND[c].off); }
+    // damage is the vessel's own: it stays with the boat, and goes when the boat goes
+    if (e.cond === "damaged") { if (s.vessel) { s.vessel.damaged = true; s.cond.damaged = true; bits.push(AZ.COND.damaged.on); } }
+    else if (e.cond) { s.cond[e.cond] = true; bits.push(AZ.COND[e.cond].on); }
+    for (const c of e.cure || []) {
+      if (c === "damaged") { if (s.vessel && s.vessel.damaged) { delete s.vessel.damaged; bits.push(AZ.COND.damaged.off); } delete s.cond.damaged; }
+      else if (s.cond[c]) { delete s.cond[c]; bits.push(AZ.COND[c].off); }
+    }
     if (e.flag) { s.flags[e.flag] = true; if (e.flag === "boarded" && s.goods && Object.keys(s.goods).length) { s.goods = {}; bits.push("your goods are taken"); } }
     if (e.unflag) delete s.flags[e.unflag];
     if (e.reveal) { const n = g.revealLeads(e.reveal); bits.push(`${n} new places entered in your journal`); }
@@ -297,7 +308,7 @@ AZ.MARKERS = (() => {
     inns: { run: async (ev, m, head) => {
       const s = ev.s, g = ev.g;
       await ev.scene(head, esc(m.note), [
-        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, null)})`, disabled: s.purse < AZ.Prices.inn(g.w, null), fx: () => ({ coin: -AZ.Prices.inn(g.w, null), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
+        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, null)})`, disabled: s.purse < AZ.Prices.inn(g.w, null), fx: () => ({ coin: -AZ.Prices.inn(g.w, null), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), sleep: true, cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
         { label: "Just a meal (🟡 1)", disabled: s.purse < 1, fx: { coin: -1, time: 1 }, text: "The food is as good as they say." },
         { label: "Move on", fx: null, text: "" }], `m${m.i}`);
     } },

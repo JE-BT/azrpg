@@ -48,6 +48,9 @@ AZ.Game = class {
     const s = this.s;
     const def = { purse: 10, stand: { f: {}, s: {} }, cond: {}, flags: {}, threads: [], leads: [], done_m: [], done_z: [], doy0: 80, sup: { food: 3 }, hunger: 0, taken: [], goods: {}, basis: {}, awake: 0 };
     for (const [k, v] of Object.entries(def)) if (s[k] === undefined) s[k] = JSON.parse(JSON.stringify(v));
+    // saves from before damage belonged to the vessel: give it to the vessel, or drop it with no vessel
+    if (s.cond.damaged && s.vessel && s.vessel.damaged == null) s.vessel.damaged = true;
+    if (!(s.vessel && s.vessel.damaged)) delete s.cond.damaged;
     s.tvFaith = this.tv.faith;
   }
   saveGame() {
@@ -177,7 +180,7 @@ AZ.Game = class {
       if (seg) { const a = seg.chainPos.get(w.idx(s.c, s.r)), b = seg.chainPos.get(w.idx(c, r)); if (a !== undefined && b !== undefined && Math.abs(a - b) === 1) miles = seg.miles / Math.max(1, seg.chain.length - 1); }
       else if (s.auto && s.autoPath && s.autoPath.mps) miles = s.autoPath.mps;
       if (this.riding()) miles = s.voyage.milesPerStep || miles;
-      return (miles / v.speed / f) * wx.sail * (s.cond.damaged && !this.riding() ? AZ.COND.damaged.slow : 1);
+      return (miles / v.speed / f) * wx.sail * (!this.riding() && s.vessel && s.vessel.damaged ? AZ.COND.damaged.slow : 1);
     }
     const cell = w.cell(c, r), b = w.P.biomes[w.C.biome[cell]], B = w.bits(c, r);
     let f = B.road ? 0.8 : B.trail ? 1 : U.clamp((b.cost || 50) / 50, 1, 4);
@@ -242,6 +245,8 @@ AZ.Game = class {
     if (pause && s.auto) { this.setAuto(false); this.ui.toast("Autopilot paused. F to carry on."); }
     if (hb && !b && s.vessel && s.aboard && !s.voyage) this.ui.toast(`In ${U.esc(hb.name)} harbour. Space to go into town.`);
     if (s.waypoint && Math.abs(s.waypoint[0] - s.c) <= 1 && Math.abs(s.waypoint[1] - s.r) <= 1) { s.waypoint = null; this.ui.toast("Waypoint reached."); }
+    const legNow = this.cpNext()?.legIn, kNow = legNow && legNow.chainPos ? legNow.chainPos.get(id) : undefined;
+    if (kNow !== undefined && (!s.prog || s.prog.cp !== s.cp || kNow > s.prog.k)) s.prog = { cp: s.cp, k: kNow };
     this.checkCheckpoints();
     this.refill();
     if (this.events) this.events.onStep();
@@ -276,14 +281,7 @@ AZ.Game = class {
     const s = this.s, w = this.w, here = [s.c, s.r];
     if (s.aboard && s.vessel) {
       const cls = s.vessel.cls;
-      if (!s.waypoint) {
-        const cp = this.cpNext();
-        const seg = this.legFor(s.c, s.r);
-        if (seg && cp && seg === cp.legIn) return seg.chain.slice(seg.chainPos.get(w.idx(s.c, s.r)));
-        if (!cp) return null;
-        const goal = cp.place.burg && cp.place.at ? w.harbour(cp.place.burg, cls)?.t : cp.tile;
-        return goal ? w.waterPath(here, goal, cls) : null;
-      }
+      if (!s.waypoint) return this.followPlan(cls);
       let goal = s.waypoint;
       if (!w.navigable(...goal, cls)) { const b = w.near(goal[0], goal[1], 8).find(n => n.kind === "burg" && n.o.port); const h = b && w.harbour(b.o, cls); goal = h ? h.t : null; }
       return goal ? w.waterPath(here, goal, cls) : null;
@@ -294,6 +292,41 @@ AZ.Game = class {
       return w.withMiles(w.path(here, goal, (c, r) => w.isLand(c, r), { limit: 300000, cost: (c, r) => { const B = w.bits(c, r); return B.road ? 0.6 : B.trail ? 0.8 : AZ.U.clamp((w.P.biomes[w.C.biome[w.cell(c, r)]].cost || 50) / 50, 1, 4); } }));
     }
     return null;
+  }
+  // F aboard your own vessel with no waypoint: the plan's course to the next checkpoint (the gold line).
+  // Off the course, the vessel makes for the nearest point of it she can reach by water, at or beyond
+  // the furthest point already reached on this leg (so a detour to a harbour never sends her back),
+  // then follows it; stretches she cannot use are bridged by water; it ends at the checkpoint's harbour.
+  followPlan(cls) {
+    const s = this.s, w = this.w, here = [s.c, s.r], cp = this.cpNext();
+    if (!cp) return null;
+    const goal = cp.place.burg && cp.place.at ? w.harbour(cp.place.burg, cls)?.t : cp.tile;
+    const direct = () => (goal ? w.waterPath(here, goal, cls) : null);
+    const seg = cp.legIn, ch = seg && seg.chain;
+    if (!ch || !ch.length) return direct();
+    const nav = (c, r) => w.navigable(c, r, cls);
+    const usable = i => nav(ch[i][0], ch[i][1]) && w.sameWater(here, ch[i], cls);
+    const k0 = seg.chainPos ? seg.chainPos.get(w.idx(s.c, s.r)) : undefined;
+    let join = k0 !== undefined && usable(k0) ? k0 : -1;
+    const from = s.prog && s.prog.cp === s.cp ? s.prog.k : 0;
+    for (const lo of join < 0 ? [from, 0] : []) {
+      let bd = Infinity;
+      for (let i = lo; i < ch.length; i++) { const d = (ch[i][0] - s.c) ** 2 + (ch[i][1] - s.r) ** 2; if (d < bd && usable(i)) { bd = d; join = i; } }
+      if (join >= 0) break;
+    }
+    if (join < 0) return direct();
+    const out = join === k0 ? [here] : w.path(here, ch[join], nav, { limit: 400000, greed: 1.2 });
+    if (!out) return direct();
+    for (let i = join + 1; i < ch.length; i++) {
+      const t = ch[i], last = out[out.length - 1];
+      if (!nav(t[0], t[1]) || (last[0] === t[0] && last[1] === t[1])) continue;
+      if (Math.abs(last[0] - t[0]) + Math.abs(last[1] - t[1]) === 1) { out.push(t); continue; }
+      const p = w.path(last, t, nav, { limit: 60000 });
+      if (p) out.push(...p.slice(1));
+    }
+    const last = out[out.length - 1];
+    if (goal && (last[0] !== goal[0] || last[1] !== goal[1])) { const p = w.waterPath(last, goal, cls); if (p) out.push(...p.slice(1)); }
+    return w.withMiles(out);
   }
   autoDir() {
     const s = this.s, p = s.autoPath;
@@ -328,11 +361,7 @@ AZ.Game = class {
     }
     if (s.aboard && s.vessel) {
       const t = [s.c + dc, s.r + dr];
-      if (w.isLand(...t) && !w.navigable(...t, s.vessel.cls)) {
-        const k = await this.ui.choose(`Go ashore here? The ${U.esc(s.vessel.kind.toLowerCase())} waits${s.vessel.mode === "hired" ? "; the crew's wages run on" : ""}.`, [{ label: "Go ashore" }, { label: "Stay aboard" }], { cancel: 1 });
-        if (k === 0) { s.aboard = false; s.auto = false; s.vessel.anchored = true; s.c = t[0]; s.r = t[1]; this.afterStep(); }
-        return;
-      }
+      if (w.isLand(...t) && !w.navigable(...t, s.vessel.cls)) return this.goAshore(t);
     } else if (s.vessel && Math.abs(s.vessel.c - s.c) + Math.abs(s.vessel.r - s.r) <= 1) {
       s.aboard = true; s.c = s.vessel.c; s.r = s.vessel.r; this.ui.toast("Back aboard."); this.afterStep(); return;
     }
@@ -358,7 +387,7 @@ AZ.Game = class {
       for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit the ${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
       for (const p of people) if (p.role !== "Notice board") opts.push({ label: `${p.role}${p.name ? `: ${U.esc(p.name)}` : ""}`, act: p });
       if (s.cond.fever || s.cond.gravely) opts.push({ label: `Ask the ${b.temple ? "priest" : "shrine-keeper"} to treat your fever (${this.healCost(b) ? "🟡 " + this.healCost(b) : "free"})`, act: "heal", disabled: s.purse < this.healCost(b) });
-      if (s.cond.damaged && b.port && s.vessel) opts.push({ label: `Have the boat repaired (🟡 ${P.repair(w, b)}, 12 h)`, act: "repair", disabled: s.purse < P.repair(w, b) });
+      if (s.vessel && s.vessel.damaged && this.vesselHere(b)) opts.push({ label: `Have the boat repaired (🟡 ${P.repair(w, b)}, 12 h)`, act: "repair", disabled: s.purse < P.repair(w, b) });
       opts.push({ label: "Leave", act: "leave" });
       const k = await this.ui.choose(`<b>${U.esc(b.name)}</b> · ${AZ.Clock.fmt(s.clock)} · 🟡 ${U.rn(s.purse, 2)} · food ${s.sup.food} rations${this.voyageLine()}`, opts, { cancel: opts.length - 1 });
       const o = opts[k];
@@ -371,7 +400,7 @@ AZ.Game = class {
       if (o.act === "board") { await this.noticeBoard(b); continue; }
       if (o.act === "inn") {
         const t0 = s.clock;
-        const out = this.events.fx({ coin: -P.inn(w, b), time: Math.max(1, AZ.Clock.nextDawn(s.clock, this.lat()) - s.clock), cure: ["hurt"] });
+        const out = this.events.fx({ coin: -P.inn(w, b), time: Math.max(1, AZ.Clock.nextDawn(s.clock, this.lat()) - s.clock), sleep: true, cure: ["hurt"] });
         this.slept();
         const act = this.doAct("rest", b);
         await this.ui.say(`You sleep in ${U.esc(b.name)}. ${AZ.Clock.span(s.clock - t0)} pass ${T("mixed")}.${out}${act ? ` <span class="hook">★ ${U.esc(act.label)}</span>` : ""}`); continue;
@@ -406,7 +435,7 @@ AZ.Game = class {
     const k = await this.ui.choose(atSea ? "Heave to or anchor?" : "Make camp or wait?", opts, { cancel: 5 });
     if (k === 5) return;
     const t0 = s.clock;
-    if (k === 4) { this.events.fx({ time: 48, cure: ["fever", "hurt"] }, "Rested two days."); this.ui.toast("Two days' rest. You feel yourself again."); return; }
+    if (k === 4) { this.events.fx({ time: 48, sleep: true, cure: ["fever", "hurt"] }, "Rested two days."); this.ui.toast("Two days' rest. You feel yourself again."); return; }
     if (k === 0) {
       s.clock = AZ.Clock.nextDawn(s.clock, this.lat());
       if (s.vessel) { s.vessel.anchored = true; s.vessel.morale = Math.min(100, (s.vessel.morale || 70) + 4); s.vessel.nightKey = Math.floor(s.clock / 24); }

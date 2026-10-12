@@ -5,7 +5,9 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 2**.
+Current version: **Alpha 2.1**.
+
+Online demo: https://je-bt.github.io/azrpg/
 
 Online demo: https://je-bt.github.io/azrpg/
 
@@ -47,7 +49,9 @@ Touch screens get an on-screen pad.
 - **Travel.** Walking pace follows the ground; wide rivers need a bridge or a boat. Booked ships,
   coaches and wagons keep fixed timetables and their own itineraries. A hired boat is yours to
   steer, with a crew who draw wages, eat your food and call for stops; overruling them costs
-  morale. Air journeys fly in the company's own craft, and teleport circles cross a leg at once.
+  morale. Your own vessel has a hold: what you cannot carry on foot stays aboard, and the hands left
+  with her eat from it while you are away, as long as food and patience last. Air journeys fly in
+  the company's own craft, and teleport circles cross a leg at once.
 - **Supplies and money.** Prices come from each town's market and the state's sales tax. Towns sell
   a share of their food each week, varying with the harvest and with famine. Hunger, fever and lack
   of sleep slow you and, in the end, bring you down.
@@ -120,7 +124,7 @@ engine/     the game (JavaScript), one module per file, joined in name order
   shell.html
   src/00_util.js … 18_carry.js
 tests/      converter tests (Python) and game tests (Node)
-docs/       journeys key, roadmap
+docs/       journeys key, roadmap, design notes
 ```
 
 ## Tests
@@ -131,6 +135,7 @@ node tests/text.js out/Pyeongak_rpg.html            # every screen's text, for w
 node tests/features.js out/Presia_rpg.html          # air legs, wild starts, carrying, alerts
 node tests/play.js out/Pyeongak_rpg.html            # a scripted journey
 node tests/browser.js out/Pyeongak_rpg.html         # the page in a simulated browser
+node tests/vessels.js out/Pyeongak_rpg.html         # damage, the hold, crews ashore, watches, F's course
 ```
 
 The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.

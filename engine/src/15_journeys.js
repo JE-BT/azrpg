@@ -440,7 +440,7 @@ AZ.TRAITS = {
     else s.clock = until;
     const pd = k === 2 ? Math.min(0.9, pDamage + 0.25) : pDamage;
     if (roll < pd) {
-      if (s.cond.damaged && roll2 < pSink * 2 || roll2 < pSink * 0.5) return this.shipwreck();
+      if (v.damaged && roll2 < pSink * 2 || roll2 < pSink * 0.5) return this.shipwreck();
       this.events.fx({ cond: "damaged" }, "Storm damage."); this.ui.toast("A spar carries away and the seams open. The boat is damaged.");
     } else this.ui.toast("The storm blows itself out.");
     this.dirty = true;

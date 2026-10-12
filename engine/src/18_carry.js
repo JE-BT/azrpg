@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------------------------
 // What you carry, how tired you are, who travels with you, and how hard the ground is.
-//   Carrying limits follow the way you travel: leaving a ship or a boat, you keep only what you
-//   can carry; in a town the surplus is sold at the market, elsewhere it is left behind.
+//   Carrying limits follow the way you travel. Leaving your own vessel, what you cannot carry stays
+//   in her hold and comes back to you when you return; going ashore where hands stay aboard, you
+//   choose how much food to take and how much to leave them. Leaving a booked passage or giving up
+//   a vessel, the surplus is sold at the market in a town and left behind elsewhere.
 //   The journal lists everything you carry. Exhaustion and falling asleep are announced.
 //   The company rests, camps and crosses portals with you. The Effort lens shows how hard each
 //   tile is to cross on foot, and steep ground is drawn more clearly.
@@ -13,6 +15,7 @@
   G.enforceCapacity = function () {
     const s = this.s, w = this.w;
     if (!s || this.ui.busy()) return;
+    this.syncVessel();
     const cap = this.capacity(), b = w.burgAt.get(w.idx(s.c, s.r));
     const extraFood = s.sup.food - cap.food, goods = Object.entries(s.goods || {}).filter(([, n]) => n > 0);
     let extraGoods = this.goodsCount() - cap.goods;
@@ -36,6 +39,83 @@
   const after0 = G.afterStep;
   G.afterStep = function (...a) { after0.apply(this, a); this.enforceCapacity(); };
 
+  // ------------------------------------------------------------------ the vessel's hold
+  // back with your vessel, her hold is yours again; on leaving her, what you cannot carry stays aboard
+  G.syncVessel = function () {
+    const s = this.s, v = s.vessel, withV = this.withVessel();
+    if (v && v.damaged) s.cond.damaged = true; else delete s.cond.damaged;
+    if (v && withV) this.takeHold();
+    else if (v && s.wasWithVessel !== false) this.stowHold();
+    s.wasWithVessel = withV;
+  };
+  G.stowHold = function () {
+    const s = this.s, v = s.vessel, hold = this.holdOf(v), cap = this.capacity(), L = [];
+    const extra = s.sup.food - cap.food;
+    if (extra > 0) { hold.food += extra; s.sup.food = cap.food; L.push(`${extra} rations`); }
+    let extraG = this.goodsCount() - cap.goods;
+    for (const [gid, n] of Object.entries(s.goods || {}).filter(([, k]) => k > 0).sort((a, c) => ((s.basis || {})[a[0]] || 0) - ((s.basis || {})[c[0]] || 0))) {
+      if (extraG <= 0) break;
+      const k = Math.min(n, extraG);
+      s.goods[gid] -= k; hold.goods[gid] = (hold.goods[gid] || 0) + k; extraG -= k;
+      L.push(`${k} ${this.know.good(gid).toLowerCase()}`);
+    }
+    if (!L.length) return;
+    this.log(`Left in the hold of the ${U.esc(v.kind.toLowerCase())}: ${U.esc(L.join(", "))}.`);
+    this.ui.toast(`More than you can carry on foot: ${U.esc(L.join(", "))} stay in the hold of the ${U.esc(v.kind.toLowerCase())} ${T("mixed")}.`);
+  };
+  G.takeHold = function () {
+    const s = this.s, v = s.vessel;
+    if (!v || !v.hold) return;
+    const h = v.hold, L = [], waited = v.waited || 0;
+    s.goods = s.goods || {};
+    if (h.food > 0) { s.sup.food += h.food; L.push(`${h.food} rations`); }
+    for (const [gid, n] of Object.entries(h.goods || {})) if (n > 0) { s.goods[gid] = (s.goods[gid] || 0) + n; L.push(`${n} ${this.know.good(gid).toLowerCase()}`); }
+    v.hold = { food: 0, goods: {} }; v.waited = 0; v.patience = null;
+    if (L.length || waited) this.ui.toast(`Back with the ${U.esc(v.kind.toLowerCase())}${waited ? ` after ${waited} day${waited > 1 ? "s" : ""}` : ""}${L.length ? `: ${U.esc(L.join(", "))} in the hold` : ""}.`);
+  };
+  // going ashore (or setting down) where hands stay aboard: how much food do you take?
+  G.goAshore = async function (t, confirmed) {
+    const s = this.s, v = s.vessel, n = this.crewFed(v), kind = U.esc(v.kind.toLowerCase());
+    const air = v.cls === "air", verb = air ? "Set down and step out" : "Go ashore", foot = AZ.CARRY.foot;
+    const step = () => { s.aboard = false; s.auto = false; v.anchored = true; v.waited = 0; if (t) { s.c = t[0]; s.r = t[1]; } this.anim = null; this.afterStep(); };
+    if (!n) {
+      if (confirmed) return step();
+      const k = await this.ui.choose(`${verb} here? The ${kind} waits, with no one aboard. On foot you carry up to ${foot.food} rations and ${foot.goods} units of goods; the rest stays in the hold ${T("mixed")}.`, [{ label: verb }, { label: "Stay aboard" }], { cancel: 1 });
+      if (k === 0) step();
+      return;
+    }
+    const run = this.runToPort(v), patience = this.patienceOf(v), total = s.sup.food, pname = run ? U.esc(run.port.name) : "";
+    const wages = v.mode === "hired" ? " Wages and hire run on." : v.mode === "owned" ? " Wages run on." : "";
+    const after = v.mode === "hired" ? "If they sail without you, they take the boat back to her owner, with whatever is aboard." : v.mode === "owned" ? "If they sail without you, they bring her into port, take their wages and leave her there." : "If they sail without you, they take her into port and wait for you there.";
+    const opts = [];
+    for (const take of [...new Set([Math.min(total, foot.food), Math.min(total, Math.ceil(foot.food / 2)), Math.min(total, 3), 0])].sort((a, c) => c - a)) {
+      const leave = total - take, wait = Math.min(patience, Math.floor((leave - (run ? run.food : 0)) / n));
+      const what = run && leave < run.food ? `too little for their run to ${pname} (${run.food} rations)` : wait <= 0 ? (run ? `they sail for ${pname} at the next dawn` : "they go hungry from tomorrow") : `they wait about ${wait} day${wait > 1 ? "s" : ""}`;
+      opts.push({ label: `${verb}: take ${take} rations and leave ${leave} aboard; ${what}`, take, leave });
+    }
+    opts.push({ label: "Stay aboard" });
+    const head = `<b>${verb} here?</b> ${n} ${n > 1 ? "hands stay" : "hand stays"} aboard the ${kind} and eat${n > 1 ? "" : "s"} from what you leave: ${n} ration${n > 1 ? "s" : ""} a day.${wages} ${run ? `They keep enough for the run to ${pname}, the nearest harbour: ${run.food} rations, ${run.days} day${run.days > 1 ? "s" : ""}.` : "No harbour can be reached from here by water."} At morale ${Math.round(v.morale)} they wait ${patience} days at most. ${after} ${T("mixed")}`;
+    const k = await this.ui.choose(head, opts, { cancel: opts.length - 1 });
+    const o = opts[k];
+    if (o.take == null) return;
+    if (run && o.leave < run.food) {
+      const enough = total - run.food;
+      const k2 = await this.ui.choose(`<b>The mate blocks the way.</b> “${o.leave} rations, and ${run.days} day${run.days > 1 ? "s" : ""} from ${pname}? You are leaving us to die out here.” Morale ${Math.round(v.morale)}${v.strikes ? `, strikes ${v.strikes}/3` : ""} ${T("mixed")}.`,
+        [{ label: enough >= 0 ? `Leave them enough for the run (take ${enough} rations)` : `You have too little food to leave them enough (${total} of ${run.food})`, disabled: enough < 0 }, { label: "Go anyway: they will take the boat to port, and it counts as a strike" }, { label: "Stay aboard" }], { cancel: 2 });
+      if (k2 === 2) return;
+      if (k2 === 0) { o.take = enough; o.leave = run.food; }
+      else {
+        v.strikes = (v.strikes || 0) + 1; v.morale -= 20;
+        this.holdOf(v).food += o.leave; s.sup.food = o.take;
+        this.log(`Went ashore and left the crew too little to reach ${pname} (strike ${v.strikes}).`, "hook");
+        step();
+        return this.crewSailsOff(v, run, "refused");
+      }
+    }
+    this.holdOf(v).food += o.leave; s.sup.food = o.take; v.patience = patience;
+    step();
+  };
+
   // ------------------------------------------------------------------ what you carry (journal)
   G.carryHtml = function () {
     const s = this.s, tv = this.tv, U2 = U, items = [];
@@ -51,7 +131,12 @@
       const st = th.steps[th.phase];
       if (/letter|message|dispatch|offering|consignment|papers|report|proof/i.test(st.text)) items.push(`For “${U2.esc(th.title)}”: ${U2.esc(st.text.toLowerCase())}`);
     }
-    if (s.vessel) items.push(`${U2.esc(s.vessel.kind)} (${s.vessel.mode}) ${s.aboard ? "under you" : "waiting where you left it"}`);
+    if (s.vessel) {
+      const v = s.vessel, h = this.holdOf(v), g = Object.values(h.goods).reduce((a, k) => a + k, 0), n = this.crewFed(v);
+      const port = this.vesselInPort(v), patience = v.patience ?? this.patienceOf(v);
+      const away = port ? `waiting in ${U2.esc(port.name)}` : "waiting where you left her";
+      items.push(`${U2.esc(v.kind)} (${v.mode}${v.damaged ? ", damaged" : ""}) ${this.withVessel() ? (s.aboard ? "under you" : "in harbour here") : `${away}, with ${h.food} rations${g ? ` and ${g} units of goods` : ""} in the hold${n ? `; ${n} aboard${port ? "" : `, who will wait about ${Math.max(0, patience - (v.waited || 0))} more days if the food lasts`}` : ""}`}`);
+    }
     if (s.voyage) items.push(`A ${s.voyage.mode === "land" ? "seat" : "berth"} on ${U2.esc(s.voyage.ship)}`);
     return `<ul class="carry">${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
   };
