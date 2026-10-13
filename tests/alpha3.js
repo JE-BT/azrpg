@@ -12,7 +12,7 @@ const tickOver = () => new Promise(r => setImmediate(r));
     AZ.game = g; g.jr0 = jr; g.fresh(3, null, 80, { mode: "journey" }); g.started(); g.s.purse = 5000; return [g, ui];
   };
   const ports = P.burgs.filter(b => b && b.port && w.harbour(b, "boat") && b.population > 3);
-  const port = ports.sort((a, b) => b.population - a.population)[0];
+  const port = ports.sort((a, b) => b.population - a.population).find(b => (AZ.YARDS[P.cultures[b.culture]?.type] || AZ.YARDS.Generic).includes("ship")) || ports[0];
   const ph = w.harbour(port, "boat").t;
   let spot = null; // a sea tile beside open land, away from towns, on the port's water
   for (let r = 0; r < w.rows && !spot; r += 3) for (let c = 0; c < w.cols && !spot; c += 3) {
@@ -77,6 +77,7 @@ const tickOver = () => new Promise(r => setImmediate(r));
     s.awake = 0; const t0 = s.clock; g.anim = null; g.tryMove(wet);
     ok(Math.abs(s.awake - 1.5 * (s.clock - t0)) < 0.01, `rowing ${(s.clock - t0).toFixed(2)} h tires you for ${s.awake.toFixed(2)} h`);
     g.anim = null; s.c = spot.sea[0]; s.r = spot.sea[1]; v.c = s.c; v.r = s.r;
+    s.portage = true; // Alpha 4.1: carrying is chosen at the shore (Space)
     const moved = g.tryMove(spot.dir);
     ok(moved && s.aboard && v.c === spot.land[0] && v.r === spot.land[1], "a skiff is carried overland");
   }

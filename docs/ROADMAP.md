@@ -57,7 +57,19 @@ The economy that comes out of them is emergent; the game balances money.
 *Control tables: what moves a price; what costs and what pays. Worked examples: four towns on
 Pyeongak; the mine, the boat, and a stranded start.*
 
-## Alpha 5: stories
+## Alpha 4.1 (released)
+
+Fixes and people: goods are sold where the map has them; skiffs stay in the water unless carried;
+the merchant reads the markets for you; the harbourmaster gives directions and watches vessels; the
+wainwright reads the road and sells riding horses; animals go aboard small ships and larger.
+
+## Alpha 5: stories (released)
+
+Built: story types, hook finders, story shapes, the builder that fits a story to any number of
+stops, beat scenes played through the game's systems, out-of-order stops, and the end of a journey.
+Waiting for a later version: stop wordings read through the family, stops called by the company's
+rule, and beats from the changing world. See [STORIES_BERNOY.md](STORIES_BERNOY.md).
+
 
 Each journey type gets a story shape (three acts, the hero's journey, five rooms, the long voyage,
 the marches, slay the dragon, the chase, mystery, nodes, siege, the underdog), filled from the
@@ -76,6 +88,14 @@ faiths and cultures, a caravan's from markets and goods, a campaign's from state
 
 *Control table: who decides in the company. Worked example: Culzan and the road through the
 forest.*
+
+## Alpha 5.1: the story, hidden (released)
+
+The narrative design in [NARRATIVE.md](NARRATIVE.md), built: the premise (tie, lead or follow) as part
+of the character; any journey from the title screen; the company at the start; arcs, weighted
+structures and leg roles with objectives in the corner; moments on the way; people who carry the
+story and help with the systems; regard and suspicion as one system, brought forward from Alpha 7;
+provisions for the road; side stories you can pick.
 
 ## Alpha 6: traffic and knowledge
 

@@ -106,7 +106,7 @@
         this.doAct("book");
         this.log(`${crew ? "Signed on" : "Booked"} ${U.esc(L.ship)} to ${U.esc(dest.name)}, leaving ${AZ.Clock.fmt(o.d.t)}.`, "hook");
         await this.ui.say([`${crew ? "You sign the articles" : `🟡 ${o.fare} buys a place`} on ${U.esc(L.ship)} (${U.esc(L.transport)}), ${U.esc(captain)} ${L.mode === "sea" ? "master" : "driving"}: ${U.esc(L.why)} ${AZ.T("mixed")}.`,
-          `It leaves <b>${AZ.Clock.fmt(o.d.t)}</b>, in ${AZ.Clock.span(o.d.t - s.clock)}, and does not wait. Bring your own food. Board from town (Space) before it leaves.`]);
+          `It leaves <b>${AZ.Clock.fmt(o.d.t)}</b>, in ${AZ.Clock.span(o.d.t - s.clock)}, and does not wait. Bring your own food.${this.foodHint ? " " + this.foodHint() : ""} Board from town (Space) before it leaves.`]);
         return;
       }
       if (o.act === "yard") { await this.shipwright(b); continue; }

@@ -3,9 +3,10 @@
 azrpg plays the first journey saved in an Azgaar map. This page explains how a journey is read, so
 that you can design one that plays well.
 
-Most of the page describes the game as it is (Alpha 3). Parts marked **(Alpha 5)** describe the
-narrative engine that version adds, which gives each journey a story built from the map. The design
-behind it is in [DESIGN.md](DESIGN.md).
+This page describes the game as it is (Alpha 5). Parts marked **(Alpha 5)** describe the narrative
+engine, which gives each journey a story built from the map; reading stop wordings through the
+family waits for a later version. The design is in [DESIGN.md](DESIGN.md), and
+[STORIES_BERNOY.md](STORIES_BERNOY.md) shows the engine on twelve journeys.
 
 ## The parts of a journey
 

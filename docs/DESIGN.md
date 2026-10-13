@@ -10,7 +10,7 @@ order; [JOURNEYS.md](JOURNEYS.md) is the map maker's view of the narrative engin
 | Alpha 2.1 | fixes: vessels, the hold, sleep (the bridge to Alpha 3) | — |
 | Alpha 3 (released) | vessels and control | who decides aboard |
 | Alpha 4 (released) | markets | what moves a price; what costs and what pays |
-| Alpha 5 | stories | who decides in the company |
+| Alpha 5 (released) | stories | who decides in the company |
 | Alpha 6 | traffic and knowledge | what you know, and how old it is |
 | Alpha 7 | war | the check |
 
@@ -417,127 +417,188 @@ where it says otherwise.
 
 ## Alpha 5: stories
 
+### As built
 
-### The idea
+Alpha 5.1 rebuilt the story layer to the design in [NARRATIVE.md](NARRATIVE.md): premise, arcs,
+weighted structures, leg roles with objectives, moments, carriers and regard. The beat engine below
+was Alpha 5's first form; its story types, hook finders and shapes remain, and feed the arcs.
 
-Each journey already has a type, a route, checkpoints and stops. Alpha 5 gives each type a story
-shape and fills it from the places where the type's main layers meet along the route. The same
-mechanics then read differently: a Rumours stop on a raid turns on the temples' silver and who
-guards it; on a pilgrimage, on the shrine and its rites. JOURNEYS.md gives the types' movement
-rules, main layers and story shapes, and the full table of stop readings.
+Alpha 5 is `engine/src/23_stories.js`. Every journey gets a story: its type sets a family, main
+layers, a story shape and a rule for who decides; hook finders read the map along the route; the
+story builder fits the shape to the stops the journey has; and each beat plays as a scene through
+the systems the game already has. [STORIES_BERNOY.md](STORIES_BERNOY.md) shows the engine on all
+twelve of Bernoy's journeys, from a two-stop pilgrimage to an eight-stop quest, built and then
+played. `tests/stories.js` makes the same report for any world.
 
-This idea must be built out to encompass the mechanics the game has. Right now, every town has an Innkeeper, Merchant, Shrine-Keeper, Elder, and Townsfolk to talk to. Can also talk to captains of ships, passengers, there could be a captain of the watch, a warehouse or harbor master, a wainwright, a shopkeeper at the market, and many others. All these are potential vehicles for the story to be told. If the story is a mystery, perhaps you can interrogate people. If you are on an adventure, perhaps they ask to hear your story or you can ask about your specific quest. All the different story types can affect this.
+Built: story shapes as data (step 1); hook finders for every layer (step 2); the story builder and
+the journal's story page (step 3); movement and leadership in the scenes (step 5, in part); beat
+scenes (step 6). Stops read through their family (step 4) stay as written in JOURNEYS.md, and beats
+from the changing world (step 7) wait for a later version. Three things came out of play:
 
-The story should also react to the character's culture, religion, and so forth, making these systems real. In Alpha 2, the game makes biomes real through the camping bonus: swamps give nothing while rainforests give an extra ration, so the traveler avoids the swamps. In a narrative, perhaps a minority culture is disliked in a state, and so when a person of that culture travels to the majority region, there is risk involved, perhaps prices are higher, people react negatively, perhaps even robbery and things, which may be punished by the guard or not, depending on how sanctioned the discrimination is. In a theocracy, persecuting a person of a different religion would be expected, so you could get no help there. But in a republic perhaps all religions are protected, so you could get help from the watch there.  People should not all react the same, their religion, culture, nationality, world situation, hunger, personality, all affect their response.  Other layers should be made real in the same way.
-### Control table: who decides in the company
+- **A later stop reached early** asks before it counts: count it now (with the cost the story sets
+  for finishing early) or only visit. A raid that reaches its home port before its target can end
+  there, but nobody will believe it.
+- **The climax happens at the target.** For raids, battles, hunts and digs the target is the stop the
+  journey's name gives ("Raid on Biragzdin"), or else the one the map marks: a hostile, walled or
+  rich town; a monster's or a ruin's country. The story then closes at the last stop with the return.
+- **At the end of a journey** each companion chooses: hired hands stay for a wage if their heart is
+  in it, kin and the faithful stay if they can, guides and healers go home, and the journey's own
+  leader goes their own way. The company's vessel becomes yours, as an owner's vessel with no hands,
+  and the harbourmaster will ask about a watch when you walk away from her.
 
-| | Free movement | Collective decision | The leader decides after discussion | Orders |
-|---|---|---|---|---|
-| **Route between checkpoints** | you | proposed by whoever leads, put to the company at each fork | the leader, after hearing the company | the orders: the plan, the commander or the unit's march |
-| **F** | the plan's course, or your waypoint | the course the company agreed | the leader's course | follow the leader, the flagship or the unit |
-| **Decisions at stops** (book, rest, buy, wait) | you | the company's vote | the leader | the orders |
-| **Choices at story beats** | you | the vote; whoever leads breaks a tie | the leader | the commander; you may volunteer or refuse within the orders |
-| **The companions' advice** | when asked (Space) | at every fork, each by their role | before every choice | the sergeant's briefing |
-| **How companions weigh a choice** | they do not vote | by role: a guard weighs danger, a guide speed, a healer the sick and the food, a merchant profit, a priest the rites, a scout what is known | as in a vote, for advice | as the orders say |
-| **Overruling them** | costs nothing | −10 morale for each who voted against; a companion overruled twice leaves at the next town | −5 morale for each whose advice you set aside, if you lead | insubordination: lost pay and standing; a second time is arrest |
-| **When morale is low** | they grumble, and follow | they weigh their own role more heavily | they grumble; below 20 one of them leaves | the unit's discipline holds until it breaks |
-| **Leaving the company** | part at any town; they wait at the next checkpoint | you may leave; the company goes on by the plan | as for a vote | absence, then desertion (Alpha 7) |
-| **If you lead** | you lead in any case | you hold the casting vote | you decide | you give the orders (Raid, Mercenary contract) |
-| **Same rule aboard** (Alpha 3 control table) | Hirer or Owner | Company | Company | Under command |
-| **Types** | Pilgrimage, Smuggling run, Courier ride, Exile's flight, Arcane errand, Wandering | Quest, Expedition, Refugee flight, Treasure hunt, Monster hunt | Caravan, Embassy, Airship voyage | Military campaign, Raid, Royal progress, Mercenary contract |
+### Control table 1: the story types
 
-### Worked example: Culzan and the road through the forest
+Every journey type, with what it reads and what it does. Hooks not named as high or medium are low.
 
-Nouileland's journey is a Quest (data). Its name begins with a person who is no town, state,
-culture or faith, so Culzan leads it (mixed). The company met at the Gathering in Ma'kan'ji is a
-sword-for-hire, a guide and a healer. Quests read through biomes and markers, decide collectively,
-and take the hero's journey as their shape.
+| Type | Family | Main layers | Shape (others) | Who decides | Can lead | High hooks | Medium hooks | Climax | Ending early |
+|---|---|---|---|---|---|---|---|---|---|
+| Pilgrimage | faith | religion, culture | the hero's journey (the long voyage) | free movement | yes | faithSeat, faithBorder, shrine, temple, crusade | cultureBorder, faithMinority, cultureMinority, hardCrossing, inn | the rites (alms; faith standing) | the vow unkept: faith standing −1 |
+| Quest | land | biomes, markers | the hero's journey (slay the dragon, the chase) | collective decision | yes | monster, ruin, hardCrossing, wonder | biomeChange, wetland, desert, cold, shrine, rebels | the deed (a story reward) | nothing found, nothing lost |
+| Caravan | trade | markets, goods, culture | the long voyage (three acts) | the leader, after discussion | yes | priceGap, destBuys, bigCity, port | cultureBorder, stateBorder, inn, rebels, famine, desert | the sale (the market screen) | contracts broken: standing −1 with home |
+| Military campaign | power | states, military | three acts (siege) | orders | no | war, regiment, walls, stateBorder | capital, invasion, hardCrossing, famine | the battle (pay, risk of hurt, standing) | orders undone: standing −2 with home |
+| Embassy | power | states, culture | mystery (three acts) | the leader, after discussion | yes | capital, stateBorder, war, cultureBorder | walls, temple, faithBorder, bigCity | the audience (state standing) | orders undone: standing −2 with home |
+| Raid | faith | culture, religion, population | five rooms (three acts) | orders | yes | walls, port, bigCity, temple, cultureBorder, faithBorder | regiment, stateBorder, war, empty, capital | the strike (plunder from the treasury; the target state turns hostile) | no plunder, no proof: standing −2 with home |
+| Smuggling run | trade | markets, goods, states | the chase (mystery) | free movement | yes | stateBorder, priceGap, war, port | destBuys, regiment, bigCity, walls | the sale (the market screen) | contracts broken: standing −1 with home |
+| Courier ride | people | burgs, biomes, temperature | three acts (the chase) | free movement | no | hardCrossing, cold, heat, bigCity | stateBorder, rebels, disaster, war, desert | the delivery (pay by lateness) | the message incomplete |
+| Expedition | land | biomes, culture, markers | the marches (the long voyage) | collective decision | yes | hardCrossing, ruin, wonder, biomeChange, empty | cultureBorder, monster, cold, heat, desert, wetland | the survey (places revealed; pay) | nothing found, nothing lost |
+| Refugee flight | people | zones, states, population | three acts (the underdog) | collective decision | yes | invasion, war, famine, disease, stateBorder | bigCity, empty, hardCrossing, rebels | shelter (a room; standing) | safe, if elsewhere |
+| Treasure hunt | land | markers, goods, biomes | nodes (five rooms) | collective decision | yes | ruin, wonder, mine, priceGap | monster, hardCrossing, desert, empty | the dig (coin or rock) | nothing found, nothing lost |
+| Monster hunt | land | markers, biomes | slay the dragon (mystery) | collective decision | yes | monster, ruin, hardCrossing | wetland, cold, empty, wonder | the hunt (pay, or hurt) | nothing found, nothing lost |
+| Exile's flight | power | states, military, culture | the underdog (the hero's journey) | free movement | no | stateBorder, war, regiment | cultureBorder, empty, hardCrossing, capital | shelter (a room; standing) | safe, if elsewhere |
+| Royal progress | power | states, burgs | the long voyage (mystery) | orders | no | capital, bigCity, walls, stateBorder | temple, port, cultureBorder | the audience (state standing) | orders undone: standing −2 with home |
+| Airship voyage | trade | markets, goods, burgs | the long voyage (three acts) | the leader, after discussion | yes | bigCity, port, priceGap, destBuys | cold, heat, disaster, wonder | the sale (the market screen) | contracts broken: standing −1 with home |
+| Arcane errand | faith | religion, states | mystery (nodes) | free movement | no | faithSeat, faithBorder, wonder, ruin | stateBorder, temple, crusade, shrine | the rites (alms; faith standing) | the vow unkept: faith standing −1 |
+| Mercenary contract | power | states, culture, religion | three acts (siege) | orders | yes | war, regiment, walls, stateBorder | cultureBorder, faithBorder, invasion | the battle (pay, risk of hurt, standing) | orders undone: standing −2 with home |
+| Wandering | land | biomes, temperature | the marches (the long voyage) | free movement | no | biomeChange, cold, heat, wonder | hardCrossing, inn, empty | a rest | nothing found, nothing lost |
 
-1. **Leading.** Quests are leader-playable. Following Culzan, the traveller has one voice in four.
-   Taking the lead at the start, the traveller holds the casting vote, and the story's choices are
-   theirs.
-2. **The hooks along the route** (data):
-   - *Ma'kan'ji → Hosisiaq*, Sailing boat, 6,115 miles (about 85 days): forest, grassland and
-     rainforest coasts of four states; the Ma'kan'ji Portal at the start; pirates; the Shegushean
-     Intervention, an invasion zone. Hosisiaq is the seat of the Witnesses of Haqsh'zes.
-   - *Hosisiaq → near Grath'tiss → Unzinb*, Sailing Ship, about 4,000 miles: pirates again.
-   - *Unzinb → Rhecad*, Rowboat, 5,807 miles at 4 mph for 8 hours a day: about 181 days. Rhecad is
-     the capital of the Principality of Rhicie, with markets, a temple and walls, on the Azure lane.
-   - *Rhecad → Highgulch → Caven*, on foot, 2,292 miles through temperate rainforest: the
-     Westhgrose Boars (brigands), the Steamberg Portal, Dustchpost Bridge, and the Orange Typhoid, a
-     disease zone, around Caven, capital of the Raven Empire.
-   - *Caven → Sunsirere*, on horseback, 2,980 miles into the taiga: the Dewgbureshi Pinery, a sacred
-     grove, and Sunsirere, capital of the Kingdom of Quickia.
-3. **The beats** the builder chooses:
+**Who decides** at a hard choice: *free movement*, you; *collective decision*, the company's vote,
+where each companion weighs it by role (guards, healers, elders and children for the safer way,
+the rest for the bold one), and only a leader breaks the vote; *the leader, after discussion*, the
+leader hears the company and decides; *orders*, the plan stands, and choices against it are closed.
+Going against the company costs 10 morale.
 
-   | Beat | Hook |
-   |---|---|
-   | home | Ma'kan'ji |
-   | the call | the Gathering |
-   | the threshold | the first sea leg, past the invasion zone |
-   | trials and allies | the Witnesses' seat at Hosisiaq; the pirates near Grath'tiss |
-   | the ordeal | the 181-day rowing leg, the hardest by far |
-   | the reward | walled Rhecad, its market and temple |
-   | the road back | brigands and typhoid on the forest road to Caven |
-   | the return | the sacred pinery and Sunsirere |
-   
-4. **A collective decision at Unzinb.** The plan says Rowboat. The companions weigh it by role. The
-   guide counts speed: a ship at 10 mph round the clock covers in a day what the rowboat covers in
-   seven or eight. The healer counts food: four people rowing for 181 days need over 700 rations, more than
-   any skiff can hold. The sword-for-hire counts danger: the Azure lane has pirates, but so has every
-   sea on this route. The vote is three to nothing for a ship, if a line runs from Unzinb toward
-   Rhecad.
-5. **Overruling.** A leading traveller who insists on rowing loses 10 morale with each companion.
-   Insisting again at the next fork (say, on the forest road through the typhoid) is a second
-   overruling: the healer leaves at Caven, and the company goes on without a healer into the
-   disease zone.
-6. **Aboard.** On the company's ship the *Company* row of the Alpha 3 control table applies: the
-   company's decision rule calls the stops, so a vote can put in at Rhecad early.
+### Control table 2: hooks to beats
 
-### Hook finders
+The hook finders return hooks of these kinds:
 
-| Layer | Hooks it finds |
+| Layer | Hook kinds |
 |---|---|
-| Religion | faith seats on or near the route; borders between faiths; places whose faith differs from their state's; faiths founded from another; crusade and proselytism zones |
-| Culture | culture borders; peoples unlike their state; provinces named in another culture's style; the culture's type |
-| Biomes | the hardest crossings by effort; changes of biome; wetlands (fever), deserts (water), forests (shelter) |
-| Temperature | the coldest nights and hottest days on the route at the season of travel; snow |
-| Markers | ruins, dungeons, monsters, shrines, battlefields, portals, libraries, and their notes |
-| Markets, goods | price gaps along the route; what the destination buys; scarcity and famine |
-| States, military | relations between the states crossed; wars and their dates; regiments near the route; occupied towns; capitals |
-| Population | crowded places and empty ones; the largest cities; isolated villages |
-| Zones | disease, disaster, invasion, rebels, crusade on or near the route |
-| Burgs | walls, citadels, temples, ports, capitals; burg types that disagree with their trade |
+| religion | faithSeat, faithBorder, faithMinority, temple |
+| culture | cultureBorder, cultureMinority |
+| biomes | hardCrossing, biomeChange, wetland, desert |
+| temperature | cold, heat |
+| markers | monster, ruin, shrine, wonder, inn, mine |
+| markets | priceGap |
+| goods | destBuys |
+| states | stateBorder, capital |
+| military | war, regiment |
+| burgs | walls, port |
+| population | bigCity, empty |
+| zones | famine, disease, disaster, invasion, rebels, crusade |
 
-A hook is a data fact, its place, how far along the journey it lies (0 at the start, 1 at the
-end), its strength, and the beats it can serve.
+A hook's score for a beat is its strength (0 to 1, by kind) × its relevance to the story type (high
+3, medium 2, low 1) × its fit to the beat (1.5 if the kind fits the beat below, 0.5 if it does not).
+Each hook is used once.
 
-### The story builder
+| Beat | Hooks that fit it |
+|---|---|
+| the call | capital, bigCity, faithSeat, temple, war, priceGap, destBuys, walls |
+| the threshold | stateBorder, cultureBorder, faithBorder, biomeChange, port, regiment |
+| a trial | monster, rebels, disease, disaster, cold, heat, wetland, desert, regiment, famine, invasion, crusade, war |
+| a turn | faithSeat, ruin, wonder, shrine, priceGap, capital, faithMinority, cultureMinority, temple, mine |
+| the ordeal | hardCrossing, desert, cold, heat, wetland, monster, war, invasion, empty |
+| a reward | priceGap, temple, inn, bigCity, port, shrine |
+| the climax | walls, capital, monster, ruin, temple, bigCity, priceGap, mine, faithSeat, port |
+| an episode | any hook; the episode then plays as the beat its hook suits |
 
-1. List the route's tiles and checkpoints with their place along the journey.
-2. Run the finders for the type's main layers at full weight, and the other layers at a third.
-3. For each beat in order, choose the strongest unused hook inside the beat's window that serves its
-   function, seeded so that the same world, journey and seed give the same story.
-4. Write a story plan: each beat's place, facts (tagged), question and possible outcomes. The
-   journal shows the beats behind you, and hints of those ahead.
-5. In play, a beat opens when you reach its place, as a scene; its outcome sets flags that later
-   beats read. The changing world can rebuild a beat: if a war ends before you reach the front, the
-   crisis is rebuilt from what is now there.
+### The shapes
+
+| Shape | Beats, in order (window along the journey; ● must happen) |
+|---|---|
+| three acts | the call 0–0.1 ● → a trial 0.1–0.45 → a turn 0.35–0.7 → a trial 0.5–0.85 → the ordeal 0.6–0.95 ● → the climax 0.9–1 ● |
+| the hero's journey | the call 0–0.05 ● → the threshold 0.05–0.4 → a trial 0.2–0.6 → a turn 0.4–0.75 → the ordeal 0.5–0.92 ● → a reward 0.6–0.95 → the climax 0.9–1 ● |
+| five rooms | the call 0–0.1 ● → the threshold 0.5–0.92 → a trial 0.6–0.95 → a turn 0.7–0.97 → the climax 0.85–1 ● → a reward 0.9–1 |
+| the long voyage | the call 0–0.05 ● → an episode (one for each middle stop or strong hook) 0.05–0.95 → the climax 0.9–1 ● |
+| the marches | the call 0–0.05 ● → an episode (one for each middle stop or strong hook) 0.05–0.95 → the climax 0.9–1 ● |
+| slay the dragon | the call 0–0.1 ● → a trial 0.1–0.5 → a reward 0.3–0.8 → a trial 0.4–0.85 → the ordeal 0.7–0.95 ● → the climax 0.9–1 ● |
+| the chase | the call 0–0.1 ● → a turn 0.1–0.5 → a trial 0.3–0.8 → a turn 0.5–0.9 → the climax 0.9–1 ● |
+| mystery | the call 0–0.1 ● → a turn 0.1–0.45 → a turn 0.3–0.75 → a trial 0.5–0.85 → a turn 0.7–0.95 → the climax 0.9–1 ● |
+| nodes | the call 0–0.05 ● → an episode (one for each middle stop or strong hook) 0.05–0.95 → the climax 0.9–1 ● |
+| siege | the call 0–0.1 ● → a trial 0.1–0.6 → a turn 0.4–0.8 → the ordeal 0.7–0.95 ● → the climax 0.9–1 ● |
+| the underdog | the call 0–0.1 ● → a trial 0.1–0.5 → a reward 0.3–0.7 → a turn 0.5–0.9 → the climax 0.9–1 ● |
+
+### Fitting a story to the stops
+
+A journey of N stops has 2N − 1 places for beats: every stop, and the way to every stop after the
+first.
+
+1. **Episodes.** The long voyage gives an episode to every middle stop; the marches and nodes give
+   one to every middle place with a hook of high or medium relevance.
+2. **The target.** The climax goes to the target stop: the last stop, or for raids, battles, hunts
+   and digs the stop the journey's name or the map gives. If the target is not the last stop, the
+   story's last beat becomes *the return*, at the end.
+3. **Folding.** If there are more beats than places on either side of the target, the weakest beats
+   that need not happen (the ones whose best hook scores lowest) fold into their neighbours. A
+   two-stop pilgrimage keeps the call, the ordeal on the road and the climax; its threshold, trial,
+   turn and reward fold.
+4. **Placing.** The call opens at the start. Each beat after it takes the place inside its window,
+   after the beat before it, whose best unused hook scores highest, with room left for the beats
+   still to come.
+5. **Strong hooks left over** stay in the story as colour.
+
+### How beats play
+
+A stop's beats play when you arrive; a beat on the way plays when you come within three tiles of its
+hook (or of the middle of the leg, for a hook with no place). The last stop's beats play before the
+journey's end. Every scene touches the game's own systems:
+
+| Beat | When its hook is… | The choices | Systems touched |
+|---|---|---|---|
+| the call | anything | set out; ask the company | morale; the company's views by role |
+| the threshold, a trial | a border, a regiment, a war | cross openly; go round by back ways | time; the fine from the money table |
+| | a monster or rebels | pay them; fight; go round | the rebels' toll; tiredness and hurt; time |
+| | disease | hurry through; buy remedies; wait | fever; the healer's price; time |
+| | famine or disaster | share your food; keep it | rations; standing with the state |
+| | a walled town, a capital, a port | look the place over; pass by | time; places revealed; for a raid, better odds at the strike |
+| | a price gap | buy five to sell later | the market field and your own trading |
+| a turn | a faith's seat, a temple, a shrine | an offering; listen | alms from the money table; faith standing; places revealed |
+| | a ruin, a wonder, a mine | look closer; note it | time; places revealed |
+| the ordeal | hard ground, cold, heat, desert, wetland | go slowly; push on (the company votes) | time and food; tiredness or fever; morale |
+| | a monster, a war, an invasion | go round; go through (the company votes) | time; hurt; morale |
+| a reward | a town | a room at the inn; trade | the inn's price; sleep; morale; the market |
+| the climax | by type (control table 1) | strike, rites, sale, delivery, survey, dig, hunt, shelter, audience, battle | money, standing, time, hurt, the market screen |
+| the return | a raid's end | share out the plunder; report | morale; standing at home |
+| an episode | its hook | as the beat its hook suits | as above |
+
+### Worked example: Bernoy's raids
+
+1. **The Leg Keels** (Raid; five rooms; orders) runs Leg → Anholdhol by rowboat (5,296 mi) →
+   Vr'seramant on foot → Negnud on horseback. It finds 15 high hooks: borders of faith and culture,
+   walls, ports and cities. The call is at Leg's walls; the threshold falls where the Old Uruk
+   Beliefs give way to the Rake (Drakonic)ism; the trial is Vr'seramant's walls, which a raider can
+   look over to better the odds at the strike; the turn is the next faith border; the climax is the
+   strike at Negnud, a walled city, the last stop.
+2. **Raid on Biragzdin** names its target, which is also its last stop. The data alone would have
+   chosen Freys, a hostile walled city of 32,897 on the way; the name settles it. Reaching Biragzdin's
+   harbour first, or any later stop early, asks before counting: ending there means no plunder, no
+   proof, and standing −2 with the raiders' home.
+3. **Two stops, or eight.** *Mistress Dorg walks to Leg* has three places for beats: the call at
+   Khorb's temple, the ordeal on the 1,560-mile road, the rites at Leg's temple. *The Company of the
+   Ember Yew* has fifteen, and keeps all seven beats of the hero's journey, its ordeal a long crossing
+   of tropical rainforest on the way to Roneminever.
 
 ### Build steps
 
-1. **Story shapes as data**, with their beats and windows.
-2. **Hook finders**, first as a converter report (`python -m azrpg hooks <World>`) that a map maker
-   can read. *Check:* on Pyeongak the report finds Durcojhler, the seat of the faith the pilgrims
-   keep, at the route's first stop after the sea crossing.
-3. **The story builder** and a story page in the journal. *Check:* the same seed gives the same
-   story; every beat has a place on the route.
-4. **Stop readings** by family (JOURNEYS.md). *Check:* the text test passes for every type.
-5. **Movement and leadership**, sharing code with the Alpha 3 control table. *Check:* a vote can
-   overrule the player, and a companion overruled twice leaves.
-6. **Beat scenes** with outcomes and flags. *Check:* a scripted run of each default shape reaches
-   its climax on Pyeongak and Nouileland.
-7. **Beats from the changing world:** wars, plagues and famines on the route.
+1. **Story shapes as data.** Done: `AZ.SHAPES`, `AZ.BEAT_FIT`.
+2. **Hook finders.** Done: `AZ.findHooks`, read by the report in `tests/stories.js`.
+3. **The story builder and the story page.** Done: `AZ.storyPlan`; the journal shows the story.
+4. **Stop readings by family.** The family is set for every type; reading stop wordings through it
+   waits for a later version.
+5. **Movement and leadership.** In the scenes: votes by role, and the rule that settles them. Stops
+   called by the company's rule wait for a later version.
+6. **Beat scenes.** Done, through money, time, food, standing, tiredness, hurt, fever, morale, the
+   market and the company.
+7. **Beats from the changing world.** Waiting for a later version.
 
 ---
 
@@ -615,6 +676,15 @@ Wars in the map are fought out: regiments march, besiege and fall back; towns fa
 occupied; peace returns them. Talking to the watch of an enemy state holds you for questioning.
 Scouting and dispatch errands follow the armies. Raids and campaigns, as journeys, run beside all of
 this without touching it.
+
+### Brought forward in Alpha 5.1
+
+Regard and suspicion are one system (`engine/src/24_people.js`): a person's regard for you is your
+people, faith and state against theirs, their state's form, war, hunger and plague, their nature and
+your standing, less suspicion. Suspicion so far comes from what you have done (raids raise it in the
+state you raided, and it cools by a tenth a day); a watch that has heard enough holds you for
+questions, and fines you if it has heard a great deal. The suspicion points below (papers, dress,
+speech, contraband, camps, the alert level) join that same number when this version is built.
 
 ### Control table: the check
 
@@ -745,7 +815,7 @@ keeps the Occultism of the Chief of Lightning (data). With a regiment inside 80 
    (a) As the control table stands.
    (b) One band milder by default, with the table as a harder setting.
    (c) A difficulty setting that also sets the starting purse.
-4. **Who chooses the story shape (Alpha 5).**
+4. **Who chooses the story shape (Alpha 5).** The type's default, for now.
    (a) The type's default, always.
    (b) The player, on the title screen, from the type's alternatives.
    (c) The map maker, by a word in the journey's name.

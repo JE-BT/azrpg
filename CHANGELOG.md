@@ -1,5 +1,117 @@
 # Changelog
 
+## Alpha 5.1: the story, hidden
+
+The narrative engine now works out of sight, through people, places and objectives. The design is in
+`docs/NARRATIVE.md`.
+
+**Who you are.** Every traveller comes with a tie to the journey (kin, a contract, a custom of your
+people, a vow, a debt, a duty, flight or curiosity) and with whether you lead it or follow. Both are
+part of the character: "Another traveller like this" rolls a new one. Kin, recruiters and elders join
+the company by name.
+
+**Any journey.** The title screen lets you choose any of the map's journeys, and the save remembers
+which.
+
+**The company at the start.** Journeys that have a company and no Gathering form it before you set
+out. The opening tells you who you are, who goes with you, what the first leg is for, and what to do
+first.
+
+**Arcs and leg roles.** Each journey type has an arc: what it wants, a measure told in words ("the
+haul: a fair haul", "devotion: steadfast"), and five endings. Each journey draws its structure by
+weighted chance; each leg takes a role from its arc (harry the coast, the fence, the false lead, the
+vigil, the guardian) and an objective. The leg into the target is its approach; the climax happens
+at the target and needs the company with you; a stop after it holds the return. Legs the map sends
+over water say so, and ask you to find a passage.
+
+**The corner** shows the objective, the measure, and one side story of your choosing.
+
+**Moments on the way.** Raiders want to strike the villages they pass; pilgrims gather at shrines;
+caravans stop at market towns; foragers find granaries; surveyors find what the map marks. Borders of
+faith and people, toll posts, quarantine, hunger, soldiers, beasts and hard ground meet you as the
+world shows them. A leader decides; a follower goes with the leader, or holds back.
+
+**People who carry the story.** When a leg ends in a question ("ask a merchant who will buy what the
+company has taken"), the right person answers it, and some answers are false. Every person you talk
+to says how they see you and why; the innkeeper reckons the food for the next leg, the priests say
+whether they will help a stranger of your faith, the watch says what the law is here and what it has
+heard of you, the elder says which country feeds a camp.
+
+**Regard and suspicion, as one system.** How a person sees you comes from your people and faith
+against theirs, your state against theirs, their state's form (a theocracy's priests do not help
+other faiths; a republic's watch protects everyone), war, hunger and plague, their nature, your
+standing, and suspicion from what you have done. It sets the price of rooms, alms, healing and goods.
+In a town that wants you gone, a thief may come in the night, and the watch catches them or looks
+away. A watch that has heard of you holds you for questions. Alpha 7 adds papers, dress, speech,
+contraband and alert levels to the same system.
+
+**Food for the road.** The innkeeper, the harbourmaster and the passage notice reckon days and rations
+for the next leg; the journal's new page lists the road ahead, leg by leg.
+
+**Side stories.** Click one in the journal to show it in the corner and set a waypoint to it.
+
+**The company's vessel** can be left in the harbour's care at the company's cost, sold for your
+share, or sent home, at the yard.
+
+**Tests.** `tests/alpha51.js`; `tests/stories.js` now builds and plays every journey's arc;
+`docs/STORIES_BERNOY.md` is its report on Bernoy.
+
+## Alpha 5: stories
+
+**Every journey is a story.** Its type sets a family, the layers of the map it reads, a story shape
+(three acts, the hero's journey, five rooms, the long voyage, the marches, slay the dragon, the
+chase, mystery, nodes, siege, the underdog) and a rule for who decides. Hook finders read the map
+along the route: borders of state, culture and faith; faith seats; hard ground, cold and heat;
+marked places; price gaps between the stops; wars and regiments; walls, capitals, ports and great
+cities; zones of plague, famine, invasion and rebellion.
+
+**Stories fit their stops.** Each kind of hook matters to each type high, medium or low. The builder
+fits the shape to the stops the journey has, folds what will not fit, gives the climax to the target
+(the stop the journey's name gives, or the one the map marks) and closes at the last stop.
+
+**Beats are scenes.** The call, thresholds, trials, turns, the ordeal, rewards, the climax, the
+return and episodes play when you arrive at a stop or come near a hook on the way. Their choices run
+through money, time, food, standing, tiredness, hurt, fever, morale, the market and the company; at
+hard choices the company votes by role, and the journey's rule settles it.
+
+**Out of order.** A later stop reached early asks before it counts: count it now, at the cost the
+story sets for finishing early, or only visit.
+
+**The end of a journey.** Each companion chooses whether to stay; hired hands stay for a wage. The
+company's vessel becomes yours.
+
+**The journal** shows the story: the beats behind you, and the next one.
+
+**Tests.** `tests/stories.js` builds and plays the story of every journey in a world;
+`docs/STORIES_BERNOY.md` is its report on Bernoy's twelve journeys.
+
+## Alpha 4.1
+
+**Fixes.**
+- Goods are sold where the map has them: where a town makes them, where its land holds them (its
+  own cell and the cells around it), where the map's deals bring them, and at a market's centre.
+  Anything with a price can still be sold.
+- Skiffs stay in the water. At the shore, Space offers to carry her overland; back in the water,
+  the carrying ends. Every other vessel stops at the shore.
+
+**People who explain the systems.**
+- **The merchant** (from the market screen) reads the markets around him: goods that are cheap here
+  and dearer in towns he knows, after tax and his trade's cut; goods worth bringing here; what your
+  packs would fetch here and elsewhere; and a tenth off five of whatever he has too much of. A
+  merchant who distrusts you (your standing with his state is below zero) shades his news.
+- **The harbourmaster** gives directions to the next stop, the days it takes in your vessel at this
+  season and the food it needs, sailing advice, and a watch on your vessel. Walk away from a vessel
+  with no one aboard and he asks whether the harbour should watch her, for a weekly fee paid when
+  you return. Unwatched, a vessel may be gone when you come back: more likely on a beach than in a
+  harbour.
+- **The wainwright** reads the road to the next stop (how much of it is road, trail or open country)
+  and says what will manage it, and sells riding horses. A horse carries you at the map's
+  Horseback pace, grazes on open ground and eats your food elsewhere, and waits in the stables when
+  you board a skiff or a boat.
+- **Animals aboard.** Pack animals and horses go aboard galleys, small ships, ships and great ships.
+
+**Tests.** `tests/alpha41.js`.
+
 ## Alpha 4: markets
 
 **The field.** Every town's price for every good blends the markets around it. Each market pulls
