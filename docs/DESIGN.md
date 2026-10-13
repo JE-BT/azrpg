@@ -9,7 +9,7 @@ order; [JOURNEYS.md](JOURNEYS.md) is the map maker's view of the narrative engin
 |---|---|---|
 | Alpha 2.1 | fixes: vessels, the hold, sleep (the bridge to Alpha 3) | — |
 | Alpha 3 (released) | vessels and control | who decides aboard |
-| Alpha 4 | markets | what moves a price; what costs and what pays |
+| Alpha 4 (released) | markets | what moves a price; what costs and what pays |
 | Alpha 5 | stories | who decides in the company |
 | Alpha 6 | traffic and knowledge | what you know, and how old it is |
 | Alpha 7 | war | the check |
@@ -221,6 +221,27 @@ land vehicles.
 ---
 
 ## Alpha 4: markets
+
+### As built
+
+Alpha 4 builds steps 1 to 7 below in `engine/src/21_markets.js`; step 8 (company purse, patron's writ,
+credit) waits for a later version. Where the code differs from the text:
+
+- **A market's reach** scales with the world: about two-thirds of the median distance from a market
+  centre to its nearest neighbour. That is 400 effective miles on Pyeongak, as in the tables; Presia's
+  31 crowded markets reach about 250. Without it, crowded worlds pulled their centres off their own
+  prices.
+- **The money table** is `AZ.MONEY`, one row for each line of the table, each a rule in R and W.
+  `AZ.Prices` reads it, and so do the scenes, errands, fares, bounties, vessels and animals that used
+  fixed coins.
+- **Your own trading** moves the town at once and fades over a week; the same trade passes into the
+  markets that pull on the town over that week and fades from them over the next four.
+- **Events** read the changing world: dearth zones as famine, disease zones, disasters, wars, sieges
+  (a regiment waiting at the gates), occupation, and lines that are closed.
+- **Fixes found in play:** F asks for rest at nightfall and when you tire; delivery errands buy
+  their goods when taken; a meal at a famous inn is a rest.
+- **Questions 6 and 7** take option (a) for now: a quarter of chance in starting money, and alms,
+  portal fees and bounties that grow with a town's size as well as its wage.
 
 ### Starting point: the economy the map already has
 

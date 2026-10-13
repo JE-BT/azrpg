@@ -43,7 +43,7 @@ AZ.travellerKinds = function (w, jr) {
     blurb: `Born to the ${relName(dRel)} in ${P.states[dB.state]?.name}; going home.`,
     trades: ["deckhand", "clerk of a trading house", "released hostage of an old treaty", "journeyman scribe", "widowed net-mender"],
     why: h => `born to the ${relName(dRel)} among the ${P.cultures[dCul].name} of ${P.states[h.state]?.name || "the far shore"}, you are going home to make the pilgrimage you were promised as a child`,
-    thread: h => (h !== dB ? { title: `Home to ${h.name}`, steps: [{ text: `Visit your family in ${h.name}`, goal: { burg: h.i, role: "Townsfolk" }, reward: { coin: 5, stand: [["f", dRel, 1]] } }] }
+    thread: h => (h !== dB ? { title: `Home to ${h.name}`, steps: [{ text: `Visit your family in ${h.name}`, goal: { burg: h.i, role: "Townsfolk" }, reward: { coin: AZ.coin(5), stand: [["f", dRel, 1]] } }] }
       : { title: "A promise kept", steps: [{ text: `Pray at the temple of ${dB.name}`, goal: { burg: dB.i, role: "Priest" }, reward: { stand: [["f", dRel, 2]] } }] }), purse: 12 });
   if (dRel !== oRel) kinds.push({ id: "convert", label: `${P.cultures[oCul].name} convert`, wt: 3.5, culture: oCul, faith: dRel, homes: [oB], family: oRel,
     blurb: `Raised in the ${relName(oRel)} of ${oB.name}; took the ${relName(dRel)} as an adult.`,
@@ -67,7 +67,7 @@ AZ.travellerKinds = function (w, jr) {
       blurb: `On leave from the ${war.name} (since ${war.start}).`,
       trades: ["archer", "cavalry groom", "sapper", "quartermaster's clerk", "infantry sergeant"],
       why: () => `you serve ${S.fullName} in the ${war.name}, which began in ${war.start}; your leave is a pilgrimage, or so your papers say`,
-      thread: () => (regs.length ? { title: "Papers to sign", steps: [{ text: `Report to the ${regs[0].name}`, goal: { unit: `${st}:${regs[0].i}` }, reward: { coin: 5, stand: [["s", st, 1]] } }] } : null), purse: 15 });
+      thread: () => (regs.length ? { title: "Papers to sign", steps: [{ text: `Report to the ${regs[0].name}`, goal: { unit: `${st}:${regs[0].i}` }, reward: { coin: AZ.coin(5), stand: [["s", st, 1]] } }] } : null), purse: 15 });
   }
   if (oB.state && dB.state && oB.state !== dB.state) {
     const rel = P.states[oB.state].diplomacy?.[dB.state] || "Unknown";
@@ -75,7 +75,7 @@ AZ.travellerKinds = function (w, jr) {
       blurb: `Letters for ${P.states[dB.state].name}; the two stand as “${rel}”.`,
       trades: ["junior envoy", "herald", "secretary to the chancery"],
       why: () => `you carry sealed letters from ${P.states[oB.state].fullName} to ${P.states[dB.state].fullName}, which it regards as “${rel}”; pilgrimage is your cover and your comfort`,
-      thread: () => ({ title: "Sealed letters", steps: [{ text: `Present the letters to the watch in ${dB.name}`, goal: { burg: dB.i, role: "Captain of the watch" }, reward: { coin: 10, stand: [["s", dB.state, 2]] } }] }), purse: 30 });
+      thread: () => ({ title: "Sealed letters", steps: [{ text: `Present the letters to the watch in ${dB.name}`, goal: { burg: dB.i, role: "Captain of the watch" }, reward: { coin: AZ.coin(10), stand: [["s", dB.state, 2]] } }] }), purse: 30 });
   }
   const sells = P.trade.sell[oB.i] || {}, buys = P.trade.buy[dB.i] || {};
   const portable = g => { const x = P.goods.find(y => y.i === +g); return x && !/ship|boat|house|building/i.test(x.name); };
@@ -106,7 +106,7 @@ AZ.travellerKinds = function (w, jr) {
       why: () => `the ${lib.name} sent you to copy the rites of the ${relName(dRel)}; you will be expected to bring back more than that`,
       thread: () => (stat ? { title: "An inscription no one can read", steps: [
         { text: `Copy the inscription on the ${stat.name}`, goal: { marker: stat.i }, reward: { flag: "inscription" } },
-        { text: `Bring the copy to the ${lib.name}`, goal: { marker: lib.i }, reward: { coin: 8, reveal: 160 } }] } : null), purse: 10 });
+        { text: `Bring the copy to the ${lib.name}`, goal: { marker: lib.i }, reward: { coin: AZ.coin(8), reveal: 160 } }] } : null), purse: 10 });
   }
   for (const z of P.zones) {
     if (!/Disease|Disaster|Tsunami|Flood|Invasion|Rebels|Eruption/.test(z.type)) continue;
@@ -151,7 +151,7 @@ AZ.makeTraveller = function (w, jr, seed, kindId) {
   return {
     seed, kind: K.id, kindLabel: K.label, name, age, culture: K.culture, faith: K.faith, home: home?.i, homeState: K.homeState ?? home?.state ?? 0,
     trade: rnd.pick(K.trades || ["traveller"]), why: K.why ? K.why(home) : K.blurb, token: deity ? `a small icon of ${deity}` : "a pilgrim's token",
-    purse: Math.round(AZ.planCost(w, jr) * (K.purseF ?? ({ returning: 1, convert: 1, envoy: 1.5, factor: 1.2, scholar: 0.9 }[K.id] ?? (/^stranger/.test(K.id) ? 0.9 : /^soldier/.test(K.id) ? 0.8 : /^fugitive/.test(K.id) ? 0.45 : 1)))),
+    purse: Math.round((AZ.prosperity ? Math.sqrt(AZ.prosperity(w, home)) : 1) * AZ.planCost(w, jr) * (K.purseF ?? ({ returning: 1, convert: 1, envoy: 1.5, factor: 1.2, scholar: 0.9 }[K.id] ?? (/^stranger/.test(K.id) ? 0.9 : /^soldier/.test(K.id) ? 0.8 : /^fugitive/.test(K.id) ? 0.45 : 1)))),
     thread: K.thread ? K.thread(home) : null, cargo: K.cargo ?? null, boat: !!K.boat, food: 3, kindId: K.id,
     pal: { cloak: U.css(cloak), cloakDark: U.css(U.shade(cloak, -0.35)), skin, belt: "rgb(150,110,60)" },
   };
@@ -179,6 +179,7 @@ AZ.Events = class {
     if (e.time) {
       s.clock += e.time; bits.push(`${AZ.Clock.span(e.time)} pass`);
       if (e.sleep) g.slept();
+      else if (e.rest) { /* sitting at a meal: the hours pass, and you rest */ }
       else if (e.time >= 20) { g.slept(); g.awakeTick(e.time - 20); }
       else g.awakeTick(e.time);
     }
@@ -285,7 +286,7 @@ AZ.MARKERS = (() => {
     const s = ev.s, dir = AZ.U.compass(m.t[0] - s.c, m.t[1] - s.r);
     await ev.scene(head, `${label} off to the ${dir}.`, [
       { label: "Steer wide (about 8 hours lost)", fx: { time: 8 }, text: "The master puts the helm over and keeps the danger hull-down until dark." },
-      { label: "Pay them off (🟡 8)", if: /pirate/.test(m.type), disabled: s.purse < 8, fx: { coin: -8, time: 1 }, text: "A boat comes over; coins go across; the black sails fall away." },
+      { label: `Pay them off (🟡 ${AZ.money("tollPirates")})`, if: /pirate/.test(m.type), disabled: s.purse < AZ.money("tollPirates"), fx: () => ({ coin: -AZ.money("tollPirates"), time: 1 }), text: "A boat comes over; coins go across; the black sails fall away." },
       { label: "Hold course", roll: { p: 0.55, ok: "Nothing comes of it. The crew talks of nothing else for a day.", okFx: null,
         bad: /pirate/.test(m.type) ? "They board at dusk and take what they like. The hull is holed in the struggle." : "Something huge rises under the bow. Timbers crack.", badFx: /pirate/.test(m.type) ? { coin: -Math.min(s.purse, 10), time: 12, cond: "damaged", flag: "boarded" } : { time: 6, cond: "damaged" } } }], `m${m.i}`);
   } });
@@ -308,24 +309,24 @@ AZ.MARKERS = (() => {
     inns: { run: async (ev, m, head) => {
       const s = ev.s, g = ev.g;
       await ev.scene(head, esc(m.note), [
-        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, null)})`, disabled: s.purse < AZ.Prices.inn(g.w, null), fx: () => ({ coin: -AZ.Prices.inn(g.w, null), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), sleep: true, cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
-        { label: "Just a meal (🟡 1)", disabled: s.purse < 1, fx: { coin: -1, time: 1 }, text: "The food is as good as they say." },
+        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, g.townNear())})`, disabled: s.purse < AZ.Prices.inn(g.w, g.townNear()), fx: () => ({ coin: -AZ.Prices.inn(g.w, g.townNear()), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), sleep: true, cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
+        { label: `Just a meal (🟡 ${AZ.money("meal")})`, disabled: s.purse < AZ.money("meal"), fx: () => ({ coin: -AZ.money("meal"), time: 1, rest: true }), text: "The food is as good as they say, and the hour at the table is a rest." },
         { label: "Move on", fx: null, text: "" }], `m${m.i}`);
     } },
     "hot-springs": { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Bathe (3 h)", fx: { time: 3, cure: ["fever", "gravely", "hurt"] }, text: "The heat goes into your bones and takes the ache with it." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     "water-sources": { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Drink, and fill a flask (2 h)", fx: { time: 2, cure: ["fever", "gravely"], flag: "flask" }, text: "Cold, clean water. You fill a flask for the road; it may help later." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    "sacred-forests": { run: async (ev, m, head) => { const r = ev.relByName(m.note); return ev.scene(head, esc(m.note), [{ label: "Leave an offering (🟡 2)", disabled: ev.s.purse < 2, fx: r ? { coin: -2, time: 1, stand: [["f", r.i, 1]] } : { coin: -2 }, text: `You leave something at the oldest tree${r ? ` for the ${esc(r.name)}` : ""}.` }, { label: "Pass through quietly", fx: { time: 1 }, text: "" }], `m${m.i}`); } },
+    "sacred-forests": { run: async (ev, m, head) => { const r = ev.relByName(m.note); return ev.scene(head, esc(m.note), [{ label: `Leave an offering (🟡 ${AZ.money("offering")})`, disabled: ev.s.purse < AZ.money("offering"), fx: r ? { coin: -AZ.money("offering"), time: 1, stand: [["f", r.i, 1]] } : { coin: -AZ.money("offering") }, text: `You leave something at the oldest tree${r ? ` for the ${esc(r.name)}` : ""}.` }, { label: "Pass through quietly", fx: { time: 1 }, text: "" }], `m${m.i}`); } },
     statues: { run: async (ev, m, head) => ev.scene(head, esc(m.note.split("\n")[0]), [{ label: "Copy the inscription (2 h)", fx: { time: 2, flag: "inscription" }, text: "You copy every mark as well as you can. Someone, somewhere, may read it." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     libraries: { run: async (ev, m, head) => {
       const s = ev.s;
       await ev.scene(head, esc(m.note), [
-        { label: "Read in the stacks (12 h, 🟡 2 to the copyists)", disabled: s.purse < 2, fx: { time: 12, coin: -2, reveal: 160 }, text: "Old charts and travellers' letters: you note every marked place within a hundred and sixty leagues." },
-        { label: "Ask after the inscription you copied", if: !!s.flags.inscription, fx: { time: 4, unflag: "inscription", coin: 3 }, text: "An old archivist reads it aloud, slowly. It is a list of names, and one of them is a place on your route." },
+        { label: `Read in the stacks (12 h, 🟡 ${AZ.money("library")} to the copyists)`, disabled: s.purse < AZ.money("library"), fx: { time: 12, coin: -AZ.money("library"), reveal: 160 }, text: "Old charts and travellers' letters: you note every marked place within a hundred and sixty leagues." },
+        { label: "Ask after the inscription you copied", if: !!s.flags.inscription, fx: { time: 4, unflag: "inscription", coin: AZ.coin(3) }, text: "An old archivist reads it aloud, slowly. It is a list of names, and one of them is a place on your route." },
         { label: "Move on", fx: null, text: "" }], `m${m.i}`);
     } },
     battlefields: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Walk the field (4 h)", fx: { time: 4 }, text: "Rusted iron, a broken standard, too many small mounds." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    mines: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Work a shift for pay (12 h)", fx: { time: 12, coin: 4 }, text: "Hard work, honest pay, and dust in every seam of your clothes." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    circuses: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Spend an afternoon (4 h, 🟡 1)", disabled: ev.s.purse < 1, fx: { time: 4, coin: -1 }, text: () => "Lights, music, and the crowd's talk: " + (ev.g.know.rumour(m.t[0], m.t[1], ev.rnd(`c${m.i}`), ev.g) || "") }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
+    mines: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: `Work a shift for pay (12 h, about 🟡 ${AZ.money("mine", undefined, m)})`, fx: () => ({ time: 12, coin: AZ.money("mine", undefined, m) }), text: "Hard work, honest pay, and dust in every seam of your clothes." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
+    circuses: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: `Spend an afternoon (4 h, 🟡 ${AZ.money("circus")})`, disabled: ev.s.purse < AZ.money("circus"), fx: { time: 4, coin: -AZ.money("circus") }, text: () => "Lights, music, and the crowd's talk: " + (ev.g.know.rumour(m.t[0], m.t[1], ev.rnd(`c${m.i}`), ev.g) || "") }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     portals: { run: async (ev, m, head) => {
       const g = ev.g, s = ev.s, others = g.w.P.markers.filter(x => x.type === "portals" && x.i !== m.i);
       const k = await g.ui.choose(`${head}<br>${esc(m.note)}<br><span class="dim">Stepping through leaves your ${s.vessel ? esc(s.vessel.kind.toLowerCase()) : "baggage"} behind. You will have to come back the same way.</span>`,
@@ -370,9 +371,9 @@ AZ.ZONES = (() => {
       const enemy = rel === "Enemy" || rel === "Rival";
       return ev.scene(head, `${inv ? `Soldiers of ${esc(inv.fullName)}` : "An army"} hold this ground. Your people stand to theirs as: <b>${rel}</b> ${AZ.T("data")}.`, [
         { label: "Go round their pickets (about 8 hours)", fx: { time: 8 }, text: "You move by night and by the long way." },
-        { label: "Present yourself and your papers", fx: enemy ? { time: 12, coin: -Math.min(ev.s.purse, 4), stand: inv ? [["s", inv.i, -1]] : [] } : { time: 2 }, text: enemy ? "They hold you half a day and keep some of your coin for their trouble." : "Questions, a stamp, and a wave onward." }], `z${z.i}`);
+        { label: "Present yourself and your papers", fx: enemy ? { time: 12, coin: -Math.min(ev.s.purse, AZ.money("fine")), stand: inv ? [["s", inv.i, -1]] : [] } : { time: 2 }, text: enemy ? "They hold you half a day and keep some of your coin for their trouble." : "Questions, a stamp, and a wave onward." }], `z${z.i}`);
     },
-    Rebels: async (ev, z, head) => ev.scene(head, "Rebels have closed the roads and levy their own toll.", [{ label: "Pay the toll (🟡 4)", disabled: ev.s.purse < 4, fx: { coin: -4 }, text: "They give you a token to show at the next barricade." }, { label: "Go round (about 6 hours)", fx: { time: 6 }, text: "" }], `z${z.i}`),
+    Rebels: async (ev, z, head) => ev.scene(head, "Rebels have closed the roads and levy their own toll.", [{ label: `Pay the toll (🟡 ${AZ.money("tollRebels")})`, disabled: ev.s.purse < AZ.money("tollRebels"), fx: { coin: -AZ.money("tollRebels") }, text: "They give you a token to show at the next barricade." }, { label: "Go round (about 6 hours)", fx: { time: 6 }, text: "" }], `z${z.i}`),
     Proselytism: async (ev, z, head) => {
       const r = ev.relByName(z.name) || ev.w.P.religions.find(x => x && x.name.split(" ")[0] === z.name.split(" ")[0]);
       return ev.scene(head, `Missionaries${r ? ` of the ${esc(r.name)}` : ""} are working these parts, with bread for anyone who will listen.`, [
@@ -382,7 +383,7 @@ AZ.ZONES = (() => {
     Crusade: async (ev, z, head) => ev.scene(head, "Armed pilgrims and recruiters for a crusade crowd the way.", [{ label: "Join a prayer and move on (2 h)", fx: { time: 2 }, text: "No one asks what you believe, as long as you kneel." }, { label: "Avoid them (about 4 hours)", fx: { time: 4 }, text: "" }], `z${z.i}`),
     Disaster: async (ev, z, head) => {
       const cell = ev.w.cell(ev.s.c, ev.s.r), rel = ev.w.C.religion[cell];
-      return ev.scene(head, "Dearth: empty granaries, thin children, prices no one can pay.", [{ label: "Give alms (🟡 2)", disabled: ev.s.purse < 2, fx: { coin: -2, stand: rel ? [["f", rel, 1]] : [] }, text: "It is not much, and it is noticed." }, { label: "Pass by", fx: null, text: "" }], `z${z.i}`);
+      return ev.scene(head, "Dearth: empty granaries, thin children, prices no one can pay.", [{ label: `Give alms (🟡 ${AZ.money("offering")})`, disabled: ev.s.purse < AZ.money("offering"), fx: { coin: -AZ.money("offering"), stand: rel ? [["f", rel, 1]] : [] }, text: "It is not much, and it is noticed." }, { label: "Pass by", fx: null, text: "" }], `z${z.i}`);
     },
     Eruption: async (ev, z, head) => ev.scene(head, "Ash falls like grey snow; the sky glows red at night.", [{ label: ev.s.aboard ? "Stand out to sea (about 6 hours)" : "Cover your face and push on (about 10 hours)", fx: { time: ev.s.aboard ? 6 : 10 }, text: "" }, { label: "Shelter until it eases (a day)", fx: { time: 24 }, text: "" }], `z${z.i}`),
     Avalanche: blocked("The pass is buried under a slide of snow and rock.", 10),

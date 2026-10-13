@@ -153,7 +153,7 @@ Object.assign(AZ.Game.prototype, {
       if ((v.strikes || 0) > 0 && v.morale > 60) { v.calm = (v.calm || 0) + 1; if (v.calm >= 10) { v.strikes--; v.calm = 0; this.ui.toast("The crew's grievances fade. One strike forgiven."); } } else v.calm = 0;
     }
     if (v && v.crew && !this.withVessel()) this.crewAway(v);
-    if (s.voyage && s.voyage.role === "crew") s.voyage.earned = U.rn((s.voyage.earned || 0) + AZ.Prices.wage(this.w, null), 2);
+    if (s.voyage && s.voyage.role === "crew") s.voyage.earned = U.rn((s.voyage.earned || 0) + AZ.Prices.wage(this.w, this.townNear ? this.townNear() : null), 2);
     // fever runs its course unless treated: gravely ill on the third day, collapse on the sixth
     if (s.cond.fever || s.cond.gravely) {
       s.feverDays = (s.feverDays || 0) + 1;

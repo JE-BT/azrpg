@@ -68,7 +68,7 @@ AZ.whyDest = function (w, jr) {
     const s = this.s, w = this.w, jr = this.jr, d = jr.dest.burg;
     const m = d && w.near(d.t[0], d.t[1], 40).find(n => n.kind === "marker" && /monster/.test(n.o.type));
     const target = m ? m.o.name : jr.J.name.replace(/^the /i, "");
-    const st = w.P.states[b.state], advance = U.rn(Math.min(60, 5 + (b.population || 1) * 0.6), 2);
+    const st = w.P.states[b.state], advance = AZ.money ? AZ.money("bounty", b) : U.rn(Math.min(60, 5 + (b.population || 1) * 0.6), 2);
     this.doAct("bounty");
     s.purse = U.rn(s.purse + advance, 2);
     this.log(`Signed the bounty in ${U.esc(b.name)}: an advance of 🟡 ${advance}.`, "hook");

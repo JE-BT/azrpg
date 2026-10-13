@@ -83,7 +83,7 @@
   };
   G.newVessel = function (vc, mode, b, crew) {
     const w = this.w, C = AZ.VCLASS[vc], P = AZ.Prices, h = w.harbour(b, C.nav).t, tr = this.transportFor(vc), loc = this.realise(vc, b);
-    return { mode, vc, cls: C.nav, kind: loc.kind, speed: tr.speed, hpd: tr.hpd, crew, morale: 70, c: h[0], r: h[1], wage: P.wage(w, b), hire: mode === "hired" ? U.rn(P.hire(w, b) * C.hire, 2) : 0, home: b.i, colour: w.P.cultures[b.culture]?.color || null, hold: { food: 0, goods: {} } };
+    return { mode, vc, cls: C.nav, kind: loc.kind, speed: tr.speed, hpd: tr.hpd, crew, morale: 70, c: h[0], r: h[1], wage: P.wage(w, b), hire: mode === "hired" ? U.rn(this.vesselPrice(vc, b) / 365, 2) : 0, home: b.i, colour: w.P.cultures[b.culture]?.color || null, hold: { food: 0, goods: {} } };
   };
   // vessels from saves and from the plan's own legs take a class where they lie
   G.classify = function (v) {
@@ -306,6 +306,7 @@
   };
 
   // ------------------------------------------------------------------ the shipwright
+  G.vesselPrice = function (vc, b) { return U.rn(AZ.Prices.hire(this.w, b) * (AZ.VCLASS[vc] || AZ.VCLASS.boat).buy, 2); }; // Alpha 4 prices her from her materials
   G.sellPrice = function (v, b) { const C = AZ.VCLASS[v.vc] || AZ.VCLASS.boat; return U.rn(AZ.Prices.hire(this.w, b) * C.buy * 0.6 * (v.damaged ? 0.5 : 1), 2); };
   G.repairCost = function (b) { const v = this.s.vessel, C = (v && AZ.VCLASS[v.vc]) || AZ.VCLASS.boat; return U.rn(AZ.Prices.repair(this.w, b) * C.repair[0], 2); };
   G.repairHours = function () { const v = this.s.vessel, C = (v && AZ.VCLASS[v.vc]) || AZ.VCLASS.boat; return C.repair[1]; };
@@ -315,7 +316,7 @@
       const opts = [], v = s.vessel, here = v && this.vesselHere(b), wage = P.wage(w, b), hire = P.hire(w, b), list = this.yardClasses(b);
       if (!v) for (const vc of list) {
         const C = AZ.VCLASS[vc], loc = this.realise(vc, b), tag = `${U.esc(loc.kind.toLowerCase())}${loc.kind.toLowerCase() === C.name ? "" : ` (${C.name})`}`;
-        const day = U.rn(hire * C.hire + C.crew * wage, 2), price = U.rn(hire * C.buy, 2);
+        const price = this.vesselPrice(vc, b), day = U.rn(price / 365 + C.crew * wage, 2);
         if (C.crew) opts.push({ label: `Hire a ${tag} with ${C.crew} hands: 🟡 ${day} a day, three days now; she holds ${C.hold.food} rations`, act: "hire", vc, first: U.rn(3 * day, 2), disabled: s.purse < 3 * day });
         opts.push({ label: `Buy a ${tag}: 🟡 ${price}; ${C.hands[0] ? `she needs ${C.hands[0]} hands or more` : "you row her yourself"}`, act: "buy", vc, price, disabled: s.purse < price });
       }

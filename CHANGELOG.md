@@ -1,5 +1,51 @@
 # Changelog
 
+## Alpha 4: markets
+
+**The field.** Every town's price for every good blends the markets around it. Each market pulls
+with a weight that falls with distance from its centre, counted in effective miles (two ports are
+close by sea; a road shortens the way; open country lengthens it), and with the number of towns it
+serves. The town has a voice of its own: cheaper for what it makes or its land holds as a bonus
+good, dearer for what comes from far away. Towns near a centre follow it closely; towns between two
+markets hear both. A market's reach follows how far apart the world's markets lie.
+
+**Season and events.** Food is cheaper after the harvest and dearer in spring. Famine, plague, war,
+sieges, occupation, disasters and closed lines move the prices of the goods they touch, in the
+places they touch.
+
+**Your own trading.** Each unit you buy or sell moves the town's price at once, a little in a city
+and a lot in a village; over the following week the effect passes into the markets around it.
+
+**A day's food and a day's work.** Every town has both, from the field, set once per world so that
+the median town keeps Alpha 3's ration and wage.
+
+**The money table.** Every cost and payment in the game is written in those two measures: food,
+rooms, meals, alms, healing, fares, coaches, wages, hire, vessels, repairs, animals, carts, portal
+fees, tolls, fines, diversions, mine shifts, working a passage, errands, story rewards and bounties.
+Dear towns cost more and cheap towns less. A mine shift pays a day and a half's wage and a share of
+the mine's own good, and vessels are priced from their timber, rope, sails and labour.
+
+**The market screen.** Every good the town makes or the markets around it bring, with its buying
+and selling price; choose one to see where its price comes from ("Sharnarthi 72%, Oim 12%, the town
+itself 15%") and to buy or sell one or five.
+
+**Starting money** follows the plan's cost, who the traveller is, and how prosperous their home
+town is, with a quarter either way left to chance.
+
+**The journal** shows a day's food, a day's work, a room, a passage and alms in the nearest town.
+
+**Fixes.**
+- F on foot, or aboard a vessel with no hands, asks you to camp (or anchor) at nightfall and when
+  you grow tired; camping, F goes on in the morning.
+- Delivery errands buy their goods when you take them: the cost leaves your purse at once and the
+  goods go into your packs. Delivering them pays; selling them on loses the errand. An errand whose
+  goods you cannot carry cannot be taken.
+- A meal at a famous inn is an hour at the table, and a rest: it can never end in sleep.
+
+**Tests.** `tests/alpha4.js` checks the field at every market centre, the design's worked example,
+the median town, the money table, the mine against a crewed boat, the market screen, famine,
+your own trading, starting money and the three fixes.
+
 ## Alpha 3: vessels and control
 
 **Classes.** Every vessel has a class: skiff, boat, galley, small ship, ship, great ship, light craft
