@@ -16,44 +16,45 @@ vessel, F following the plan's course from anywhere, the vessel's hold and the c
 watches for round-the-clock crews, waking hours that count, harbours and markets in a fixed world.
 See [CHANGELOG.md](../CHANGELOG.md).
 
-## Alpha 3: vessels and control
+## Alpha 3: vessels and control (released)
 
-Every vessel, and in time every vehicle, is described by its **class** (what she is), her
+Every vessel, and every land vehicle, is described by its **class** (what she is), her
 **realisation** (what the culture of her port calls her and how she looks) and her **control** (who
 steers, who calls the stops, who feeds whom, what F does, when you sleep). The arrangements Alpha 2
-grew one at a time (booked passage, hired boat, owned boat, company vessel) become rows of one
-control table, with a new row, *under command*, for Alpha 7.
+grew one at a time (booked passage, hired boat, owned boat, company vessel) are rows of one control
+table, with a row, *under command*, waiting for Alpha 7.
 
-1. One vessel record for class, realisation, control, hold, damage and crew.
-2. The control table as data.
-3. Classes from skiff to great ship, airships and light craft; the map's transports mapped onto
-   them; the Rowboat as a skiff you row yourself.
-4. Courses by class: boats keep near the coast, ships keep off shoals.
-5. Storms by class and distance from land.
-6. Names and looks by the culture of the port.
-7. The harbour as a market for vessels: hire, buy, sell, crew, repair.
-8. Hands brought ashore as porters.
-9. Pack animals, carts and wagons on the same lines.
+Built: one vessel record; the control table as data; eight classes, with the map's transports
+mapped onto them and the Rowboat as a skiff you row and carry; courses and storms by class; names
+and looks by the port's culture; shipwrights in harbours and river towns; hands ashore as porters;
+pack animals, carts and wagons, with stables. Added on the way: a warehouse in every town, so that
+what you cannot carry can be stored for a deposit and a weekly fee.
 
 *Control table: who decides aboard. Worked example: a hired boat on the pilgrimage to Chelhazpo.*
 
 ## Alpha 4: markets
 
-1. A market screen that lists every good in the region, made locally or carried in from the
-   centre.
-2. Demand from population, goods and the map's trade deals, so one sale cannot halve a price.
-3. Town prices: carriage from the market centre, and a local glut from your own trading that
-   spreads to the region over a week.
-4. Errands that move goods in and out of market stock; shortages that post errands.
-5. **Funding a long journey.** Long journeys cost more than a single traveller can carry. Ways to
-   pay for them, each drawn from the map: a company purse, pooled at the Gathering and backed
-   according to the journey's type; a patron's writ from a ruler, temple or guild, honoured in
-   friendly states and dangerous in hostile ones, with real political stakes; paid work before
-   setting out; credit from merchants and temples, repayable at the destination; and difficulty
-   levels that set how much money there is.
+Built on the economy the map already has: markets, which work like watersheds with a centre of
+gravity, and goods, spread over the land by Azgaar's spread functions and each cell's bonus good.
+The economy that comes out of them is emergent; the game balances money.
 
-*Control table: how goods and money change hands. Worked example: ten units of wood and one of
-jewellery at Froi.*
+1. **The field.** Every town's price for every good blends the markets around it, each pulling
+   with a weight that falls with distance from its centre (counted by sea, road, trail or open
+   country), and the town's own voice: cheaper for what it makes, dearer for what comes from far
+   away. Towns near a centre follow it closely; towns between two markets hear both.
+2. **The day's food and the day's work.** Two local measures from the field, calibrated so the
+   world's median town keeps today's prices.
+3. **The money table:** every cost and payment in the game (food, inns, alms, healing, fares, hire,
+   wages, vessels, animals, tolls, mines, errands, bounties, sales, starting money) written in those
+   two measures and read by the game.
+4. **A market screen** listing every good, made here or brought in, and where its price comes from.
+5. **Season and events:** harvests, famine, plague, war, sieges and closed lines in prices.
+6. **Your own trading**, felt in the town first and its neighbours later.
+7. **Starting money** from the plan's cost, who the traveller is, and how prosperous their home is.
+8. **Funding a long journey:** a company purse, a patron's writ, credit.
+
+*Control tables: what moves a price; what costs and what pays. Worked examples: four towns on
+Pyeongak; the mine, the boat, and a stranded start.*
 
 ## Alpha 5: stories
 
@@ -87,7 +88,9 @@ forest.*
    drawn, and can be traded with captains; some are wrong. Lenses show your chart; Sandbox adds a
    view of the true world.
 4. **Rumours of prices** from real gaps between markets, older and vaguer with distance.
-5. **News of the unseen:** a crew sailing off, a carrier robbed, a town falling, all heard at news
+5. **Caches.** Goods buried away from towns, marked on your own chart and nowhere else; the longer
+   they lie, the likelier someone finds them.
+6. **News of the unseen:** a crew sailing off, a carrier robbed, a town falling, all heard at news
    speed.
 
 *Control table: what you know, and how old it is. Worked example: is wood worth carrying from Froi

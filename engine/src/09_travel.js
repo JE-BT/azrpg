@@ -21,6 +21,12 @@ Object.assign(AZ.COND, {
 
 Object.assign(AZ.Game.prototype, {
   // the hands your vessel feeds: companions in the party carry their own food
+  // which crews call for stops, and which keep watches round the clock (Alpha 3 reads the control table)
+  callsStops(v) { return (v.hpd || 0) < 24; },
+  keepsWatches(v) { return (v.hpd || 0) >= 24; },
+  footCapacity() { return { ...AZ.CARRY.foot }; },
+  repairCost(b) { return AZ.Prices.repair(this.w, b); },
+  repairHours() { return 12; },
   crewFed(v = this.s.vessel) { if (!v || !v.crew) return 0; return v.mode === "company" ? Math.max(0, v.crew - (this.s.party || []).length) : v.crew; },
   // with your vessel: aboard her, or in the town whose harbour she lies in
   withVessel() {
@@ -46,7 +52,7 @@ Object.assign(AZ.Game.prototype, {
     if (best === undefined) {
       const cands = [];
       for (const b of w.P.burgs) {
-        if (!b || !(b.port || v.cls === "air")) continue;
+        if (!b || !(b.port || v.cls === "air" || v.cls === "skiff" || v.cls === "boat")) continue;
         const h = w.harbour(b, v.cls);
         if (h && w.sameWater(here, h.t, v.cls)) cands.push({ port: b, h: h.t, d: Math.hypot(h.t[0] - v.c, h.t[1] - v.r) });
       }
@@ -117,12 +123,12 @@ Object.assign(AZ.Game.prototype, {
       s.wxKind = wx.kind;
     }
     const v = s.vessel;
-    if (v && s.aboard && !this.riding() && v.crew && v.hpd < 24 && v.cls !== "air" && !this.harbourAt.has(w.idx(s.c, s.r)) && w.navigable(s.c, s.r, v.cls)) {
+    if (v && s.aboard && !this.riding() && v.crew && this.callsStops(v) && v.cls !== "air" && !this.harbourAt.has(w.idx(s.c, s.r)) && w.navigable(s.c, s.r, v.cls)) {
       const sun = AZ.Clock.sun(s.clock, this.lat()), key = Math.floor((s.clock + 12) / 24);
       if (sun.dl < 24 && (sun.hour >= sun.set + 0.75 || sun.hour < sun.rise) && v.nightKey !== key) { v.nightKey = key; return this.crewCall(); }
     }
     // a crew that sails round the clock keeps watches: you turn in below and the watch sails on
-    if (v && s.aboard && !this.riding() && v.crew && (v.hpd || 0) >= 24 && !s.watchBelow && !this.vesselInPort(v)) {
+    if (v && s.aboard && !this.riding() && v.crew && this.keepsWatches(v) && !s.watchBelow && !this.vesselInPort(v)) {
       const night = AZ.Clock.light(s.clock, this.lat()).phase === "night";
       if ((s.awake || 0) >= 20 || ((s.awake || 0) >= 16 && night)) {
         this.slept(); s.watchBelow = s.clock + 8;
@@ -339,11 +345,7 @@ Object.assign(AZ.Game.prototype, {
         if (crew) opts.push({ label: `   … or sign on as crew aboard ${U.esc(o.ship)} (no fare; work the passage)`, act: "crew", o, disabled: !!s.voyage });
       }
       const boatH = w.harbour(b, "boat");
-      if (boatH && !s.vessel) {
-        const crew = 3, day = U.rn(crew * (P.wage(w, b) + P.ration(w, b)) + P.hire(w, b), 2);
-        opts.push({ label: `Hire a sailing boat with a crew of ${crew}: 🟡 ${U.rn(P.hire(w, b) + crew * P.wage(w, b), 2)} a day in wages and hire, three days paid now; you feed the crew (about 🟡 ${day} a day in all)`, act: "hire", disabled: s.purse < 3 * (P.hire(w, b) + crew * P.wage(w, b)) });
-      }
-      if (s.vessel && s.vessel.mode === "owned" && !s.vessel.crew) opts.push({ label: `Hire a crew of 3 for your boat (🟡 ${U.rn(3 * P.wage(w, b) * 3, 2)} for three days)`, act: "crewup", disabled: s.purse < 3 * P.wage(w, b) * 3 });
+      if (this.shipwright) opts.push({ label: "Shipwright: vessels to hire or buy; your own to crew, mend or sell", act: "yard" });
       if (s.vessel && s.vessel.mode === "hired" && this.vesselHere(b)) opts.push({ label: `Pay off the crew and return the boat${s.vessel.owed ? ` (owed 🟡 ${s.vessel.owed})` : ""}`, act: "payoff" });
       if (!opts.length) opts.push({ label: "No ships are taking passengers this week", act: "none", disabled: true });
       opts.push({ label: "Back", act: "back" });
@@ -364,6 +366,7 @@ Object.assign(AZ.Game.prototype, {
           `She sails <b>${AZ.Clock.fmt(o.o.departAt)}</b>, in ${AZ.Clock.span(o.o.departAt - s.clock)}, and will not wait. Bring your own food: you have ${s.sup.food} days' worth. Board from town (Space) before she sails.`]);
         return;
       }
+      if (o.act === "yard") { await this.shipwright(b); continue; }
       if (o.act === "hire") {
         const crew = 3, h = boatH.t;
         const first = U.rn(3 * (P.hire(w, b) + crew * P.wage(w, b)), 2);

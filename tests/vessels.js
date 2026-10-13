@@ -48,7 +48,7 @@ const ok = (cond, msg) => { console.log(`${cond ? "ok  " : "FAIL"} ${msg}`); if 
   {
     const [g, ui] = mkGame(jr), s = g.s;
     const h = boatAt(g, port, "hired", { damaged: true }); s.aboard = true; s.c = h[0]; s.r = h[1]; g.afterStep();
-    s.awake = 2; ui.script = [/Have the boat repaired/, /Leave/]; await g.town(port);
+    s.awake = 2; ui.script = [/repaired/, /Leave/]; await g.town(port);
     ok(!s.vessel.damaged && Math.round(s.awake) === 14, `a repair keeps you awake twelve hours (awake ${Math.round(s.awake)} h)`);
     ui.script = [/^Inn/, /Leave/]; await g.town(port);
     ok(s.awake === 0, "a night at the inn is sleep");
@@ -88,7 +88,7 @@ const ok = (cond, msg) => { console.log(`${cond ? "ok  " : "FAIL"} ${msg}`); if 
     // the crew waits while the food allows, and sails for port with enough for the run
     s.sup.food = run.food + 3 * 2 + 20; ui.script = [/take 20 rations/]; await g.goAshore(spot.land);
     let days = 0; while (s.vessel && days < 40) { g.newDay(); days++; }
-    ok(!s.vessel && ui.said.some(x => /Word reaches you: the crew of your hired sailing boat sailed her back/.test(x)), `left ${run.food + 6} rations (the run to ${run.port.name} is ${run.food}), the hired crew waited ${days - 1} days and took the boat home`);
+    ok(!s.vessel && ui.said.some(x => /Word reaches you: the hands of your hired .* sailed her back/.test(x)), `left ${run.food + 6} rations (the run to ${run.port.name} is ${run.food}), the hired crew waited ${days - 1} days and took the boat home`);
     // too little for the run: the mate blocks the way
     boatAt(g, port); Object.assign(s.vessel, { c: spot.sea[0], r: spot.sea[1], morale: 80 }); s.aboard = true; s.c = spot.sea[0]; s.r = spot.sea[1]; s.sup.food = 20; g.afterStep();
     const run2 = g.runToPort(s.vessel);

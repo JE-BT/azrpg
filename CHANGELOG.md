@@ -1,5 +1,60 @@
 # Changelog
 
+## Alpha 3: vessels and control
+
+**Classes.** Every vessel has a class: skiff, boat, galley, small ship, ship, great ship, light craft
+or airship. The class sets the hands she needs, what she holds (a skiff 20 rations, a boat 220, a
+ship 1,500), the rivers she can use, whether she can beach, the water she prefers and how she meets
+a storm. The map's transports take classes: the Rowboat is a skiff, the Sailing boat a boat, the
+Sailing Ship and Steamship ships, the Modern Ship a great ship, the Dirigible an airship, and
+Aircraft, Helicopters and Modern Airplanes light craft.
+
+**Names and looks by culture.** A vessel takes the name her port's people give her class: a knarr
+or a cog in Norse and Germanic ports, a felucca or a sambuk in Arabic and Persian ones, a sampan or
+a junk in the east, an outrigger or a proa in the islands. Peoples with invented namebases name
+their own hulls. Sails take the port's culture colour. What a yard builds follows its people:
+Naval ports build everything, River and Lake ports skiffs, boats and galleys, Highland, Hunting and
+Nomadic towns skiffs only.
+
+**Who decides aboard.** One control table answers the same eleven questions for six arrangements:
+passenger, signed crew, hirer, owner, company and (for Alpha 7) under command. The game reads it for
+who eats from your stores, how long hands left aboard will wait, whether a crew keeps watches or
+calls for stops, what hands do when they give up waiting, and who decides in a storm. The journal
+shows your row.
+
+**The shipwright.** Harbours, and landings in river towns, have a yard: hire a vessel with hands,
+buy one, hire and dismiss hands for your own, repair her, or sell her. Prices follow the town's
+market and tax; repairs take a class's own time (four hours for a skiff, two days for a ship).
+
+**Courses and storms by class.** F and waypoints keep boats, skiffs and galleys near the coast and
+ships and great ships off it. Storms are worse offshore for small hulls and near land for large
+ones; a ship caught near land can claw off into open water.
+
+**Rowing and portage.** A skiff is rowed: hours at the oars tire you half as much again as hours
+walking. She can be carried over land at twice the walking time.
+
+**Watches.** A crew sails round the clock only with hands enough for two watches: fifteen for a
+ship, forty for a great ship. With fewer, they call for a stop at dusk. Light craft set down for the
+night over land.
+
+**Porters.** An owner or a company can bring hands ashore as porters. Each carries 10 rations and 2
+units more, eats from your pack, and loses heart on land.
+
+**Pack animals, carts and wagons.** Stables in every town sell a pack animal (a mule, a camel, a
+reindeer or a packhorse, by the land and its people), a cart or a wagon. They carry 40, 120 or 300
+rations more. Carts slow off the roads and wagons crawl; animals graze on open ground and eat your
+food elsewhere. None of them can go aboard: board in a town and they wait in its stables.
+
+**The warehouse.** Every town keeps a warehouse. Leave goods or food there for a deposit of a
+twentieth of their value and a hundredth a week, due when you collect; anything left a year is sold
+to cover the fees. When you have more than you can carry in a town, you choose: store it or sell
+it.
+
+**Saves.** Alpha 2 saves load: vessels take the class of their kind.
+
+**Tests.** `tests/alpha3.js` checks the tables, the shipwright, capacity, watches, courses, storms,
+rowing and portage, porters, the warehouse, the stables, light craft and old saves.
+
 ## Alpha 2.1
 
 The bridge between Alpha 2 and Alpha 3: fixes from the first public tests of Alpha 2.

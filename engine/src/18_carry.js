@@ -20,6 +20,7 @@
     const extraFood = s.sup.food - cap.food, goods = Object.entries(s.goods || {}).filter(([, n]) => n > 0);
     let extraGoods = this.goodsCount() - cap.goods;
     if (extraFood <= 0 && extraGoods <= 0) return;
+    if (b && this.surplusChoice) return this.surplusChoice(b, cap); // in a town: store it or sell it
     const L = [];
     if (extraFood > 0) {
       s.sup.food = cap.food;
@@ -76,7 +77,7 @@
   // going ashore (or setting down) where hands stay aboard: how much food do you take?
   G.goAshore = async function (t, confirmed) {
     const s = this.s, v = s.vessel, n = this.crewFed(v), kind = U.esc(v.kind.toLowerCase());
-    const air = v.cls === "air", verb = air ? "Set down and step out" : "Go ashore", foot = AZ.CARRY.foot;
+    const air = v.cls === "air", verb = air ? "Set down and step out" : "Go ashore", foot = this.footCapacity();
     const step = () => { s.aboard = false; s.auto = false; v.anchored = true; v.waited = 0; if (t) { s.c = t[0]; s.r = t[1]; } this.anim = null; this.afterStep(); };
     if (!n) {
       if (confirmed) return step();

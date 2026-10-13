@@ -90,11 +90,7 @@
       }
       if (!deps.length) opts.push({ label: "No sailings or coaches from here in the next twelve days", disabled: true });
       const boatH = b.port ? w.harbour(b, "boat") : null;
-      if (boatH && !s.vessel) {
-        const crew = 3;
-        opts.push({ label: `Hire a sailing boat with a crew of ${crew}: 🟡 ${U.rn(P.hire(w, b) + crew * P.wage(w, b), 2)} a day, three days paid now; you feed the crew`, act: "hire", disabled: s.purse < 3 * (P.hire(w, b) + crew * P.wage(w, b)) });
-      }
-      if (s.vessel && s.vessel.mode === "owned" && !s.vessel.crew && this.vesselHere(b)) opts.push({ label: `Hire a crew of 3 for your boat (🟡 ${U.rn(3 * P.wage(w, b) * 3, 2)} for three days)`, act: "crewup", disabled: s.purse < 3 * P.wage(w, b) * 3 });
+      if (this.shipwright) opts.push({ label: "Shipwright: vessels to hire or buy; your own to crew, mend or sell", act: "yard" });
       if (s.vessel && s.vessel.mode === "hired" && this.vesselHere(b)) opts.push({ label: `Pay off the crew and return the boat${s.vessel.owed ? ` (owed 🟡 ${s.vessel.owed})` : ""}`, act: "payoff" });
       opts.push({ label: "Back", act: "back" });
       const k = await this.ui.choose(`<b>${U.esc(b.name)}: ${b.port ? "harbour and coach office" : "coach office"}</b> · 🟡 ${U.rn(s.purse, 2)}${this.voyageLine()}<br><span class="dim">Timetables are fixed; what runs depends on war, quarantine and the weather of the world ${AZ.T("mixed")}</span>`, opts, { cancel: opts.length - 1 });
@@ -113,6 +109,7 @@
           `It leaves <b>${AZ.Clock.fmt(o.d.t)}</b>, in ${AZ.Clock.span(o.d.t - s.clock)}, and does not wait. Bring your own food. Board from town (Space) before it leaves.`]);
         return;
       }
+      if (o.act === "yard") { await this.shipwright(b); continue; }
       if (o.act === "hire") {
         const crew = 3, first = U.rn(3 * (P.hire(w, b) + crew * P.wage(w, b)), 2);
         s.purse = U.rn(s.purse - first, 2);
