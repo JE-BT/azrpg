@@ -25,7 +25,7 @@ const { loadWorld, stubUI } = require("./harness.js");
     await g.town(b);
   };
   const stockUp = async (days) => { // buy what the town spares; if not enough, sleep at the inn and buy again
-    if (s.vessel && s.vessel.damaged) await town([/Have the boat repaired/, /Leave/]);
+    if (s.vessel && s.vessel.damaged) await town([/repaired/, /Leave/]);
     for (let k = 0; k < 8 && s.sup.food < days * g.eaters(); k++) { await town([/Market/, /Food for 20 days/, /Food for 10 days/, /Food for 5 days/, /Food for 1 day/, /Back/, /Inn/, /Leave/]); }
     const b = g.burgHere(); if (b && s.vessel && !s.aboard) { ui.script = [/Board your/]; await g.town(b); }
   };
@@ -34,7 +34,7 @@ const { loadWorld, stubUI } = require("./harness.js");
   console.log("booked", s.voyage && s.voyage.ship, "aboard", s.aboard, F(s.clock), "purse", AZ.U.rn(s.purse, 1), "food", s.sup.food);
   console.log("voyage:", await run(4000), "at", F(s.clock), "cp", s.cp, "here", g.burgHere()?.name);
   // Durcojhler: alms, a room, hire a boat, stock it, board
-  await town([/Give alms/, /Inn/, /Harbour/, /Hire a sailing boat/, /Back/, /Market/, /Food for 20 days/, /Food for 20 days/, /Food for 10 days/, /Back/, /Board your/]);
+  await town([/Give alms/, /Inn/, /Harbour/, /Shipwright/, /Hire a .*\(boat\)|Hire a sailing boat/, /Back/, /Back/, /Market/, /Food for 20 days/, /Food for 20 days/, /Food for 10 days/, /Back/, /Board your/]);
   console.log("Durcojhler done", F(s.clock), "acts", JSON.stringify(s.cpRec[1]?.acts), "vessel", s.vessel && s.vessel.mode, "aboard", s.aboard, "purse", AZ.U.rn(s.purse, 1), "food", s.sup.food);
   for (let leg = 0; leg < 8 && !s.done; leg++) {
     const cp0 = s.cp;

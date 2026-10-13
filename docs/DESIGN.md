@@ -8,8 +8,8 @@ order; [JOURNEYS.md](JOURNEYS.md) is the map maker's view of the narrative engin
 | Version | Subject | Control table |
 |---|---|---|
 | Alpha 2.1 | fixes: vessels, the hold, sleep (the bridge to Alpha 3) | — |
-| Alpha 3 | vessels and control | who decides aboard |
-| Alpha 4 | markets | how goods and money change hands |
+| Alpha 3 (released) | vessels and control | who decides aboard |
+| Alpha 4 | markets | what moves a price; what costs and what pays |
 | Alpha 5 | stories | who decides in the company |
 | Alpha 6 | traffic and knowledge | what you know, and how old it is |
 | Alpha 7 | war | the check |
@@ -45,6 +45,29 @@ tells the player some things at once; Alpha 6 moves them into the news.
 ---
 
 ## Alpha 3: vessels and control
+
+### As built
+
+Alpha 3 builds all nine steps below, with all eight classes. In the code (`engine/src/20_vessels.js`):
+
+- **The tables** are data: `AZ.VCLASS` (classes), `AZ.HULLS` and `AZ.YARDS` (realisation), `AZ.CONTROL`
+  (the control table, with machine rules and the text the journal shows), `AZ.LANDV` (land vehicles).
+- **The control table is read** for who eats from your stores, how long hands left aboard wait, whether
+  a crew keeps watches or calls for stops, what hands do when they give up, who decides in a storm, and
+  whether hands may come ashore as porters. Daily hire and wages still follow Alpha 2's own code, which
+  gives the same result as the table's *Money* column.
+- **The company row** calls stops by the hands' custom until Alpha 5 brings decision rules; the
+  *under command* row waits for Alpha 7.
+- **Prices** are multiples of the town's daily boat hire, repair price and wage, so they follow the
+  market and the state's tax.
+- **Long courses** that prefer the coast or the open sea search more of the map; a search that runs
+  out falls back to the plain course.
+
+Added on the way, from public tests: **the warehouse.** Every town stores goods and food for a deposit
+of a twentieth of their value and a hundredth a week, due on collection; anything left a year is sold
+to cover the fees. Over your limit in a town, you choose to store or sell. Outside towns the surplus
+is still left behind. Caches (burying goods in the wild) wait for Alpha 6, where your chart can mark
+them and others can find them; Alpha 7 ties both to suspicion.
 
 ### What Alpha 2 has
 
@@ -199,103 +222,180 @@ land vehicles.
 
 ## Alpha 4: markets
 
-### What the Alpha 2 tests found, and why
+### Starting point: the economy the map already has
 
-- **The goods list is short in large markets.** A town offers only goods it produces itself; the
-  town at the centre of a market region offers every good the region holds. The list is then sorted
-  by stock and cut to the ten best stocked, so a market centre loses everything below the tenth good.
-- **One sale moves the price in every town of the market.** Prices are kept per market region,
-  with one stock shared by all its towns.
-- **One unit can halve a price.** Each good's target stock is twenty days of the region's own
-  supply. For goods the region does not produce, that is a fraction of a unit, so one unit sold
-  pushes the price to its floor. Demand from the map's trade deals is computed and then replaced by
-  the supply figure.
-- **Errands do not touch the market.** Goods for deliveries are bought and delivered outside it.
-- **Trade flows are invisible.** The map's deals move stock between markets only when a passenger
-  line between them closes.
+Azgaar's map carries two simple systems, and azrpg builds on both as they are.
 
-### Control table: how goods and money change hands
+- **Markets** work like watersheds. Every cell belongs to one market region; each region has a
+  centre (the burg at its centre of gravity, usually its largest market) and a price for each good
+  it holds. Pyeongak has 13 markets, from Khatho's 6 burgs to Oim's 57 (data).
+- **Goods** are the geographic overlay. Each good has a spread function that places it on cells by
+  biome, height, temperature, shore and rivers; a cell holds at most one good, and no good takes more
+  than `ceil(200 × cells ÷ 5000)` cells ([Azgaar's wiki](https://github.com/Azgaar/Fantasy-Map-Generator/wiki/Goods-spread-functions)).
+  These are the cells' bonus goods: 522 of Pyeongak's 3,877 cells hold one (data). Towns produce
+  goods from their land and from recipes, and the map's deals record who sells to whom.
 
-| | Price or amount set by | What moves | Lands first | Spreads | Tax | Limits | You see | Tag |
-|---|---|---|---|---|---|---|---|---|
-| **Buy goods** | base × scarcity in the region × carriage × local glut | region stock −1 a unit | the town's price rises at once (glut) | the glut passes into the region's stock over a week | the state's sales tax, paid by the buyer | the town makes it or carries it in; stock; your hold | the market screen: price, stock, made here or carried in | mixed |
-| **Sell goods** | the same price × 0.85, the merchants' margin | region stock +1 a unit | the town's price falls at once | over a week, as above | none for the seller | someone in the region uses the good; the scarcity floor | today's offer, and what you paid | mixed |
-| **Buy food** | the cheapest food in the region, a tenth of a unit per ration, with carriage and tax | the region's food stocks | the town's weekly share for strangers | the region's stock | sales tax | the week's share; season; famine halves it | rations for sale this week | mixed |
-| **Delivery errand** | the price gap between the two markets × units, plus distance | giver's region −units at the start; destination +units on delivery | the destination's price falls on delivery | through the destination's region over a week | buyer's tax at the start | deadline; your hold | the errand card, with the gap it rests on | mixed |
-| **Relief errand** | the temple: cost and a share | food or salt from a market with stock to a stricken town | the stricken town's price falls and its famine eases | its region | none on temple goods | deadline; the zone must still hold | the errand card | mixed |
-| **Carriage** | distance from the market centre: +2% per 100 mi on goods carried in, −1% per 100 mi on goods made here (proposal) | nothing | this town's price | fixed | none | none | "carried in from the centre, N mi" | mixed |
-| **Company purse** | the journey type and the company's shares, pooled at the Gathering | coin into a shared purse | shared costs leave your own purse | companions' morale follows how it is spent | none | the shares; a company that breaks up takes its share | the purse line in the journal | mixed |
-| **Patron's writ** | a ruler, a temple seat or a guild at a market centre (data) | credit honoured by the patron's friends | towns of states allied or friendly to the patron | relations; a writ is a danger where the patron has enemies (Alpha 7) | the patron's own lands waive it | honoured by allies and friends, refused by others, dangerous among enemies | the writ, in what you carry | mixed |
-| **Paid work** | the town's wage × days worked | coin in; days pass | your purse | the plan's par slips | none | days before the plan's departure | work offers on the notice board | mixed |
-| **Credit** | a merchant or temple: the rate by standing and distance | coin now; a debt to repay at a named town by a date | your purse | a default lowers standing with the lender's state and faith, and the news travels | none | your standing | debts, with places and dates | mixed |
+The economy that comes out of these two systems is emergent. Alpha 4 codes only what matches the
+systems, and balances the one thing the systems leave to the game: **money**. Two control tables
+do that. The first says what moves a price in a given town, from the markets and goods around it.
+The second lists everything that costs or pays money, each tied to two local measures that the
+first table produces: the price of a day's food and the worth of a day's work. Both tables are
+filled from the world.
 
-### Worked example: ten units of wood and one of jewellery at Froi
+### What the tests found
 
-Froi, in Pyeongak, is a town of about 13,000 people (data) whose market region is centred on
-Wildgemea, 484 miles away. The region holds 71 goods; the sales tax is 18%. Froi makes wood, ropes
-and tar.
+- Prices are flat across a market region. Froi, 484 miles from its centre at Wildgemea, pays
+  Wildgemea's prices to the last copper, and Bayfront, halfway between two market centres, pays only
+  one of them.
+- One unit sold moves the price in every town of the region, and for goods a region does not make,
+  one unit halves it.
+- A town lists only the ten best-stocked goods it makes.
+- A twelve-hour shift at the Bluszils clay mine pays 🟡 4, while a boat with three hands costs 🟡 0.59
+  a day in the same town. Wages everywhere else sit near 🟡 0.17 a day.
+- Starting money is a random 0.6 to 1.4 times the plan's cost. A low start (🟡 125) that left the
+  traveller living off the land for two seasons was good play, and that balance stays.
 
-1. **Wood today (Alpha 2).** Base price 🟡 1.54; the region holds 102 units against a target of
-   102, so the price is the base. Froi quotes 🟡 1.82 to buy (with tax) and 🟡 1.31 to sell. Selling
-   ten units adds ten to the region's stock and drops the price to 🟡 1.47 in every town of
-   Wildgemea's region at once.
-2. **Jewellery today (Alpha 2).** Base 🟡 44.72; the region makes none, so its target stock is 0.2
-   of a unit. One unit sold drops the price to 🟡 22.36, the floor, across the whole region.
-3. **Carriage (Alpha 4).** Wood is made in Froi: −1% per 100 miles from the centre gives ×0.952.
-   Jewellery is carried in: +2% per 100 miles gives ×1.097 (proposals).
-4. **Local glut (Alpha 4).** Each unit you trade moves the town's own price by 0.2 ÷ the
-   population in thousands (proposal): 1.5% a unit in Froi, where a village of a thousand would
-   move 20%.
-5. **Selling the wood (Alpha 4).** The first unit fetches 1.54 × 0.952 × 0.85 = 🟡 1.25; each unit
-   after it 1.5% less, the tenth 🟡 1.07; 🟡 11.60 for the ten (rows *Sell goods*, *Carriage*).
-   Over the next week the ten units pass into the region's stock at a seventh a day, and the other
-   towns' prices drift down to the 🟡 1.47 that Alpha 2 shows at once, while Froi's glut fades.
-6. **Pricing the jewellery (Alpha 4).** Demand now comes from consumption (the good's tags and the
-   region's population) and the map's deals, and a thin market's target is never below ten units
-   (proposal). At the target, Froi's price is 44.72 × 1.097 = 🟡 49.06; a buyer pays 🟡 57.89 with
-   tax; a seller gets 🟡 41.70. One unit sold moves Froi by 1.5% at once and the region, after a
-   week, by 4.7% (from ten units to eleven).
-7. **An errand.** Froi's notice board offers wood for a town that buys it. In Alpha 4 the four units
-   leave Wildgemea's stock when you buy them and enter the destination's when you deliver them
-   (row *Delivery errand*), so the errand itself lowers the price it was posted on.
-8. **Paying for the voyage.** The pilgrims' faith has its seat at Durcojhler, on the route (data).
-   Its temple can write a *patron's writ* honoured in states friendly to Madas, or lend against the
-   pilgrims' standing, repayable at Chelhazpo (row *Credit*).
+### Control table 1: what moves a price
 
-### The systems
+A town's price for a good is a weighted blend: each market pulls on the town with a weight that
+falls with distance from its centre, and the town has a voice of its own. The weights come from the
+first four rows; the town's own price from the next two; the rest act on the blend.
 
-| System | Keeps | One rule |
-|---|---|---|
-| Market stock | stock per good, per market region | supply in, demand out, each day, by season |
-| Consumption | demand per town | population and the good's tags set how much a town uses |
-| Carriage | distance from the market centre | further from the centre, imports dearer and exports cheaper |
-| Local glut | your trading per town | it moves the town's price at once and passes into the region over a week |
-| Price | — | base × scarcity × carriage × glut × tax |
-| Credit | debts and writs | borrowed money, repaid at a stated place and time |
+| Influence | Reads (map data) | Rule | Range | Acts on | On Pyeongak |
+|---|---|---|---|---|---|
+| **Home market** | the cell's market region, its centre burg, its price for each good | pull = size × e^−(d ÷ 400)², with d in effective miles | 1 at the centre; 0.14 at 560 effective miles | every good | at Wildgemea, the centre, 74% of each price comes from its own market |
+| **Other markets** | every other market's centre and prices | the same pull, from each | as above | every good | Bayfront: Deadkeep 31%, Hauls 28%; Bluszils: Oim 54%, Wildgemea 31% |
+| **Market size** | the number of burgs in the region | the square root of its share of the mean | about 0.4–1.5 | each market's pull | Oim's 57 burgs pull at 1.40; Khatho's 6 at 0.45 |
+| **Travel options** | ports, roads and trails at both ends | effective miles = miles × 0.6 between two ports, 0.8 by road, 1.0 by trail, 1.3 across country | ×0.6–×1.3 | every distance in this table | Froi to Wildgemea, 484 miles by sea, count as 290 |
+| **Local production** | the town's production and its cell's bonus good | the town's own voice weighs 0.15, three times that for goods it makes, which it prices at 0.7 of its home market | ×0.7 | goods made here | Froi makes wood (its cell's bonus good): 🟡 1.54 at Wildgemea, 1.40 in Froi |
+| **Distance from supply** | effective miles to the home centre | for goods the town does not make, its own price rises a tenth for every 100 effective miles, to double at most | ×1–×2 | goods not made here | Bayfront makes no wood and lies 526 miles from Deadkeep: its own voice says 1.69 |
+| **Season** | the latitude and the date | food ×0.9 after the harvest, ×1.15 in late winter and spring | ×0.9–×1.15 | food | the boat off Cielb on Day 52 is in a southern autumn: harvest prices |
+| **Events** | the changing world's zones, wars, sieges and closed lines | famine ×1.6 on food; disease ×1.5 on salt and medicines; war ×1.3 on arms and horses and ×1.15 on food; siege ×3 on food inside the walls; occupation ×1.1; disaster ×1.4; a closed line ×1.2 on what it carried | ×1–×3 | the named goods, in the zone or the state | Froi's notice board asks for relief for Lostshell, inside a zone |
+| **Tax** | the state's sales tax | buyers pay it on top | +0–40% | buying | Froi, in Voh: 18% |
+| **Merchants' margin** | — | sellers receive 85% of the price | ×0.85 | selling | wood sells for 1.19 in Froi |
+| **Your own trading** | your sales and purchases in this town | each unit moves the town's own price by 0.2 ÷ its population in thousands at once, fading into the field over a week | ±1.5% a unit in Froi; ±20% in a village | goods you trade | ten units of wood sold in Froi lower Froi first, its neighbours later |
+| **The day's food (R)** | the field prices of the town's foods | R = k × the mean of the three cheapest foods, with tax; k is set once per world so the median town keeps Alpha 3's ration | — | the money table | Pyeongak: k = 0.058; median ration 🟡 0.07 |
+| **The day's work (W)** | R | W = c × R; c is set once per world so the median town keeps Alpha 3's wage | — | the money table | Pyeongak: c = 2.43; median wage 🟡 0.17 |
 
-### Where they meet
+### Worked example: four towns on Pyeongak
 
-- **Stock and war.** Closed lines and seized ships starve markets (Alpha 6, Alpha 7).
-- **Consumption and zones.** Famine and plague change what a town eats and can spare.
-- **Errands and stock.** A delivery draws on one market and adds to another; shortages post
-  errands.
-- **Credit and politics.** A writ is honoured by friends and dangerous among enemies.
+| Town | Where it lies (data) | Pulls on its prices (mixed) | Wood: market → field | Iron: market → field | R | W |
+|---|---|---|---|---|---|---|
+| Wildgemea | a market centre, a port on a road | Wildgemea 74%, Oim 8%, its own voice 9% | 1.54 → 1.54 | 4.72 → 4.42 | 0.067 | 0.16 |
+| Froi | 484 miles from Wildgemea by sea; makes wood, ropes and tar | Wildgemea 72%, Oim 12%, its own voice 15% | 1.54 → 1.40 | 4.72 → 4.68 | 0.073 | 0.18 |
+| Bayfront | inland on a trail, 526 miles from Deadkeep and 523 from Hauls | Deadkeep 31%, Hauls 28%, its own voice 23% | 1.11 → 1.37 | 3.72 → 3.64 | 0.046 | 0.11 |
+| Bluszils | a clay-mining port in Oim's region, 450 miles from Oim and 617 from Wildgemea | Oim 54%, Wildgemea 31%, its own voice 9% | 1.77 → 1.71 | 2.73 → 3.40 | 0.071 | 0.17 |
+
+1. **At the centre** the field gives Wildgemea its own market's prices, give or take what Oim's
+   cheaper iron does to the margin.
+2. **Far from the centre**, Froi still follows Wildgemea, because 484 miles of sea count as 290. The
+   wood its own forests give it is cheaper there than at the centre.
+3. **Between two markets**, Bayfront hears both, and its own voice is loud: no market lies close.
+   Wood is dearer there than either market quotes, because Bayfront makes none and the nearest wood
+   is far off.
+4. **Two markets at once:** Bluszils belongs to Oim, but Wildgemea's buyers pay 4.72 for iron and
+   their pull reaches Bluszils at 31%. Iron that cost 2.73 there under Alpha 3 costs 3.40 in the
+   field.
+5. **Food and work** follow. Bayfront's cheap food makes its labour cheap: a hand there is worth
+   🟡 0.11 a day, two-thirds of a hand in Froi.
+
+### Control table 2: what costs and what pays
+
+Every row keeps its Alpha 3 shape, rewritten in R and W: each constant becomes that constant ÷ the
+median wage, times the town's W. The median town pays exactly what it paid in Alpha 3; dear towns
+cost more and cheap towns less. Three rows change on purpose (marked ●): the mine, vessels, and
+starting money. The example column is Durcojhler, where food is dear (R 0.116, W 0.281), except
+where it says otherwise.
+
+| Row                                                                                   | Costs or pays    | Alpha 3 rule                                                       | Alpha 4 rule                                                                                            | Durcojhler: Alpha 3 → Alpha 4                         | The world's reason                                                                                                          |
+| ------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| A day's food                                                                          | costs            | the cheapest food ×0.1, with tax                                   | R                                                                                                       | 0.12 → 0.12                                           | what the land and the markets around bring                                                                                  |
+| A room until morning                                                                  | costs            | 0.3 + 2 rations, with tax                                          | 1.8W + 2R                                                                                               | 0.60 → 0.74                                           | the innkeeper's day and two meals                                                                                           |
+| A meal at a roadside inn                                                              | costs            | 🟡 1                                                               | 4R                                                                                                      | 1.00 → 0.46                                           | four rations of good food                                                                                                   |
+| Alms                                                                                  | costs            | 0.5 + 0.01 per thousand people                                     | 3W + 0.06W per thousand people                                                                          | 0.90 → 1.53                                           | a day's work for the temple, more in great towns                                                                            |
+| Treating a fever                                                                      | costs            | 1 + 5R                                                             | 6W + 5R                                                                                                 | 1.60 → 2.27                                           | the healer's time and five days' broth                                                                                      |
+| A sea passage                                                                         | costs            | 0.004 a mile (🟡 1 at least), with tax                             | W × 0.024 a mile (6W at least)                                                                          | 500 mi: 2.30 → 3.37                                   | the crew's time and the port's dues                                                                                         |
+| A coach                                                                               | costs            | 0.006 a mile (🟡 0.5 at least), with tax                           | W × 0.035 a mile (3W at least)                                                                          | 100 mi: 0.70 → 0.98                                   | the driver's time and the team's feed                                                                                       |
+| A hand's wage, a day                                                                  | costs            | 0.15, with tax                                                     | W                                                                                                       | 0.17 → 0.28                                           | the local day's work                                                                                                        |
+| Hiring a boat, a day                                                                  | costs            | 0.10, with tax                                                     | her price ÷ 365                                                                                         | 0.12 → 0.12                                           | a boat pays for herself in a year of hire                                                                                   |
+| ● Buying a vessel                                                                     | costs            | 150 days' hire (a boat 🟡 18)                                      | materials and labour: a boat is 10 wood, 2 ropes, 2 sails and 30W; other classes by Alpha 3's multiples | a boat: 18 → 43                                       | what she is made of, at this town's prices                                                                                  |
+| Repairs                                                                               | costs            | 0.3 sail + 0.3 rope, with tax                                      | 0.3 sail + 0.3 rope + W for every 12 hours in the yard                                                  | 3.90 → 3.61                                           | materials and the yard's time                                                                                               |
+| A pack animal                                                                         | costs            | 30 wages                                                           | the field price of Horses (Camels in deserts)                                                           | 5.10 → 7.82                                           | animals are goods on the map                                                                                                |
+| A cart; a wagon                                                                       | costs            | 80 and 200 wages                                                   | Cattle + 8 wood + 10W; 2 Horses + 16 wood + 20W                                                         | 13.6 → 22.8; 34.0 → 44.3                              | the beasts and the timber                                                                                                   |
+| The warehouse                                                                         | costs            | a twentieth of the value now, a hundredth a week                   | the same, valued at the field's prices                                                                  | —                                                     | a share of what is stored                                                                                                   |
+| The portal keepers                                                                    | costs            | 1 + 0.15 per thousand people                                       | W × (6 + 0.9 per thousand people)                                                                       | 7.15 → 12.05                                          | keepers charge what the town can bear                                                                                       |
+| Tolls: rebels; pirates paid off                                                       | costs            | 🟡 4; 🟡 8                                                         | 24W; 47W                                                                                                | 4.00 → 6.74; 8.00 → 13.21                             | what a band can ask of a traveller here                                                                                     |
+| A fine from an enemy watch                                                            | costs            | up to 🟡 4                                                         | up to 24W                                                                                               | 4.00 → 6.74                                           |                                                                                                                             |
+| Diversions: a circus, the library's copyists, an offering at a grove, a stake at dice | costs            | 🟡 1, 2, 2, 1                                                      | 6W, 12W, 12W, 6W                                                                                        | 1.00 → 1.69; 2.00 → 3.37                              | a day's or two days' work                                                                                                   |
+| ● A shift at a mine (12 hours)                                                        | pays             | 🟡 4                                                               | 1.5W + a quarter of a unit of the mine's own good, at the town's price                                  | at Bluszils: 4.00 → 0.53                              | a miner's wage and a share of what he digs; a gold mine pays more than a clay pit                                           |
+| Working a passage                                                                     | pays             | the wage, each day                                                 | W each day, paid at the last port                                                                       | 0.17 → 0.28 a day                                     | the ship's day's work                                                                                                       |
+| Delivering goods                                                                      | pays             | the destination's price × units × 1.1, + 0.003 a mile              | the destination's field price × units × 1.1, + W a day of travel                                        | glass for Aghagos: 31.2 → about 32                    | the goods' worth there, and your days on the road                                                                           |
+| Relief for a stricken town                                                            | pays             | 0.6 × cost + 1                                                     | 0.6 × cost + 6W                                                                                         | at Froi, Lostshell: 2.10 → 2.21                       | the temple repays most of it                                                                                                |
+| Dispatches to a regiment                                                              | pays             | 1 + 0.005 a mile                                                   | W × (6 + 0.03 a mile)                                                                                   | 40 mi: 1.20 → 2.02                                    | a runner's days, and the danger                                                                                             |
+| The truth about a marked place                                                        | pays             | 1.5 + 0.004 a mile                                                 | W × (9 + 0.024 a mile)                                                                                  | 50 mi: 1.70 → 2.87                                    | someone's curiosity, paid in days of work                                                                                   |
+| Story rewards (letters, papers, relics)                                               | pays             | 🟡 3, 5, 8, 10                                                     | 18W, 30W, 47W, 60W                                                                                      | 5.00 → 8.43                                           |                                                                                                                             |
+| A bounty, in advance; on proof                                                        | pays             | 5 + 0.6 per thousand people, at most 60; three times that on proof | W × (30 + 3.5 per thousand people), at most 350W; three times that on proof                             | 29.6 → 48.7                                           | a great town pays a hunter well                                                                                             |
+| Selling goods                                                                         | pays             | the market's price × 0.85                                          | the field price × 0.85                                                                                  | wood: 1.11 → 1.22                                     |                                                                                                                             |
+| Selling a vessel or an animal                                                         | pays             | 60% of her price                                                   | the same, at the field's prices                                                                         | a boat: 10.8 → 25.9                                   |                                                                                                                             |
+| Living off the land                                                                   | feeds            | fishing and foraging give food                                     | the same                                                                                                | —                                                     | the land gives food, never coin                                                                                             |
+| ● Starting money                                                                      | —                | the plan's cost × the kind's share × 0.6–1.4 at random             | the plan's cost at Alpha 4 prices × the kind's share × √(home prosperity) × 0.75–1.25                   | from Oxbreak, returning home: 126–293 → about 144–241 | savings follow the home town's wealth: prosperity is its product per thousand people over the world's median (Oxbreak 0.85) |
+| A company purse                                                                       | pays             | —                                                                  | each companion puts in 20–60W by role at the Gathering                                                  | new                                                   | the company's own savings                                                                                                   |
+| A patron's writ                                                                       | pays             | —                                                                  | credit up to 200W of the patron's town, honoured by its friends                                         | new                                                   | a ruler's, temple's or guild's name                                                                                         |
+| Credit                                                                                | pays, then costs | —                                                                  | up to 100W, repaid with a tenth more at a named town by a date                                          | new                                                   | a merchant's or temple's trust                                                                                              |
+
+### Worked example: the mine, the boat, and a stranded start
+
+1. **The mine.** At Bluszils, a clay-mining port of 33,557 people (data), Alpha 3 pays 🟡 4 for a
+   shift, and a boat with three hands costs 🟡 0.59 a day: one shift pays for a week of the boat.
+   In Alpha 4, W at Bluszils is 0.172 and clay costs 1.09 in the field, so a shift pays 1.5 × 0.172
+   + 0.25 × 1.09 = 🟡 0.53, and the boat with three hands costs 0.123 + 3 × 0.172 = 🟡 0.64 a day. A
+   miner earns three times a hand's wage, and a shift buys most of a day of a crewed boat.
+2. **Still a way back.** A traveller stranded at Bluszils with nothing can live off the shore and
+   work the pit: a week of shifts (🟡 3.7) buys a 500-mile passage from the port (W × 12 = 🟡 2.06)
+   with food to spare. The road back to the journey takes weeks of work, which is the point.
+3. **The start.** Pyeongak's plan costs 🟡 209 at Alpha 3 prices. Its median town keeps its prices
+   in Alpha 4, so the plan's cost moves only where the route passes dear or cheap towns: Durcojhler,
+   the pilgrims' first stop, is dear (W 0.281), which raises the cost of its stays and its boat.
+   Oxbreak's prosperity is 0.85, so a traveller returning home starts with about 🟡 144–241. A
+   stranger (share 0.9) starts with about 130–217, a soldier (0.8) with 116–193, and a fugitive
+   (0.45) with 65–109: the lean start that ends in a season of fishing is still there, and it now
+   follows from who the traveller is and where they come from.
+
+### Where it meets the other versions
+
+- **Alpha 3.** Vessels, carts and animals are priced from their materials and the goods they are
+  (rows *Buying a vessel*, *A pack animal*, *A cart; a wagon*), and hire follows from price.
+- **Alpha 5.** A caravan's story reads its hooks from the field: the gaps between towns, the goods
+  a town makes, the markets that pull on it.
+- **Alpha 6.** Rumours of prices are made from the field's real gaps; carriers on the lines are the
+  reason two markets pull on one town; your price book records field prices with their dates.
+- **Alpha 7.** War, sieges and occupation reach prices through the *Events* row; a patron's writ is
+  honoured by friends and dangerous among enemies.
 
 ### Build steps
 
-1. **A market screen** listing every good in the region, made here or carried in, with stock,
-   price and your last-known price elsewhere. *Check:* every good on Azgaar's goods map for that
-   market appears.
-2. **Demand** from consumption and deals; targets from demand; the thin-market floor. *Check:* a
-   table of price per unit sold for a local good, an import and a luxury stays within set bounds.
-3. **Town prices:** carriage and local glut. *Check:* selling ten units in one town moves its
-   price at once and its neighbours' over the following week.
-4. **Errands that move goods**, and shortages that post them.
-5. **Funding a long journey:** company purse, patron's writ, paid work, credit, difficulty levels.
+1. **The field.** Weights for every town, computed once per world and kept; prices for every good
+   in every town. *Check:* at each market centre the field stays within a tenth of the market's own
+   prices, and the four Pyeongak towns match the worked example.
+2. **R and W**, calibrated per world. *Check:* the median town's ration and wage equal Alpha 3's.
+3. **The money table as data** (`AZ.MONEY`), with every cost and payment in the game reading its row,
+   and `AZ.Prices` reading the table. *Check:* a test prints every row at Durcojhler, Bluszils,
+   Bayfront and Froi; a mine shift pays less than a day of a boat with three hands.
+4. **The market screen:** every good with a field price, made here or brought in, and where its
+   price comes from ("Wildgemea 72%, Oim 12%, Froi 15%"). *Check:* every good on Azgaar's goods map
+   for the region appears.
+5. **Season and events.** *Check:* famine in a zone raises food there, and nowhere else.
+6. **Your own trading.** *Check:* ten units sold in Froi move Froi at once and its neighbours over the
+   following week.
+7. **Starting money** from the plan at Alpha 4 prices, the kind and home prosperity. *Check:* on each
+   test world the median traveller can pay for the plan with about a seventh to spare, and a
+   fugitive cannot.
+8. **Company purse, patron's writ and credit**, last; they can wait for a later version.
 
 ---
 
 ## Alpha 5: stories
+
 
 ### The idea
 
@@ -305,6 +405,9 @@ mechanics then read differently: a Rumours stop on a raid turns on the temples' 
 guards it; on a pilgrimage, on the shrine and its rites. JOURNEYS.md gives the types' movement
 rules, main layers and story shapes, and the full table of stop readings.
 
+This idea must be built out to encompass the mechanics the game has. Right now, every town has an Innkeeper, Merchant, Shrine-Keeper, Elder, and Townsfolk to talk to. Can also talk to captains of ships, passengers, there could be a captain of the watch, a warehouse or harbor master, a wainwright, a shopkeeper at the market, and many others. All these are potential vehicles for the story to be told. If the story is a mystery, perhaps you can interrogate people. If you are on an adventure, perhaps they ask to hear your story or you can ask about your specific quest. All the different story types can affect this.
+
+The story should also react to the character's culture, religion, and so forth, making these systems real. In Alpha 2, the game makes biomes real through the camping bonus: swamps give nothing while rainforests give an extra ration, so the traveler avoids the swamps. In a narrative, perhaps a minority culture is disliked in a state, and so when a person of that culture travels to the majority region, there is risk involved, perhaps prices are higher, people react negatively, perhaps even robbery and things, which may be punished by the guard or not, depending on how sanctioned the discrimination is. In a theocracy, persecuting a person of a different religion would be expected, so you could get no help there. But in a republic perhaps all religions are protected, so you could get help from the watch there.  People should not all react the same, their religion, culture, nationality, world situation, hunger, personality, all affect their response.  Other layers should be made real in the same way.
 ### Control table: who decides in the company
 
 | | Free movement | Collective decision | The leader decides after discussion | Orders |
@@ -356,6 +459,7 @@ and take the hero's journey as their shape.
    | the reward | walled Rhecad, its market and temple |
    | the road back | brigands and typhoid on the forest road to Caven |
    | the return | the sacred pinery and Sunsirere |
+   
 4. **A collective decision at Unzinb.** The plan says Rowboat. The companions weigh it by role. The
    guide counts speed: a ship at 10 mph round the clock covers in a day what the rowboat covers in
    seven or eight. The healer counts food: four people rowing for 181 days need over 700 rations, more than
@@ -465,6 +569,7 @@ world, and the vehicles of the passenger lines are not drawn.
 | Your carriers | your own vehicles on runs you set | they trade by your orders and report by letter |
 | Charts | what you know of each place, and when you learned it | lenses draw your chart; a chart is dated and may be wrong |
 | Rumours of prices | — | made from real gaps between markets, older and vaguer with distance |
+| Caches | goods buried in the wild, where and when | marked on your chart only; the longer they lie and the busier the road, the likelier they are found |
 | News of the unseen | — | events away from you reach you at news speed |
 
 ### Build steps
@@ -584,6 +689,9 @@ keeps the Occultism of the Chief of Lightning (data). With a regiment inside 80 
   pursuit, turns treasury into plunder, and changes relations, all as news (Alpha 6).
 - **Occupation and the Beta.** Checks use the occupation the changing world has; claims, control
   and contestation (Beta) later decide who checks whom.
+- **Storage and suspicion.** A warehouse keeps a ledger: contraband stored in a town at war is found
+  in searches, and goods stored in an enemy town add a point of suspicion when you come to collect
+  them. Caches are safe from ledgers and searches, and open to anyone who finds them.
 
 ### Build steps
 
@@ -610,10 +718,8 @@ keeps the Occultism of the Chief of Lightning (data). With a regiment inside 80 
    can be exported.
    (c) Death with succession, as a difficulty setting: a companion or kin takes up the journey, the
    world keeps the consequences, and the grave becomes a marker.
-2. **How many vessel classes (Alpha 3).**
-   (a) All eight.
-   (b) The five the map's transports need (skiff, boat, ship, great ship, airship), with small
-   ships, galleys and light craft in a later version.
+2. **How many vessel classes (Alpha 3).** Settled for Alpha 3: all eight are built. Small ships,
+   galleys and light craft can be withdrawn if they crowd the yards.
 3. **How strict checks are (Alpha 7).**
    (a) As the control table stands.
    (b) One band milder by default, with the table as a harder setting.
@@ -625,3 +731,11 @@ keeps the Occultism of the Chief of Lightning (data). With a regiment inside 80 
 5. **Your own carriers.**
    (a) In Alpha 6, after carriers on the lines.
    (b) In the Beta, with the growing network.
+6. **Starting money (Alpha 4).**
+   (a) The plan's cost × the kind's share × √(home prosperity) × 0.75–1.25, as in the money table.
+   (b) The same with Alpha 3's wider spread, 0.6–1.4.
+   (c) No chance at all: the kind's share and home prosperity only.
+7. **Rows that rise in dear towns (Alpha 4).** Alms, portal fees and bounties grow with a town's size
+   as well as its wage, so Durcojhler's portal costs 🟡 12 where Alpha 3 asked 7.
+   (a) Keep them.
+   (b) Let only the wage move them, holding the size term at Alpha 3's value.

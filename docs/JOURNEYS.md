@@ -3,10 +3,9 @@
 azrpg plays the first journey saved in an Azgaar map. This page explains how a journey is read, so
 that you can design one that plays well.
 
-Most of the page describes the game as it is (Alpha 2.1). Parts marked **(Alpha 3)** or
-**(Alpha 5)** describe what those versions add: vessel classes in Alpha 3, and in Alpha 5 a
-narrative engine that gives each journey a story built from the map. The design behind them is in
-[DESIGN.md](DESIGN.md).
+Most of the page describes the game as it is (Alpha 3). Parts marked **(Alpha 5)** describe the
+narrative engine that version adds, which gives each journey a story built from the map. The design
+behind it is in [DESIGN.md](DESIGN.md).
 
 ## The parts of a journey
 
@@ -179,17 +178,18 @@ and domain.
   boats also reach river towns.
 - **Air** transports fly over land and sea and moor at towns. A **Teleport** leg is crossed at
   once.
-- A booked ship or coach keeps its own timetable; a hired boat is the player's to steer; the
+- A booked ship or coach keeps its own timetable; a hired vessel is the player's to steer; the
   company's own vessel (after a loading stop, or for the types marked above) is boarded at the
   quay with no fare.
 - Your own vessel has a hold. Going ashore, you carry what you can on foot and the rest stays
   aboard; any hands left with her eat from it, and wait as long as food and patience allow.
-- In Alpha 2.1 every boat leg, the Rowboat included, is sailed in a hired sailing boat with three
-  hands. **(Alpha 3)** Each transport takes a vessel class: the Rowboat becomes a skiff you row
-  yourself, the Sailing boat a boat, the Sailing Ship and Steamship a ship, the Modern Ship a great
-  ship, the Dirigible an airship. Classes set the crew, the hold, the rivers she can use, where she
-  can stop, the water she prefers and how she meets a storm. Her name and look come from the
-  culture of the port that built her.
+- Each water and air transport takes a vessel class: the Rowboat is a skiff you row yourself and
+  can carry over land, the Sailing boat a boat, the Sailing Ship and Steamship a ship, the Modern
+  Ship a great ship, the Dirigible an airship, and Aircraft, Helicopters and Modern Airplanes light
+  craft that set down at night. The class sets the hands she needs, her hold, the rivers she can
+  use, where she can stop, the water she prefers and how she meets a storm. Her name and look come
+  from the culture of the port that built her, and shipwrights sell and hire what their people
+  build.
 
 ## Tips
 

@@ -276,7 +276,8 @@ AZ.TRAITS = {
       const here = this.burgHere() || w.near(s.c, s.r, 20).find(n => n.kind === "burg" && n.o.port)?.o;
       const deps = here ? this.sim.departures(here, s.clock, 14).filter(d => d.L.to === next.place.burg?.i || (d.L.via || []).includes(next.place.burg?.i)) : [];
       L.push(deps.length ? `${U.esc((p[2] || lead).name)}: “${U.esc(deps[0].L.ship)} sails from ${U.esc(here.name)} on ${AZ.Clock.fmt(deps[0].t)} and calls there. That is our ship.” ${T("mixed")}` : `${U.esc((p[2] || lead).name)}: “No ship I know of runs straight there from here. Ask at the harbour, or find one that goes close.”`);
-    } else if (leg && /boat/i.test(leg.transport)) L.push(`${U.esc((p[2] || lead).name)}: “We'll need a boat of our own. Hire one at a harbour; we'll crew it.”`);
+    } else if (leg && /row|skiff|canoe/i.test(leg.transport)) L.push(`${U.esc((p[2] || lead).name)}: “We'll need a skiff of our own. Buy one from a shipwright; we'll take turns at the oars.”`);
+    else if (leg && /boat/i.test(leg.transport)) L.push(`${U.esc((p[2] || lead).name)}: “We'll need a boat of our own. Hire one from a shipwright; it comes with hands.”`);
     const why = this.legReasons(next).find(x => /seat|capital|lane|crosses|clear of|Hazards/.test(x));
     if (why) L.push(`${U.esc(lead.name)}: “${why.replace(/<[^>]+>/g, "").replace(/ (data|mixed|new)\./g, ".")}”`);
     return this.ui.say(L, "The company");

@@ -14,7 +14,8 @@ AZ.Game = class {
     this.held = []; this.anim = null; this.s = null; this.lensIdx = 0; this.inspectOn = false;
     this.walkSpeed = (w.W.transports.find(t => t.name === "On foot (light)") || { speed: 5 }).speed;
     this.harbourAt = new Map();
-    for (const b of w.P.burgs) if (b && b.port) for (const cls of ["boat", "ship"]) { const h = w.harbour(b, cls); if (h) this.harbourAt.set(w.idx(h.t[0], h.t[1]), b); }
+    // harbours for every class of vessel; towns that are not ports still have a landing for skiffs and boats
+    for (const b of w.P.burgs) if (b) for (const cls of AZ.WATER_NAV || ["boat", "ship"]) { if (!b.port && cls !== "skiff" && cls !== "boat") continue; const h = w.harbour(b, cls); if (h && !this.harbourAt.has(w.idx(h.t[0], h.t[1]))) this.harbourAt.set(w.idx(h.t[0], h.t[1]), b); }
     ren.piers = new Set([...this.harbourAt.keys()]);
     ren.cache.clear();
   }
@@ -297,6 +298,9 @@ AZ.Game = class {
   // Off the course, the vessel makes for the nearest point of it she can reach by water, at or beyond
   // the furthest point already reached on this leg (so a detour to a harbour never sends her back),
   // then follows it; stretches she cannot use are bridged by water; it ends at the checkpoint's harbour.
+  // town menu items that later versions add (warehouse, shipwright, stables), and how vessels are drawn
+  townExtras() { return []; }
+  vesselArt(v, dir) { return this.ren.art.vessel(v && v.cls === "ship" ? "ship" : "boat", dir); }
   followPlan(cls) {
     const s = this.s, w = this.w, here = [s.c, s.r], cp = this.cpNext();
     if (!cp) return null;
@@ -387,7 +391,8 @@ AZ.Game = class {
       for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit the ${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
       for (const p of people) if (p.role !== "Notice board") opts.push({ label: `${p.role}${p.name ? `: ${U.esc(p.name)}` : ""}`, act: p });
       if (s.cond.fever || s.cond.gravely) opts.push({ label: `Ask the ${b.temple ? "priest" : "shrine-keeper"} to treat your fever (${this.healCost(b) ? "🟡 " + this.healCost(b) : "free"})`, act: "heal", disabled: s.purse < this.healCost(b) });
-      if (s.vessel && s.vessel.damaged && this.vesselHere(b)) opts.push({ label: `Have the boat repaired (🟡 ${P.repair(w, b)}, 12 h)`, act: "repair", disabled: s.purse < P.repair(w, b) });
+      opts.push(...this.townExtras(b));
+      if (s.vessel && s.vessel.damaged && this.vesselHere(b)) opts.push({ label: `Have the ${U.esc(s.vessel.kind.toLowerCase())} repaired (🟡 ${this.repairCost(b)}, ${this.repairHours()} h)`, act: "repair", disabled: s.purse < this.repairCost(b) });
       opts.push({ label: "Leave", act: "leave" });
       const k = await this.ui.choose(`<b>${U.esc(b.name)}</b> · ${AZ.Clock.fmt(s.clock)} · 🟡 ${U.rn(s.purse, 2)} · food ${s.sup.food} rations${this.voyageLine()}`, opts, { cancel: opts.length - 1 });
       const o = opts[k];
@@ -411,7 +416,8 @@ AZ.Game = class {
         await this.ui.say(`You give alms at the ${b.temple ? "temple" : "shrine"} of the ${U.esc(w.P.religions[w.C.religion[b.cell]].name)}.${out}${act ? ` <span class="hook">★ ${U.esc(act.label)}</span>` : ""}`); continue;
       }
       if (o.act === "heal") { const out = this.events.fx({ coin: -this.healCost(b), time: 6, cure: ["fever", "gravely"] }, `Treated for fever in ${U.esc(b.name)}.`); await this.ui.say(`Bitter tea, cool cloths and a long prayer. By evening the fever breaks.${out}`); continue; }
-      if (o.act === "repair") { const out = this.events.fx({ coin: -P.repair(w, b), time: 12, cure: ["damaged"] }, `Repairs in ${U.esc(b.name)}.`); await this.ui.say(`Shipwrights work through the day.${out}`); continue; }
+      if (o.act === "repair") { const out = this.events.fx({ coin: -this.repairCost(b), time: this.repairHours(), cure: ["damaged"] }, `Repairs in ${U.esc(b.name)}.`); await this.ui.say(`Shipwrights work on the hull.${out}`); continue; }
+      if (o.act && o.act.extra) { await o.act.extra(); if (s.aboard) break; continue; }
       if (o.act && o.act.go) { await o.act.go(); if (s.aboard) break; continue; }
       const p = o.act;
       if (p.cost && !charged.has(p.role)) { charged.add(p.role); const h = p.cost(); if (h) s.clock += h; }
@@ -469,9 +475,9 @@ AZ.Game = class {
     const frame = this.anim ? 1 + (Math.floor(now / 120) % 2) : 0;
     const sprites = [];
     if (this.sim) for (const r of this.sim.regs) if (r.a > 200 && Math.abs(r.t[0] - s.c) < 45 && Math.abs(r.t[1] - s.r) < 28) sprites.push({ img: this.ren.art.unit({ state: r.state, naval: false }), c: r.t[0], r: r.t[1] });
-    if (s.vessel && !(s.aboard && !this.riding())) sprites.push({ img: this.ren.art.vessel(s.vessel.cls === "ship" ? "ship" : "boat", "left"), c: s.vessel.c, r: s.vessel.r });
+    if (s.vessel && !(s.aboard && !this.riding())) sprites.push({ img: this.vesselArt(s.vessel, "left"), c: s.vessel.c, r: s.vessel.r });
     if (s.voyage && !this.riding() && s.voyage.state === "port" && s.voyage.at) sprites.push({ img: this.ren.art.vessel(s.voyage.mode === "land" ? "wagon" : "ship", "left"), c: s.voyage.at[0], r: s.voyage.at[1] });
-    const me = this.riding() && s.voyage.mode === "land" ? this.ren.art.vessel("wagon", s.dir === "left" ? "left" : "right") : s.aboard ? this.ren.art.vessel(this.riding() ? "ship" : s.vessel?.cls === "ship" ? "ship" : "boat", s.dir === "left" ? "left" : "right")
+    const me = this.riding() && s.voyage.mode === "land" ? this.ren.art.vessel("wagon", s.dir === "left" ? "left" : "right") : s.aboard ? (this.riding() ? this.ren.art.vessel("ship", s.dir === "left" ? "left" : "right") : this.vesselArt(s.vessel, s.dir === "left" ? "left" : "right"))
       : this.ren.art.walker(s.dir, frame, this.tv.pal);
     sprites.push({ img: me, c: cx, r: cy });
     const cp = this.cpNext(), leg = cp && cp.legIn;
