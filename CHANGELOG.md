@@ -1,8 +1,8 @@
 # Changelog
 
-## Alpha 5.1: the story, hidden
+## Alpha 5.1: the story engine refined
 
-The narrative engine now works out of sight, through people, places and objectives. The design is in
+The narrative engine works out of sight, through people, places and objectives. The design is in
 `docs/NARRATIVE.md`.
 
 **Who you are.** Every traveller comes with a tie to the journey (kin, a contract, a custom of your
