@@ -72,7 +72,7 @@
     this.s.priceBook[M.i] = { t: this.s.clock, at: b.name, ration: AZ.Prices.ration(this.w, b), rations: f.rations, season: this.sim.season(b) };
   };
   // ---------------------------------------------------------------- harbour and coach office
-  G.fareFor = function (L, b) { const w = this.w; const A = w.P.burgs[L.from], B = w.P.burgs[L.to]; const miles = L.mode === "sea" ? Math.hypot(B.t[0] - A.t[0], B.t[1] - A.t[1]) * w.miles * 1.15 : L.miles; return L.mode === "sea" ? AZ.Prices.fare(w, b, miles) : U.rn(Math.max(0.5, miles * 0.006) * (1 + AZ.Prices.tax(w, b)), 2); };
+  G.fareFor = function (L, b) { const w = this.w; const A = w.P.burgs[L.from], B = w.P.burgs[L.to]; const miles = L.mode === "sea" ? Math.hypot(B.t[0] - A.t[0], B.t[1] - A.t[1]) * w.miles * 1.15 : L.miles; return L.mode === "sea" ? AZ.Prices.fare(w, b, miles) : AZ.money ? AZ.money("coach", b, miles) : U.rn(Math.max(0.5, miles * 0.006) * (1 + AZ.Prices.tax(w, b)), 2); };
   G.harbour = async function (b) {
     if (!this.sim) return harbour0.call(this, b);
     const s = this.s, w = this.w, P = AZ.Prices, sim = this.sim;
@@ -194,7 +194,7 @@
       const enemy = war.a === st ? war.d : war.a;
       const reg = sim.regs.filter(r => r.state === enemy && r.a > 200).map(r => ({ r, d: Math.hypot(r.t[0] - b.t[0], r.t[1] - b.t[1]) })).filter(o => o.d > 3 && o.d < 160).sort((x, y) => x.d - y.d)[0];
       if (!reg) continue;
-      const mi = Math.round(reg.d * w.miles), pay = U.rn(2 + mi * 0.006, 2);
+      const mi = Math.round(reg.d * w.miles), pay = AZ.money ? AZ.money("dispatch", b, mi) : U.rn(2 + mi * 0.006, 2);
       out.push({ title: `Eyes on the ${reg.r.name}`, pay, cost: 0, why: `${P.states[st].name} is at war with ${P.states[enemy].name} (the ${war.name}) ${AZ.T("data")}. The watch's last word puts the ${reg.r.name} ${this.know.dirDist(b.t[0], b.t[1], reg.r.t).txt}; armies move, and news is slow.`,
         dist: mi, deadline: s.clock + (Math.ceil((mi * 2) / 40) + 6) * 24, giver: b.i,
         steps: [{ text: `Find the ${reg.r.name} and count them (within two tiles)`, goal: { observe: reg.r.id } }, { text: `Report to the watch in ${b.name}`, goal: { burg: b.i, role: "Captain of the watch" }, reward: { coin: pay, stand: [["s", st, 2]] } }] });

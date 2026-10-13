@@ -32,7 +32,7 @@ what you cannot carry can be stored for a deposit and a weekly fee.
 
 *Control table: who decides aboard. Worked example: a hired boat on the pilgrimage to Chelhazpo.*
 
-## Alpha 4: markets
+## Alpha 4: markets (released)
 
 Built on the economy the map already has: markets, which work like watersheds with a centre of
 gravity, and goods, spread over the land by Azgaar's spread functions and each cell's bonus good.
@@ -51,7 +51,8 @@ The economy that comes out of them is emergent; the game balances money.
 5. **Season and events:** harvests, famine, plague, war, sieges and closed lines in prices.
 6. **Your own trading**, felt in the town first and its neighbours later.
 7. **Starting money** from the plan's cost, who the traveller is, and how prosperous their home is.
-8. **Funding a long journey:** a company purse, a patron's writ, credit.
+8. **Funding a long journey:** a company purse, a patron's writ, credit. Waiting for a later
+   version; the money table already has their rows.
 
 *Control tables: what moves a price; what costs and what pays. Worked examples: four towns on
 Pyeongak; the mine, the boat, and a stranded start.*

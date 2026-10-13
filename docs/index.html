@@ -2316,7 +2316,7 @@ AZ.travellerKinds = function (w, jr) {
     blurb: `Born to the ${relName(dRel)} in ${P.states[dB.state]?.name}; going home.`,
     trades: ["deckhand", "clerk of a trading house", "released hostage of an old treaty", "journeyman scribe", "widowed net-mender"],
     why: h => `born to the ${relName(dRel)} among the ${P.cultures[dCul].name} of ${P.states[h.state]?.name || "the far shore"}, you are going home to make the pilgrimage you were promised as a child`,
-    thread: h => (h !== dB ? { title: `Home to ${h.name}`, steps: [{ text: `Visit your family in ${h.name}`, goal: { burg: h.i, role: "Townsfolk" }, reward: { coin: 5, stand: [["f", dRel, 1]] } }] }
+    thread: h => (h !== dB ? { title: `Home to ${h.name}`, steps: [{ text: `Visit your family in ${h.name}`, goal: { burg: h.i, role: "Townsfolk" }, reward: { coin: AZ.coin(5), stand: [["f", dRel, 1]] } }] }
       : { title: "A promise kept", steps: [{ text: `Pray at the temple of ${dB.name}`, goal: { burg: dB.i, role: "Priest" }, reward: { stand: [["f", dRel, 2]] } }] }), purse: 12 });
   if (dRel !== oRel) kinds.push({ id: "convert", label: `${P.cultures[oCul].name} convert`, wt: 3.5, culture: oCul, faith: dRel, homes: [oB], family: oRel,
     blurb: `Raised in the ${relName(oRel)} of ${oB.name}; took the ${relName(dRel)} as an adult.`,
@@ -2340,7 +2340,7 @@ AZ.travellerKinds = function (w, jr) {
       blurb: `On leave from the ${war.name} (since ${war.start}).`,
       trades: ["archer", "cavalry groom", "sapper", "quartermaster's clerk", "infantry sergeant"],
       why: () => `you serve ${S.fullName} in the ${war.name}, which began in ${war.start}; your leave is a pilgrimage, or so your papers say`,
-      thread: () => (regs.length ? { title: "Papers to sign", steps: [{ text: `Report to the ${regs[0].name}`, goal: { unit: `${st}:${regs[0].i}` }, reward: { coin: 5, stand: [["s", st, 1]] } }] } : null), purse: 15 });
+      thread: () => (regs.length ? { title: "Papers to sign", steps: [{ text: `Report to the ${regs[0].name}`, goal: { unit: `${st}:${regs[0].i}` }, reward: { coin: AZ.coin(5), stand: [["s", st, 1]] } }] } : null), purse: 15 });
   }
   if (oB.state && dB.state && oB.state !== dB.state) {
     const rel = P.states[oB.state].diplomacy?.[dB.state] || "Unknown";
@@ -2348,7 +2348,7 @@ AZ.travellerKinds = function (w, jr) {
       blurb: `Letters for ${P.states[dB.state].name}; the two stand as “${rel}”.`,
       trades: ["junior envoy", "herald", "secretary to the chancery"],
       why: () => `you carry sealed letters from ${P.states[oB.state].fullName} to ${P.states[dB.state].fullName}, which it regards as “${rel}”; pilgrimage is your cover and your comfort`,
-      thread: () => ({ title: "Sealed letters", steps: [{ text: `Present the letters to the watch in ${dB.name}`, goal: { burg: dB.i, role: "Captain of the watch" }, reward: { coin: 10, stand: [["s", dB.state, 2]] } }] }), purse: 30 });
+      thread: () => ({ title: "Sealed letters", steps: [{ text: `Present the letters to the watch in ${dB.name}`, goal: { burg: dB.i, role: "Captain of the watch" }, reward: { coin: AZ.coin(10), stand: [["s", dB.state, 2]] } }] }), purse: 30 });
   }
   const sells = P.trade.sell[oB.i] || {}, buys = P.trade.buy[dB.i] || {};
   const portable = g => { const x = P.goods.find(y => y.i === +g); return x && !/ship|boat|house|building/i.test(x.name); };
@@ -2379,7 +2379,7 @@ AZ.travellerKinds = function (w, jr) {
       why: () => `the ${lib.name} sent you to copy the rites of the ${relName(dRel)}; you will be expected to bring back more than that`,
       thread: () => (stat ? { title: "An inscription no one can read", steps: [
         { text: `Copy the inscription on the ${stat.name}`, goal: { marker: stat.i }, reward: { flag: "inscription" } },
-        { text: `Bring the copy to the ${lib.name}`, goal: { marker: lib.i }, reward: { coin: 8, reveal: 160 } }] } : null), purse: 10 });
+        { text: `Bring the copy to the ${lib.name}`, goal: { marker: lib.i }, reward: { coin: AZ.coin(8), reveal: 160 } }] } : null), purse: 10 });
   }
   for (const z of P.zones) {
     if (!/Disease|Disaster|Tsunami|Flood|Invasion|Rebels|Eruption/.test(z.type)) continue;
@@ -2424,7 +2424,7 @@ AZ.makeTraveller = function (w, jr, seed, kindId) {
   return {
     seed, kind: K.id, kindLabel: K.label, name, age, culture: K.culture, faith: K.faith, home: home?.i, homeState: K.homeState ?? home?.state ?? 0,
     trade: rnd.pick(K.trades || ["traveller"]), why: K.why ? K.why(home) : K.blurb, token: deity ? `a small icon of ${deity}` : "a pilgrim's token",
-    purse: Math.round(AZ.planCost(w, jr) * (K.purseF ?? ({ returning: 1, convert: 1, envoy: 1.5, factor: 1.2, scholar: 0.9 }[K.id] ?? (/^stranger/.test(K.id) ? 0.9 : /^soldier/.test(K.id) ? 0.8 : /^fugitive/.test(K.id) ? 0.45 : 1)))),
+    purse: Math.round((AZ.prosperity ? Math.sqrt(AZ.prosperity(w, home)) : 1) * AZ.planCost(w, jr) * (K.purseF ?? ({ returning: 1, convert: 1, envoy: 1.5, factor: 1.2, scholar: 0.9 }[K.id] ?? (/^stranger/.test(K.id) ? 0.9 : /^soldier/.test(K.id) ? 0.8 : /^fugitive/.test(K.id) ? 0.45 : 1)))),
     thread: K.thread ? K.thread(home) : null, cargo: K.cargo ?? null, boat: !!K.boat, food: 3, kindId: K.id,
     pal: { cloak: U.css(cloak), cloakDark: U.css(U.shade(cloak, -0.35)), skin, belt: "rgb(150,110,60)" },
   };
@@ -2452,6 +2452,7 @@ AZ.Events = class {
     if (e.time) {
       s.clock += e.time; bits.push(`${AZ.Clock.span(e.time)} pass`);
       if (e.sleep) g.slept();
+      else if (e.rest) { /* sitting at a meal: the hours pass, and you rest */ }
       else if (e.time >= 20) { g.slept(); g.awakeTick(e.time - 20); }
       else g.awakeTick(e.time);
     }
@@ -2558,7 +2559,7 @@ AZ.MARKERS = (() => {
     const s = ev.s, dir = AZ.U.compass(m.t[0] - s.c, m.t[1] - s.r);
     await ev.scene(head, `${label} off to the ${dir}.`, [
       { label: "Steer wide (about 8 hours lost)", fx: { time: 8 }, text: "The master puts the helm over and keeps the danger hull-down until dark." },
-      { label: "Pay them off (🟡 8)", if: /pirate/.test(m.type), disabled: s.purse < 8, fx: { coin: -8, time: 1 }, text: "A boat comes over; coins go across; the black sails fall away." },
+      { label: `Pay them off (🟡 ${AZ.money("tollPirates")})`, if: /pirate/.test(m.type), disabled: s.purse < AZ.money("tollPirates"), fx: () => ({ coin: -AZ.money("tollPirates"), time: 1 }), text: "A boat comes over; coins go across; the black sails fall away." },
       { label: "Hold course", roll: { p: 0.55, ok: "Nothing comes of it. The crew talks of nothing else for a day.", okFx: null,
         bad: /pirate/.test(m.type) ? "They board at dusk and take what they like. The hull is holed in the struggle." : "Something huge rises under the bow. Timbers crack.", badFx: /pirate/.test(m.type) ? { coin: -Math.min(s.purse, 10), time: 12, cond: "damaged", flag: "boarded" } : { time: 6, cond: "damaged" } } }], `m${m.i}`);
   } });
@@ -2581,24 +2582,24 @@ AZ.MARKERS = (() => {
     inns: { run: async (ev, m, head) => {
       const s = ev.s, g = ev.g;
       await ev.scene(head, esc(m.note), [
-        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, null)})`, disabled: s.purse < AZ.Prices.inn(g.w, null), fx: () => ({ coin: -AZ.Prices.inn(g.w, null), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), sleep: true, cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
-        { label: "Just a meal (🟡 1)", disabled: s.purse < 1, fx: { coin: -1, time: 1 }, text: "The food is as good as they say." },
+        { label: `Take a room until morning (🟡 ${AZ.Prices.inn(g.w, g.townNear())})`, disabled: s.purse < AZ.Prices.inn(g.w, g.townNear()), fx: () => ({ coin: -AZ.Prices.inn(g.w, g.townNear()), time: Math.max(1, AZ.Clock.nextDawn(s.clock, g.lat()) - s.clock), sleep: true, cure: ["hurt"] }), text: () => "You sleep under a roof. Over supper: " + (g.know.rumour(m.t[0], m.t[1], ev.rnd(`inn${m.i}:${Math.floor(s.clock / 24)}`), g) || "nothing worth repeating.") },
+        { label: `Just a meal (🟡 ${AZ.money("meal")})`, disabled: s.purse < AZ.money("meal"), fx: () => ({ coin: -AZ.money("meal"), time: 1, rest: true }), text: "The food is as good as they say, and the hour at the table is a rest." },
         { label: "Move on", fx: null, text: "" }], `m${m.i}`);
     } },
     "hot-springs": { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Bathe (3 h)", fx: { time: 3, cure: ["fever", "gravely", "hurt"] }, text: "The heat goes into your bones and takes the ache with it." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     "water-sources": { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Drink, and fill a flask (2 h)", fx: { time: 2, cure: ["fever", "gravely"], flag: "flask" }, text: "Cold, clean water. You fill a flask for the road; it may help later." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    "sacred-forests": { run: async (ev, m, head) => { const r = ev.relByName(m.note); return ev.scene(head, esc(m.note), [{ label: "Leave an offering (🟡 2)", disabled: ev.s.purse < 2, fx: r ? { coin: -2, time: 1, stand: [["f", r.i, 1]] } : { coin: -2 }, text: `You leave something at the oldest tree${r ? ` for the ${esc(r.name)}` : ""}.` }, { label: "Pass through quietly", fx: { time: 1 }, text: "" }], `m${m.i}`); } },
+    "sacred-forests": { run: async (ev, m, head) => { const r = ev.relByName(m.note); return ev.scene(head, esc(m.note), [{ label: `Leave an offering (🟡 ${AZ.money("offering")})`, disabled: ev.s.purse < AZ.money("offering"), fx: r ? { coin: -AZ.money("offering"), time: 1, stand: [["f", r.i, 1]] } : { coin: -AZ.money("offering") }, text: `You leave something at the oldest tree${r ? ` for the ${esc(r.name)}` : ""}.` }, { label: "Pass through quietly", fx: { time: 1 }, text: "" }], `m${m.i}`); } },
     statues: { run: async (ev, m, head) => ev.scene(head, esc(m.note.split("\n")[0]), [{ label: "Copy the inscription (2 h)", fx: { time: 2, flag: "inscription" }, text: "You copy every mark as well as you can. Someone, somewhere, may read it." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     libraries: { run: async (ev, m, head) => {
       const s = ev.s;
       await ev.scene(head, esc(m.note), [
-        { label: "Read in the stacks (12 h, 🟡 2 to the copyists)", disabled: s.purse < 2, fx: { time: 12, coin: -2, reveal: 160 }, text: "Old charts and travellers' letters: you note every marked place within a hundred and sixty leagues." },
-        { label: "Ask after the inscription you copied", if: !!s.flags.inscription, fx: { time: 4, unflag: "inscription", coin: 3 }, text: "An old archivist reads it aloud, slowly. It is a list of names, and one of them is a place on your route." },
+        { label: `Read in the stacks (12 h, 🟡 ${AZ.money("library")} to the copyists)`, disabled: s.purse < AZ.money("library"), fx: { time: 12, coin: -AZ.money("library"), reveal: 160 }, text: "Old charts and travellers' letters: you note every marked place within a hundred and sixty leagues." },
+        { label: "Ask after the inscription you copied", if: !!s.flags.inscription, fx: { time: 4, unflag: "inscription", coin: AZ.coin(3) }, text: "An old archivist reads it aloud, slowly. It is a list of names, and one of them is a place on your route." },
         { label: "Move on", fx: null, text: "" }], `m${m.i}`);
     } },
     battlefields: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Walk the field (4 h)", fx: { time: 4 }, text: "Rusted iron, a broken standard, too many small mounds." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    mines: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Work a shift for pay (12 h)", fx: { time: 12, coin: 4 }, text: "Hard work, honest pay, and dust in every seam of your clothes." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
-    circuses: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: "Spend an afternoon (4 h, 🟡 1)", disabled: ev.s.purse < 1, fx: { time: 4, coin: -1 }, text: () => "Lights, music, and the crowd's talk: " + (ev.g.know.rumour(m.t[0], m.t[1], ev.rnd(`c${m.i}`), ev.g) || "") }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
+    mines: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: `Work a shift for pay (12 h, about 🟡 ${AZ.money("mine", undefined, m)})`, fx: () => ({ time: 12, coin: AZ.money("mine", undefined, m) }), text: "Hard work, honest pay, and dust in every seam of your clothes." }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
+    circuses: { run: async (ev, m, head) => ev.scene(head, esc(m.note), [{ label: `Spend an afternoon (4 h, 🟡 ${AZ.money("circus")})`, disabled: ev.s.purse < AZ.money("circus"), fx: { time: 4, coin: -AZ.money("circus") }, text: () => "Lights, music, and the crowd's talk: " + (ev.g.know.rumour(m.t[0], m.t[1], ev.rnd(`c${m.i}`), ev.g) || "") }, { label: "Move on", fx: null, text: "" }], `m${m.i}`) },
     portals: { run: async (ev, m, head) => {
       const g = ev.g, s = ev.s, others = g.w.P.markers.filter(x => x.type === "portals" && x.i !== m.i);
       const k = await g.ui.choose(`${head}<br>${esc(m.note)}<br><span class="dim">Stepping through leaves your ${s.vessel ? esc(s.vessel.kind.toLowerCase()) : "baggage"} behind. You will have to come back the same way.</span>`,
@@ -2643,9 +2644,9 @@ AZ.ZONES = (() => {
       const enemy = rel === "Enemy" || rel === "Rival";
       return ev.scene(head, `${inv ? `Soldiers of ${esc(inv.fullName)}` : "An army"} hold this ground. Your people stand to theirs as: <b>${rel}</b> ${AZ.T("data")}.`, [
         { label: "Go round their pickets (about 8 hours)", fx: { time: 8 }, text: "You move by night and by the long way." },
-        { label: "Present yourself and your papers", fx: enemy ? { time: 12, coin: -Math.min(ev.s.purse, 4), stand: inv ? [["s", inv.i, -1]] : [] } : { time: 2 }, text: enemy ? "They hold you half a day and keep some of your coin for their trouble." : "Questions, a stamp, and a wave onward." }], `z${z.i}`);
+        { label: "Present yourself and your papers", fx: enemy ? { time: 12, coin: -Math.min(ev.s.purse, AZ.money("fine")), stand: inv ? [["s", inv.i, -1]] : [] } : { time: 2 }, text: enemy ? "They hold you half a day and keep some of your coin for their trouble." : "Questions, a stamp, and a wave onward." }], `z${z.i}`);
     },
-    Rebels: async (ev, z, head) => ev.scene(head, "Rebels have closed the roads and levy their own toll.", [{ label: "Pay the toll (🟡 4)", disabled: ev.s.purse < 4, fx: { coin: -4 }, text: "They give you a token to show at the next barricade." }, { label: "Go round (about 6 hours)", fx: { time: 6 }, text: "" }], `z${z.i}`),
+    Rebels: async (ev, z, head) => ev.scene(head, "Rebels have closed the roads and levy their own toll.", [{ label: `Pay the toll (🟡 ${AZ.money("tollRebels")})`, disabled: ev.s.purse < AZ.money("tollRebels"), fx: { coin: -AZ.money("tollRebels") }, text: "They give you a token to show at the next barricade." }, { label: "Go round (about 6 hours)", fx: { time: 6 }, text: "" }], `z${z.i}`),
     Proselytism: async (ev, z, head) => {
       const r = ev.relByName(z.name) || ev.w.P.religions.find(x => x && x.name.split(" ")[0] === z.name.split(" ")[0]);
       return ev.scene(head, `Missionaries${r ? ` of the ${esc(r.name)}` : ""} are working these parts, with bread for anyone who will listen.`, [
@@ -2655,7 +2656,7 @@ AZ.ZONES = (() => {
     Crusade: async (ev, z, head) => ev.scene(head, "Armed pilgrims and recruiters for a crusade crowd the way.", [{ label: "Join a prayer and move on (2 h)", fx: { time: 2 }, text: "No one asks what you believe, as long as you kneel." }, { label: "Avoid them (about 4 hours)", fx: { time: 4 }, text: "" }], `z${z.i}`),
     Disaster: async (ev, z, head) => {
       const cell = ev.w.cell(ev.s.c, ev.s.r), rel = ev.w.C.religion[cell];
-      return ev.scene(head, "Dearth: empty granaries, thin children, prices no one can pay.", [{ label: "Give alms (🟡 2)", disabled: ev.s.purse < 2, fx: { coin: -2, stand: rel ? [["f", rel, 1]] : [] }, text: "It is not much, and it is noticed." }, { label: "Pass by", fx: null, text: "" }], `z${z.i}`);
+      return ev.scene(head, "Dearth: empty granaries, thin children, prices no one can pay.", [{ label: `Give alms (🟡 ${AZ.money("offering")})`, disabled: ev.s.purse < AZ.money("offering"), fx: { coin: -AZ.money("offering"), stand: rel ? [["f", rel, 1]] : [] }, text: "It is not much, and it is noticed." }, { label: "Pass by", fx: null, text: "" }], `z${z.i}`);
     },
     Eruption: async (ev, z, head) => ev.scene(head, "Ash falls like grey snow; the sky glows red at night.", [{ label: ev.s.aboard ? "Stand out to sea (about 6 hours)" : "Cover your face and push on (about 10 hours)", fx: { time: ev.s.aboard ? 6 : 10 }, text: "" }, { label: "Shelter until it eases (a day)", fx: { time: 24 }, text: "" }], `z${z.i}`),
     Avalanche: blocked("The pass is buried under a slide of snow and rock.", 10),
@@ -3083,7 +3084,7 @@ Object.assign(AZ.Game.prototype, {
       if ((v.strikes || 0) > 0 && v.morale > 60) { v.calm = (v.calm || 0) + 1; if (v.calm >= 10) { v.strikes--; v.calm = 0; this.ui.toast("The crew's grievances fade. One strike forgiven."); } } else v.calm = 0;
     }
     if (v && v.crew && !this.withVessel()) this.crewAway(v);
-    if (s.voyage && s.voyage.role === "crew") s.voyage.earned = U.rn((s.voyage.earned || 0) + AZ.Prices.wage(this.w, null), 2);
+    if (s.voyage && s.voyage.role === "crew") s.voyage.earned = U.rn((s.voyage.earned || 0) + AZ.Prices.wage(this.w, this.townNear ? this.townNear() : null), 2);
     // fever runs its course unless treated: gravely ill on the third day, collapse on the sixth
     if (s.cond.fever || s.cond.gravely) {
       s.feverDays = (s.feverDays || 0) + 1;
@@ -3549,6 +3550,11 @@ Object.assign(AZ.Game.prototype, {
       this.log(`${U.esc(th.title)}: the consignment is gone.`, "side");
       return this.ui.say(`<b class="side">${U.esc(th.title)}</b>: there is nothing to deliver. ${s.flags.boarded ? "The pirates who boarded you took it" : "You sold some of it elsewhere"} ${AZ.T("mixed")}.`);
     }
+    if (st.needs === "goods" && ((s.goods || {})[st.g] || 0) < st.units) {
+      th.done = true; th.outcome = "failed";
+      this.log(`${U.esc(th.title)}: the goods are gone.`, "side");
+      return this.ui.say(`<b class="side">${U.esc(th.title)}</b>: the ${st.units} ${U.esc(this.know.good(st.g).toLowerCase())} are gone from your packs, and the merchant will not pay for promises ${AZ.T("mixed")}.`);
+    }
     if (st.risk && U.rnd2(th.id, th.phase, s.seed % 9973) < st.risk) {
       th.done = true; th.outcome = "caught";
       const out = this.events.fx({ time: 24, stand: st.riskStand || [] }, `${U.esc(th.title)}: caught.`);
@@ -3558,6 +3564,7 @@ Object.assign(AZ.Game.prototype, {
     let late = "";
     if (th.deadline && s.clock > th.deadline && reward) { if (reward.coin > 0) reward.coin = U.rn(reward.coin / 2, 1); delete reward.stand; late = " You are late: half the pay, and no thanks."; }
     if (st.needs === "cargo") { s.goods[this.tv.cargo] -= 4; delete s.flags.cargo; }
+    if (st.needs === "goods") s.goods[st.g] -= st.units;
     const out = this.events.fx(reward, `${U.esc(th.title)}: ${U.esc(st.text)}${where ? " (" + U.esc(where.name || "") + ")" : ""}.`);
     th.phase++;
     if (th.phase >= th.steps.length) { th.done = true; th.outcome = "done"; }
@@ -3605,10 +3612,10 @@ Object.assign(AZ.Game.prototype, {
       const dest = near(8, 160).find(x => (P.trade.buy[x.i] || {})[g]);
       if (!dest) continue;
       const here = AZ.Prices.goodPrice(w, b, g) || 1, there = AZ.Prices.goodPrice(w, dest, g) || here * 1.2, units = 4;
-      const cost = U.rn(here * units, 1), pay = U.rn(Math.max(there, here * 1.1) * units * 1.1 + mi(dest) * 0.003, 1);
+      const cost = U.rn(here * units, 1), pay = AZ.money ? AZ.money("delivery", b, { there: Math.max(there, here * 1.05), units, days: days(dest) }) : U.rn(Math.max(there, here * 1.1) * units * 1.1 + mi(dest) * 0.003, 1);
       out.push({ title: `${gname(g)} for ${dest.name}`, cost, pay, why: `${b.name} makes ${gname(g).toLowerCase()}; ${dest.name} buys it on its market ${T("data")}. You buy ${units} units here at ${U.rn(here, 2)} and sell there at about ${U.rn(there, 2)} ${T("data")}.`,
-        dist: mi(dest), deadline: s.clock + days(dest) * 24, giver: b.i,
-        steps: [{ text: `Deliver ${units} ${gname(g).toLowerCase()} to the merchant in ${dest.name}`, goal: { burg: dest.i, role: "Merchant" }, reward: { coin: pay } }] });
+        dist: mi(dest), deadline: s.clock + days(dest) * 24, giver: b.i, goods: { g: +g, units, each: U.rn(here, 2) },
+        steps: [{ text: `Deliver ${units} ${gname(g).toLowerCase()} to the merchant in ${dest.name}`, goal: { burg: dest.i, role: "Merchant" }, needs: "goods", g: +g, units, reward: { coin: pay } }] });
       break;
     }
     // relief for a town in a zone
@@ -3618,9 +3625,9 @@ Object.assign(AZ.Game.prototype, {
       if (!tb || tb === b) continue;
       const need = z.type === "Disease" ? P.goods.find(x => /salt/i.test(x.name)) : P.goods.find(x => /grain/i.test(x.name));
       const price = need ? AZ.Prices.goodPrice(w, b, need.i) || 1 : 1, cost = U.rn(price * 2, 1);
-      out.push({ title: `Relief for ${tb.name}`, cost, pay: U.rn(cost * 0.6 + 1, 1), why: `${tb.name} lies in the ${z.name} (${z.type.toLowerCase()}) ${T("data")}. The temple here gathers ${need ? need.name.toLowerCase() : "supplies"} for it.`,
+      out.push({ title: `Relief for ${tb.name}`, cost, pay: (AZ.money ? AZ.money("relief", b, cost) : U.rn(cost * 0.6 + 1, 1)), why: `${tb.name} lies in the ${z.name} (${z.type.toLowerCase()}) ${T("data")}. The temple here gathers ${need ? need.name.toLowerCase() : "supplies"} for it.`,
         dist: mi(tb), deadline: s.clock + days(tb) * 24, giver: b.i,
-        steps: [{ text: `Bring ${need ? need.name.toLowerCase() : "supplies"} to the priests of ${tb.name}`, goal: { burg: tb.i, role: "Priest" }, reward: { coin: U.rn(cost * 0.6 + 1, 1), stand: [["s", tb.state, 2], ["f", w.C.religion[tb.cell], 1]] } }] });
+        steps: [{ text: `Bring ${need ? need.name.toLowerCase() : "supplies"} to the priests of ${tb.name}`, goal: { burg: tb.i, role: "Priest" }, reward: { coin: (AZ.money ? AZ.money("relief", b, cost) : U.rn(cost * 0.6 + 1, 1)), stand: [["s", tb.state, 2], ["f", w.C.religion[tb.cell], 1]] } }] });
       break;
     }
     // letters along the state's friendships and enmities
@@ -3640,14 +3647,14 @@ Object.assign(AZ.Game.prototype, {
       // dispatches to the state's army in a war
       const war = (st.campaigns || []).find(c => c.end == null);
       const reg = war && P.military.filter(u => u.state === b.state && !u.naval).sort((a, c) => d(a) - d(c)).find(u => d(u) > 6 && d(u) < 300);
-      if (reg) out.push({ title: `Dispatches for the ${reg.name}`, pay: U.rn(1 + mi(reg) * 0.005, 1), cost: 0, why: `${st.name} is at war: the ${war.name}, since ${war.start} ${T("data")}. The ${reg.name} is ${this.know.dirDist(b.t[0], b.t[1], reg.t).txt} ${T("data")}.`,
-        dist: mi(reg), deadline: s.clock + days(reg) * 24, giver: b.i, steps: [{ text: `Carry dispatches to the ${reg.name}`, goal: { unit: `${reg.state}:${reg.i}` }, reward: { coin: U.rn(1 + mi(reg) * 0.005, 1), stand: [["s", b.state, 1]] } }] });
+      if (reg) out.push({ title: `Dispatches for the ${reg.name}`, pay: (AZ.money ? AZ.money("dispatch", b, mi(reg)) : U.rn(1 + mi(reg) * 0.005, 1)), cost: 0, why: `${st.name} is at war: the ${war.name}, since ${war.start} ${T("data")}. The ${reg.name} is ${this.know.dirDist(b.t[0], b.t[1], reg.t).txt} ${T("data")}.`,
+        dist: mi(reg), deadline: s.clock + days(reg) * 24, giver: b.i, steps: [{ text: `Carry dispatches to the ${reg.name}`, goal: { unit: `${reg.state}:${reg.i}` }, reward: { coin: (AZ.money ? AZ.money("dispatch", b, mi(reg)) : U.rn(1 + mi(reg) * 0.005, 1)), stand: [["s", b.state, 1]] } }] });
     }
     // strange places nearby
     const m = w.near(b.t[0], b.t[1], 80).filter(n => n.kind === "marker" && /monster|ruin|dungeon|necrop|burial|rift|cave|portal|statue/.test(n.o.type) && !s.done_m.includes(n.o.i)).sort(() => rnd() - 0.5)[0];
-    if (m) out.push({ title: `The truth about the ${m.o.name}`, pay: U.rn(1.5 + m.d * w.miles * 0.004, 1), cost: 0, why: `${b.name} wants to know what is at the ${m.o.name}, ${this.know.dirDist(b.t[0], b.t[1], m.o.t).txt} ${T("data")}.`,
+    if (m) out.push({ title: `The truth about the ${m.o.name}`, pay: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)), cost: 0, why: `${b.name} wants to know what is at the ${m.o.name}, ${this.know.dirDist(b.t[0], b.t[1], m.o.t).txt} ${T("data")}.`,
       dist: Math.round(m.d * w.miles), deadline: s.clock + (Math.ceil((m.d * w.miles * 2) / 30) + 6) * 24, giver: b.i,
-      steps: [{ text: `See the ${m.o.name} for yourself (walk there and press Space beside it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: U.rn(1.5 + m.d * w.miles * 0.004, 1) } }] });
+      steps: [{ text: `See the ${m.o.name} for yourself (walk there and press Space beside it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)) } }] });
     // an offering for the faith's seat
     const rel = P.religions[w.C.religion[b.cell]], seat = rel && P.burgs.find(x => x && x.cell === rel.center);
     if (seat && seat !== b && d(seat) < 300) out.push({ title: `An offering for ${seat.name}`, pay: 0, cost: 0, why: `${b.name} keeps the ${rel.name}; its seat is ${seat.name} ${T("data")}.`,
@@ -3665,10 +3672,19 @@ Object.assign(AZ.Game.prototype, {
       const k = await this.ui.choose(`<b>${U.esc(b.name)}: notice board</b> · 🟡 ${U.rn(s.purse, 1)}`, opts, { cancel: opts.length - 1 });
       const o = opts[k].o;
       if (!o) return;
-      const k2 = await this.ui.choose(`<b class="side">${U.esc(o.title)}</b><br>${o.why}<br>${U.esc(o.steps.map(x => x.text).join(", then "))}.`, [{ label: `Take it${o.cost ? ` (pay 🟡 ${o.cost} now)` : ""}` }, { label: "Leave it" }], { cancel: 1 });
+      const taken = s.threads.some(t => t.title === o.title && !t.done), full = o.goods && this.goodsCount() + o.goods.units > this.capacity().goods;
+      const k2 = await this.ui.choose(`<b class="side">${U.esc(o.title)}</b><br>${o.why}<br>${U.esc(o.steps.map(x => x.text).join(", then "))}.`, [{ label: taken ? "You are already doing this" : full ? `You cannot carry ${o.goods.units} more units of goods (${this.goodsCount()}/${this.capacity().goods})` : `Take it${o.cost ? ` (pay 🟡 ${o.cost} now${o.goods ? ` for ${o.goods.units} ${U.esc(this.know.good(o.goods.g).toLowerCase())}` : ""})` : ""}`, disabled: taken || full || s.purse < (o.cost || 0) }, { label: "Leave it" }], { cancel: 1 });
       if (k2 !== 0) continue;
       if (o.cost) s.purse = U.rn(s.purse - o.cost, 2);
+      if (o.goods) { // the errand's goods are bought now, and carried to the buyer
+        s.goods = s.goods || {}; s.basis = s.basis || {};
+        const n0 = s.goods[o.goods.g] || 0;
+        s.basis[o.goods.g] = U.rn(((s.basis[o.goods.g] || 0) * n0 + o.goods.each * o.goods.units) / (n0 + o.goods.units), 2);
+        s.goods[o.goods.g] = n0 + o.goods.units;
+        this.ui.toast(`🟡 −${o.cost}: ${o.goods.units} ${U.esc(this.know.good(o.goods.g).toLowerCase())} bought for the errand.`);
+      }
       this.startThread({ title: o.title, steps: o.steps, deadline: o.deadline, giver: o.giver, why: o.why });
+      this.dirty = true; this.afterStep();
     }
   },
   // ------------------------------------------------------------------ why the plan goes this way
@@ -4108,7 +4124,7 @@ Object.assign(AZ.Game.prototype, {
       { wt: paxRel === this.tv.faith ? 2 : 0.5, run: () => this.events.scene(`<b class="side">${U.esc(pax)}</b> keeps the ${U.esc(P.religions[paxRel]?.name || "old ways")}`, paxRel === this.tv.faith ? "You find you share a faith, and the evening prayers." : "They pray at dawn on the open deck and ask if you will join.",
         [{ label: "Pray with them", fx: { stand: [["f", paxRel, 1]] }, text: "It costs nothing, and someone remembers it." }, { label: "Keep to yourself", fx: null, text: "" }], `pray${day}`) },
       { wt: 1.5, run: () => this.events.scene("<b>Dice on the main deck</b>", `${U.esc(capCul.name)} sailors' rules ${T("data")}; nobody explains them twice.`,
-        [{ label: "Stake 🟡 1", disabled: s.purse < 1, roll: { p: 0.45, ok: "You win, to some grumbling.", okFx: { coin: 1 }, bad: "You lose, to some laughter.", badFx: { coin: -1 } } },
+        [{ label: `Stake 🟡 ${AZ.money("dice")}`, disabled: s.purse < AZ.money("dice"), roll: { p: 0.45, ok: "You win, to some grumbling.", okFx: { coin: AZ.money("dice") }, bad: "You lose, to some laughter.", badFx: { coin: -AZ.money("dice") } } },
          { label: "Stake 🟡 5", disabled: s.purse < 5, roll: { p: 0.45, ok: "You win, and the deck goes quiet.", okFx: { coin: 5 }, bad: "You lose. They are kinder about it than you expect.", badFx: { coin: -5 } } }, { label: "Watch", fx: null, text: "" }], `dice${day}`) },
       { wt: 1, run: () => this.events.scene("<b>Fever in the forecastle</b>", "Two of the crew are down with it, and the passengers sleep close.",
         [{ label: `Pay the surgeon for a draught (🟡 ${AZ.Prices.heal(w, home)})`, disabled: s.purse < AZ.Prices.heal(w, home), fx: { coin: -AZ.Prices.heal(w, home) }, text: "It tastes of iron and you stay well." },
@@ -4569,7 +4585,7 @@ function P_burg(w, i) { return w.P.burgs[i] || w.P.burgs.find(Boolean); }
     this.s.priceBook[M.i] = { t: this.s.clock, at: b.name, ration: AZ.Prices.ration(this.w, b), rations: f.rations, season: this.sim.season(b) };
   };
   // ---------------------------------------------------------------- harbour and coach office
-  G.fareFor = function (L, b) { const w = this.w; const A = w.P.burgs[L.from], B = w.P.burgs[L.to]; const miles = L.mode === "sea" ? Math.hypot(B.t[0] - A.t[0], B.t[1] - A.t[1]) * w.miles * 1.15 : L.miles; return L.mode === "sea" ? AZ.Prices.fare(w, b, miles) : U.rn(Math.max(0.5, miles * 0.006) * (1 + AZ.Prices.tax(w, b)), 2); };
+  G.fareFor = function (L, b) { const w = this.w; const A = w.P.burgs[L.from], B = w.P.burgs[L.to]; const miles = L.mode === "sea" ? Math.hypot(B.t[0] - A.t[0], B.t[1] - A.t[1]) * w.miles * 1.15 : L.miles; return L.mode === "sea" ? AZ.Prices.fare(w, b, miles) : AZ.money ? AZ.money("coach", b, miles) : U.rn(Math.max(0.5, miles * 0.006) * (1 + AZ.Prices.tax(w, b)), 2); };
   G.harbour = async function (b) {
     if (!this.sim) return harbour0.call(this, b);
     const s = this.s, w = this.w, P = AZ.Prices, sim = this.sim;
@@ -4691,7 +4707,7 @@ function P_burg(w, i) { return w.P.burgs[i] || w.P.burgs.find(Boolean); }
       const enemy = war.a === st ? war.d : war.a;
       const reg = sim.regs.filter(r => r.state === enemy && r.a > 200).map(r => ({ r, d: Math.hypot(r.t[0] - b.t[0], r.t[1] - b.t[1]) })).filter(o => o.d > 3 && o.d < 160).sort((x, y) => x.d - y.d)[0];
       if (!reg) continue;
-      const mi = Math.round(reg.d * w.miles), pay = U.rn(2 + mi * 0.006, 2);
+      const mi = Math.round(reg.d * w.miles), pay = AZ.money ? AZ.money("dispatch", b, mi) : U.rn(2 + mi * 0.006, 2);
       out.push({ title: `Eyes on the ${reg.r.name}`, pay, cost: 0, why: `${P.states[st].name} is at war with ${P.states[enemy].name} (the ${war.name}) ${AZ.T("data")}. The watch's last word puts the ${reg.r.name} ${this.know.dirDist(b.t[0], b.t[1], reg.r.t).txt}; armies move, and news is slow.`,
         dist: mi, deadline: s.clock + (Math.ceil((mi * 2) / 40) + 6) * 24, giver: b.i,
         steps: [{ text: `Find the ${reg.r.name} and count them (within two tiles)`, goal: { observe: reg.r.id } }, { text: `Report to the watch in ${b.name}`, goal: { burg: b.i, role: "Captain of the watch" }, reward: { coin: pay, stand: [["s", st, 2]] } }] });
@@ -4820,7 +4836,7 @@ AZ.TRAITS = {
     } else tv = make0(w, jr, seed, kindId);
     // variety: purse and one trait, seeded with the traveller
     const r2 = U.rng(`${seed}:trait`);
-    tv.purse = Math.max(5, Math.round(tv.purse * (0.6 + 0.8 * r2())));
+    tv.purse = Math.max(5, Math.round(tv.purse * (0.75 + 0.5 * r2()))); // Alpha 4: chance moves the purse a quarter either way
     const pool = Object.keys(AZ.TRAITS);
     tv.trait = /deck|net|fish|cook|shipmaster|skipper|steersman/i.test(tv.trade) ? "sea legs" : /soldier|archer|sergeant|scout|raider|mercenary/i.test(tv.kindLabel + tv.trade) && r2() < 0.5 ? "hardy" : pool[Math.floor(r2() * pool.length)];
     return tv;
@@ -5181,7 +5197,7 @@ AZ.TRAITS = {
   AZ.MARKERS.portals = { run: async (ev, m, head) => {
     const g = ev.g, s = ev.s, w = g.w, others = w.P.markers.filter(x => x.type === "portals" && x.i !== m.i);
     const town = w.near(m.t[0], m.t[1], 4).find(n => n.kind === "burg")?.o;
-    const fee = U.rn(1 + (town ? town.population * 0.15 : 0) + (town && w.P.cultures[town.culture]?.type === "Naval" ? 1 : 0), 2);
+    const fee = AZ.money ? AZ.money("portal", town || null) : U.rn(1 + (town ? town.population * 0.15 : 0), 2);
     const k = await g.ui.choose(`${head}<br>${U.esc(m.note)}<br><span class="dim">The keepers${town ? ` of ${U.esc(town.name)}` : ""} ask 🟡 ${fee} ${T("mixed")}. Whatever you carry goes with you; your ${s.vessel ? U.esc(s.vessel.kind.toLowerCase()) : "baggage train"} stays. Not every crossing goes as planned.</span>`,
       [...others.map(o => ({ label: `Step through to the ${U.esc(o.name)} (${U.num(g.know.dirDist(s.c, s.r, o.t).mi)} mi)`, disabled: s.purse < fee })), { label: "Stay on this side" }], { cancel: others.length });
     if (k >= others.length) return;
@@ -5275,7 +5291,7 @@ AZ.whyDest = function (w, jr) {
     const s = this.s, w = this.w, jr = this.jr, d = jr.dest.burg;
     const m = d && w.near(d.t[0], d.t[1], 40).find(n => n.kind === "marker" && /monster/.test(n.o.type));
     const target = m ? m.o.name : jr.J.name.replace(/^the /i, "");
-    const st = w.P.states[b.state], advance = U.rn(Math.min(60, 5 + (b.population || 1) * 0.6), 2);
+    const st = w.P.states[b.state], advance = AZ.money ? AZ.money("bounty", b) : U.rn(Math.min(60, 5 + (b.population || 1) * 0.6), 2);
     this.doAct("bounty");
     s.purse = U.rn(s.purse + advance, 2);
     this.log(`Signed the bounty in ${U.esc(b.name)}: an advance of 🟡 ${advance}.`, "hook");
@@ -5763,7 +5779,7 @@ AZ.whyDest = function (w, jr) {
   };
   G.newVessel = function (vc, mode, b, crew) {
     const w = this.w, C = AZ.VCLASS[vc], P = AZ.Prices, h = w.harbour(b, C.nav).t, tr = this.transportFor(vc), loc = this.realise(vc, b);
-    return { mode, vc, cls: C.nav, kind: loc.kind, speed: tr.speed, hpd: tr.hpd, crew, morale: 70, c: h[0], r: h[1], wage: P.wage(w, b), hire: mode === "hired" ? U.rn(P.hire(w, b) * C.hire, 2) : 0, home: b.i, colour: w.P.cultures[b.culture]?.color || null, hold: { food: 0, goods: {} } };
+    return { mode, vc, cls: C.nav, kind: loc.kind, speed: tr.speed, hpd: tr.hpd, crew, morale: 70, c: h[0], r: h[1], wage: P.wage(w, b), hire: mode === "hired" ? U.rn(this.vesselPrice(vc, b) / 365, 2) : 0, home: b.i, colour: w.P.cultures[b.culture]?.color || null, hold: { food: 0, goods: {} } };
   };
   // vessels from saves and from the plan's own legs take a class where they lie
   G.classify = function (v) {
@@ -5986,6 +6002,7 @@ AZ.whyDest = function (w, jr) {
   };
 
   // ------------------------------------------------------------------ the shipwright
+  G.vesselPrice = function (vc, b) { return U.rn(AZ.Prices.hire(this.w, b) * (AZ.VCLASS[vc] || AZ.VCLASS.boat).buy, 2); }; // Alpha 4 prices her from her materials
   G.sellPrice = function (v, b) { const C = AZ.VCLASS[v.vc] || AZ.VCLASS.boat; return U.rn(AZ.Prices.hire(this.w, b) * C.buy * 0.6 * (v.damaged ? 0.5 : 1), 2); };
   G.repairCost = function (b) { const v = this.s.vessel, C = (v && AZ.VCLASS[v.vc]) || AZ.VCLASS.boat; return U.rn(AZ.Prices.repair(this.w, b) * C.repair[0], 2); };
   G.repairHours = function () { const v = this.s.vessel, C = (v && AZ.VCLASS[v.vc]) || AZ.VCLASS.boat; return C.repair[1]; };
@@ -5995,7 +6012,7 @@ AZ.whyDest = function (w, jr) {
       const opts = [], v = s.vessel, here = v && this.vesselHere(b), wage = P.wage(w, b), hire = P.hire(w, b), list = this.yardClasses(b);
       if (!v) for (const vc of list) {
         const C = AZ.VCLASS[vc], loc = this.realise(vc, b), tag = `${U.esc(loc.kind.toLowerCase())}${loc.kind.toLowerCase() === C.name ? "" : ` (${C.name})`}`;
-        const day = U.rn(hire * C.hire + C.crew * wage, 2), price = U.rn(hire * C.buy, 2);
+        const price = this.vesselPrice(vc, b), day = U.rn(price / 365 + C.crew * wage, 2);
         if (C.crew) opts.push({ label: `Hire a ${tag} with ${C.crew} hands: 🟡 ${day} a day, three days now; she holds ${C.hold.food} rations`, act: "hire", vc, first: U.rn(3 * day, 2), disabled: s.purse < 3 * day });
         opts.push({ label: `Buy a ${tag}: 🟡 ${price}; ${C.hands[0] ? `she needs ${C.hands[0]} hands or more` : "you row her yourself"}`, act: "buy", vc, price, disabled: s.purse < price });
       }
@@ -6222,6 +6239,322 @@ AZ.whyDest = function (w, jr) {
     const lots = Object.entries(s.stores || {});
     if (lots.length) h += `<h3>Stored</h3><ul>${lots.map(([bi, S]) => { const b = w.P.burgs[bi]; return `<li>${U.esc(b.name)}: ${U.esc(this.storeDesc(S.lots))} · 🟡 ${this.storeDue(b)} due</li>`; }).join("")}</ul>`;
     if (R) h += `<h3>Who decides aboard: ${R.label}</h3><table>${AZ.CONTROL_COLS.map(([k, l]) => `<tr><td class="dim">${l}</td><td>${U.esc(R.text[k])}</td></tr>`).join("")}</table>`;
+    return h;
+  };
+})();
+
+// =============================================================================================
+// 21_markets.js · Alpha 4: markets.
+//   Built on the economy the map already has: markets (watersheds with a centre of gravity and a
+//   price for each good) and goods (spread over the land; each cell may hold a bonus good).
+//   The field: a town's price for a good blends the markets around it, each pulling with a weight
+//   that falls with distance from its centre, and the town's own voice. Season, events and your
+//   own trading act on top. Two local measures come out of the field: R, a day's food, and W, a
+//   day's work, calibrated so the world's median town keeps Alpha 3's prices. The money table
+//   writes every cost and payment in the game in R and W, and AZ.Prices reads it.
+// =============================================================================================
+(() => {
+  const G = AZ.Game.prototype, U = AZ.U, T = AZ.T;
+  const P3 = { ...AZ.Prices }; // Alpha 3's rules: kept for calibration and comparison
+  const med = a => { const s = a.filter(x => x != null && isFinite(x)).sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+
+  // ------------------------------------------------------------------ the field
+  AZ.Field = class {
+    constructor(w) {
+      const P = w.P;
+      this.w = w;
+      this.mk = P.markets.filter(m => m && m.centerBurgId != null && P.burgs[m.centerBurgId] && m.goods);
+      this.byId = new Map(this.mk.map(m => [m.i, m]));
+      const n = new Map(), pop = new Map();
+      for (const b of P.burgs) if (b && this.byId.has(b.market)) { n.set(b.market, (n.get(b.market) || 0) + 1); pop.set(b.market, (pop.get(b.market) || 0) + (b.population || 0)); }
+      const mean = [...n.values()].reduce((a, x) => a + x, 0) / Math.max(1, n.size);
+      this.size = new Map(this.mk.map(m => [m.i, Math.sqrt((n.get(m.i) || 1) / mean)]));
+      this.mpop = pop;
+      this.food = new Set(P.goods.filter(g => (g.tags || []).includes("food")).map(g => g.i));
+      this.goods = new Map(P.goods.map(g => [g.i, g]));
+      this.cache = new Map();
+      // the reach of a market follows how far apart the world's markets lie: about two-thirds of the
+      // median distance from a centre to its nearest neighbour (400 effective miles on Pyeongak)
+      const cs = this.mk.map(m => P.burgs[m.centerBurgId]);
+      this.T = Math.max(60, 0.64 * (med(cs.map(c => Math.min(...cs.filter(x => x !== c).map(x => this.eff(c, x))))) || 530));
+      this.calibrate();
+    }
+    access(b) { const B = this.w.bits(b.t[0], b.t[1]); return B.road ? 0.8 : B.trail ? 1 : 1.3; }
+    // effective miles: two ports are close by sea; a road shortens the way; open country lengthens it
+    eff(b, c) { if (b === c) return 0; const mi = Math.hypot(b.t[0] - c.t[0], b.t[1] - c.t[1]) * this.w.miles; return mi * (b.port && c.port ? 0.6 : Math.max(this.access(b), this.access(c))); }
+    pulls(b) {
+      let F = this.cache.get(b.i);
+      if (F) return F;
+      const P = this.w.P, home = this.byId.get(b.market) || null;
+      const list = this.mk.map(m => { const c = P.burgs[m.centerBurgId], d = this.eff(b, c); return { m, c, d, p: this.size.get(m.i) * Math.exp(-((d / this.T) ** 2)) }; }).filter(x => x.p > 0.002).sort((a, c) => c.p - a.p);
+      const dHome = home ? this.eff(b, P.burgs[home.centerBurgId]) : 800;
+      F = { home, list, dHome, sum: list.reduce((a, x) => a + x.p, 0) };
+      this.cache.set(b.i, F);
+      return F;
+    }
+    made(b, gid) { return ((b.production || {})[gid] || 0) > 0 || this.w.C.good[b.cell] === +gid; }
+    // the field price before season, events, tax and trading
+    base(b, gid) {
+      gid = +gid;
+      const F = this.pulls(b), made = this.made(b, gid);
+      let v = 0, k = 0;
+      for (const x of F.list) { const q = x.m.goods[gid]; if (q && q[1] > 0) { v += x.p * q[1]; k += x.p; } }
+      if (!k && !made) return null;
+      const ph = (F.home && F.home.goods[gid]?.[1]) || (k ? v / k : this.goods.get(gid)?.value || 1);
+      const local = ph * (made ? 0.7 : Math.min(2, 1 + (0.1 * F.dHome) / 100)), L = 0.15 * (made ? 3 : 1);
+      return (v + L * local) / (k + L);
+    }
+    // where a price comes from: each market's share and the town's own
+    shares(b, gid) {
+      const F = this.pulls(b), made = this.made(b, gid), L = 0.15 * (made ? 3 : 1);
+      const has = F.list.filter(x => x.m.goods[gid]?.[1] > 0), tot = has.reduce((a, x) => a + x.p, 0) + L;
+      return { markets: has.map(x => ({ name: x.c.name, m: x.m.i, share: x.p / tot, stock: x.m.goods[gid][0] || 0 })), own: L / tot, made };
+    }
+    available(b, gid) { const S = this.shares(b, gid); return S.made || S.markets.filter(x => x.stock > 0).reduce((a, x) => a + x.share, 0) >= 0.25; }
+    basket(b) { const ps = [...this.food].map(g => this.base(b, g)).filter(p => p > 0).sort((a, c) => a - c).slice(0, 3); return ps.length ? ps.reduce((a, p) => a + p, 0) / ps.length : 1; }
+    tax(b) { return P3.tax(this.w, b); }
+    // R and W are set once per world so that the median town keeps Alpha 3's ration and wage
+    calibrate() {
+      const w = this.w, burgs = w.P.burgs.filter(b => b && this.byId.has(b.market));
+      const r3 = burgs.map(b => Math.max(0.05, P3.food(w, b) * 0.1)), w3 = burgs.map(b => P3.wage(w, b));
+      this.kR = med(r3) / Math.max(1e-6, med(burgs.map(b => this.basket(b) * (1 + this.tax(b)))));
+      this.cW = med(w3) / Math.max(1e-6, med(r3));
+      this.r0 = new Map(burgs.map(b => [b.i, this.kR * this.basket(b) * (1 + this.tax(b))]));
+      this.medR = med([...this.r0.values()]) || 0.07; this.medW = this.cW * this.medR || 0.17;
+      const ppk = b => (b.product || 0) / Math.max(0.1, b.population || 0.1);
+      this.medP = med(burgs.map(ppk)) || 1; this.ppk = ppk;
+    }
+    R0(b) { if (!b) return this.medR; let r = this.r0.get(b.i); if (r == null) { r = this.kR * this.basket(b) * (1 + this.tax(b)); this.r0.set(b.i, r); } return r; }
+    W(b) { return b ? this.cW * this.R0(b) : this.medW; }
+    prosperity(b) { return b ? U.clamp(this.ppk(b) / this.medP, 0.5, 2) : 1; }
+  };
+  AZ.fieldOf = w => w._field || (w._field = new AZ.Field(w));
+  AZ.prosperity = (w, b) => AZ.fieldOf(w).prosperity(b);
+
+  // ------------------------------------------------------------------ season, events and your own trading
+  const SEASON_FOOD = { autumn: 0.9, winter: 1.05, spring: 1.15, summer: 1 };
+  G.eventsAt = function (b) {
+    const day = Math.floor(this.s.clock / 24), key = `${b.i}:${day}`;
+    this._ev = this._ev && this._ev.day === day ? this._ev : { day, m: new Map() };
+    if (this._ev.m.has(key)) return this._ev.m.get(key);
+    const sim = this.sim, w = this.w, E = { famine: false, disease: false, disaster: false, war: false, siege: false, occupied: false, closed: false };
+    for (const z of sim ? sim.zonesOfCell(b.cell) : w.zonesOfCell(b.cell)) {
+      if (/dearth|famine/i.test(`${z.name} ${z.key || ""}`)) E.famine = true;
+      else if (/Disease/.test(z.type)) E.disease = true;
+      else if (/Disaster|Eruption|Flood|Avalanche|Tsunami|Fault/.test(z.type)) E.disaster = true;
+    }
+    if (sim) {
+      const st = sim.stateOf(b);
+      E.war = sim.wars.some(x => !x.over && (x.a === st || x.d === st));
+      E.siege = sim.regs.some(r => r.target === b.i && r.wait > 0);
+      E.occupied = sim.occupied[b.i] != null;
+      E.closed = sim.lines.some(L => (L.from === b.i || L.to === b.i) && !sim.lineStatus(L).ok);
+    }
+    this._ev.m.set(key, E);
+    return E;
+  };
+  G.priceF = function (b, gid) {
+    const s = this.s, w = this.w, g = w.P.goods.find(x => x.i === +gid) || {}, tags = g.tags || [], food = tags.includes("food");
+    let f = 1;
+    if (food) f *= SEASON_FOOD[AZ.Clock.season(w.latlon(b.t[0], b.t[1])[0], s.clock)] || 1;
+    const E = this.eventsAt(b);
+    if (E.famine && food) f *= 1.6;
+    if (E.disease && /salt|soap|herb|medic/i.test(g.name || "")) f *= 1.5;
+    if (E.disaster) f *= 1.4;
+    if (E.war) f *= tags.includes("military") ? 1.3 : food ? 1.15 : 1;
+    if (E.siege && food) f *= 3;
+    if (E.occupied) f *= 1.1;
+    if (E.closed && !AZ.fieldOf(w).made(b, gid)) f *= 1.2;
+    return f * this.glutF(b, gid);
+  };
+  // each unit you trade moves the town's own price at once (0.2 ÷ its population in thousands),
+  // fading over a week; over that week it passes into the markets that pull on the town
+  G.glutF = function (b, gid) {
+    const s = this.s, F = AZ.fieldOf(this.w);
+    if (!s.trades || !s.trades.length) return 1;
+    let f = 1;
+    for (const t of s.trades) {
+      if (t.g !== +gid) continue;
+      const age = s.clock - t.t;
+      if (t.b === b.i) f += t.n * Math.min(0.25, 0.2 / Math.max(0.3, b.population || 1)) * Math.max(0, 1 - age / 168);
+      const x = F.pulls(b).list.find(y => y.m.i === t.m);
+      if (x) { const ramp = age < 168 ? age / 168 : Math.max(0, 1 - (age - 168) / 672); f += t.n * (x.p / (F.pulls(b).sum + 0.15)) * (0.2 / Math.max(1, F.mpop.get(t.m) || 1)) * 5 * ramp; }
+    }
+    return U.clamp(f, 0.3, 3);
+  };
+  // the field price here, now: R and W follow from it
+  G.fieldPrice = function (b, gid) { const base = AZ.fieldOf(this.w).base(b, gid); return base == null ? null : base * (this.s ? this.priceF(b, gid) : 1); };
+  G.townNear = function () {
+    const s = this.s, w = this.w;
+    if (!s) return null;
+    const i = w.idx(s.c, s.r);
+    return w.burgAt.get(i) || this.harbourAt.get(i) || w.near(s.c, s.r, 120).find(n => n.kind === "burg")?.o || this.jr?.origin?.burg || null;
+  };
+  const game = () => (AZ.game && AZ.game.s ? AZ.game : null);
+  const priceAt = (w, b, gid) => { const g = game(); return g && b ? g.fieldPrice(b, gid) : AZ.fieldOf(w).base(b, gid); };
+  const goodId = (w, name) => w.P.goods.find(x => x.name.toLowerCase() === name.toLowerCase())?.i;
+  const priceOf = (w, b, name, dflt) => { const id = goodId(w, name); const p = id != null && b ? priceAt(w, b, id) : null; return p || dflt; };
+  const R = (w, b) => { const F = AZ.fieldOf(w), g = game(); if (!b) return F.medR; let r = F.R0(b); if (g) { const f = SEASON_FOOD[AZ.Clock.season(w.latlon(b.t[0], b.t[1])[0], g.s.clock)] || 1, E = g.eventsAt(b); r *= f * (E.famine ? 1.6 : 1) * (E.siege ? 3 : 1) * (E.war ? 1.15 : 1); } return r; };
+  const W = (w, b) => AZ.fieldOf(w).W(b);
+  const popk = b => (b && b.population) || 1;
+  AZ.R = R; AZ.W = W;
+
+  // ------------------------------------------------------------------ the money table
+  // every cost and payment, in R (a day's food) and W (a day's work) at the town where it happens
+  AZ.MONEY = {
+    ration: { label: "A day's food", kind: "costs", rule: "R", fn: (w, b) => R(w, b) },
+    inn: { label: "A room until morning", kind: "costs", rule: "1.8W + 2R", fn: (w, b) => 1.8 * W(w, b) + 2 * R(w, b) },
+    meal: { label: "A meal at a roadside inn", kind: "costs", rule: "4R", fn: (w, b) => 4 * R(w, b) },
+    alms: { label: "Alms", kind: "costs", rule: "3W + 0.06W per thousand people", fn: (w, b) => W(w, b) * (3 + 0.06 * popk(b)) },
+    heal: { label: "Treating a fever", kind: "costs", rule: "6W + 5R", fn: (w, b) => 6 * W(w, b) + 5 * R(w, b) },
+    fare: { label: "A sea passage", kind: "costs", rule: "W × 0.024 a mile, 6W at least", fn: (w, b, mi) => W(w, b) * Math.max(6, 0.024 * (mi || 0)) },
+    coach: { label: "A coach", kind: "costs", rule: "W × 0.035 a mile, 3W at least", fn: (w, b, mi) => W(w, b) * Math.max(3, 0.035 * (mi || 0)) },
+    wage: { label: "A hand's wage, a day", kind: "costs", rule: "W", fn: (w, b) => W(w, b) },
+    water: { label: "A cask of water, a day", kind: "costs", rule: "0.12W", fn: (w, b) => 0.12 * W(w, b) },
+    vessel: { label: "Buying a boat", kind: "costs", rule: "10 wood, 2 ropes, 2 sails and 30W", fn: (w, b) => 10 * priceOf(w, b, "Wood", 1.5) + 2 * priceOf(w, b, "Ropes", 3) + 2 * priceOf(w, b, "Sails", 8) + 30 * W(w, b) },
+    hire: { label: "Hiring a boat, a day", kind: "costs", rule: "her price ÷ 365", fn: (w, b) => AZ.MONEY.vessel.fn(w, b) / 365 },
+    repair: { label: "Repairs (materials)", kind: "costs", rule: "0.3 sail + 0.3 rope, and W for every 12 hours in the yard", fn: (w, b) => 0.3 * priceOf(w, b, "Sails", 8) + 0.3 * priceOf(w, b, "Ropes", 3) },
+    pack: { label: "A pack animal", kind: "costs", rule: "the field price of Horses (Camels in deserts)", fn: (w, b) => (b && /desert/i.test(w.P.biomes[w.C.biome[b.cell]]?.name || "") ? priceOf(w, b, "Camels", 0) : 0) || priceOf(w, b, "Horses", 30 * W(w, b)) },
+    cart: { label: "A cart", kind: "costs", rule: "Cattle + 8 wood + 10W", fn: (w, b) => priceOf(w, b, "Cattle", 8) + 8 * priceOf(w, b, "Wood", 1.5) + 10 * W(w, b) },
+    wagon: { label: "A wagon", kind: "costs", rule: "2 Horses + 16 wood + 20W", fn: (w, b) => 2 * priceOf(w, b, "Horses", 8) + 16 * priceOf(w, b, "Wood", 1.5) + 20 * W(w, b) },
+    portal: { label: "The portal keepers", kind: "costs", rule: "W × (6 + 0.9 per thousand people)", fn: (w, b) => W(w, b) * (6 + 0.9 * (b ? popk(b) : 0)) },
+    tollRebels: { label: "A rebels' toll", kind: "costs", rule: "24W", fn: (w, b) => 24 * W(w, b) },
+    tollPirates: { label: "Paying pirates off", kind: "costs", rule: "47W", fn: (w, b) => 47 * W(w, b) },
+    fine: { label: "A fine from an enemy watch", kind: "costs", rule: "up to 24W", fn: (w, b) => 24 * W(w, b) },
+    circus: { label: "An afternoon at the circus", kind: "costs", rule: "6W", fn: (w, b) => 6 * W(w, b) },
+    library: { label: "The library's copyists", kind: "costs", rule: "12W", fn: (w, b) => 12 * W(w, b) },
+    offering: { label: "An offering", kind: "costs", rule: "12W", fn: (w, b) => 12 * W(w, b) },
+    dice: { label: "A stake at dice", kind: "costs", rule: "6W", fn: (w, b) => 6 * W(w, b) },
+    mine: { label: "A shift at a mine (12 hours)", kind: "pays", rule: "1.5W + a quarter of a unit of the mine's own good", fn: (w, b, m) => {
+      const name = m && m.note ? (w.P.goods.find(g => new RegExp(`\\b${g.name}\\b`, "i").test(m.note)) || {}).name : null;
+      const gid = name ? goodId(w, name) : b ? w.C.good[b.cell] : null, p = gid && b ? priceAt(w, b, gid) : null;
+      return 1.5 * W(w, b) + 0.25 * (p || 1);
+    } },
+    crewday: { label: "Working a passage, a day", kind: "pays", rule: "W, paid at the last port", fn: (w, b) => W(w, b) },
+    delivery: { label: "Delivering goods", kind: "pays", rule: "the destination's field price × units × 1.1, and W a day of travel", fn: (w, b, x) => (x.there || 1) * x.units * 1.1 + W(w, b) * (x.days || 1) },
+    relief: { label: "Relief for a stricken town", kind: "pays", rule: "0.6 × cost + 6W", fn: (w, b, cost) => 0.6 * (cost || 0) + 6 * W(w, b) },
+    dispatch: { label: "Dispatches to a regiment", kind: "pays", rule: "W × (6 + 0.03 a mile)", fn: (w, b, mi) => W(w, b) * (6 + 0.03 * (mi || 0)) },
+    truth: { label: "The truth about a marked place", kind: "pays", rule: "W × (9 + 0.024 a mile)", fn: (w, b, mi) => W(w, b) * (9 + 0.024 * (mi || 0)) },
+    reward: { label: "Story rewards", kind: "pays", rule: "Alpha 3's coins ÷ the median wage, in W", fn: (w, b, x) => ((x || 0) / 0.17) * W(w, b) },
+    bounty: { label: "A bounty, in advance", kind: "pays", rule: "W × (30 + 3.5 per thousand people), at most 350W; three times that on proof", fn: (w, b) => Math.min(350 * W(w, b), W(w, b) * (30 + 3.5 * popk(b))) },
+  };
+  AZ.money = (id, b, x) => {
+    const g = game(), w = g ? g.w : AZ.game && AZ.game.w;
+    if (!w) return 0;
+    const town = b === undefined ? (g ? g.townNear() : null) : b;
+    return U.rn(Math.max(0, AZ.MONEY[id].fn(w, town, x)), 2);
+  };
+  AZ.coin = (x, b) => (game() ? AZ.money("reward", b, x) : x); // a story's fixed reward, in the local wage
+
+  // AZ.Prices reads the table
+  Object.assign(AZ.Prices, {
+    ration: (w, b) => U.rn(Math.max(0.02, R(w, b)), 2),
+    food: (w, b) => U.rn(R(w, b) * 10, 2),
+    inn: (w, b) => U.rn(AZ.MONEY.inn.fn(w, b), 2),
+    alms: (w, b) => U.rn(AZ.MONEY.alms.fn(w, b), 2),
+    fare: (w, b, mi) => U.rn(AZ.MONEY.fare.fn(w, b, mi), 2),
+    wage: (w, b) => U.rn(W(w, b), 2),
+    hire: (w, b) => U.rn(AZ.MONEY.hire.fn(w, b), 2),
+    heal: (w, b) => U.rn(AZ.MONEY.heal.fn(w, b), 2),
+    water: (w, b) => U.rn(AZ.MONEY.water.fn(w, b), 2),
+    repair: (w, b) => U.rn(AZ.MONEY.repair.fn(w, b), 2),
+    goodPrice: (w, b, gid) => { if (!b) return null; const p = priceAt(w, b, gid); return p == null ? null : p * (1 + P3.tax(w, b)); },
+  });
+
+  // ------------------------------------------------------------------ vessels and animals from their materials
+  G.vesselPrice = function (vc, b) { const C = AZ.VCLASS[vc] || AZ.VCLASS.boat; return U.rn(AZ.money("vessel", b) * (C.buy / 150), 2); };
+  G.sellPrice = function (v, b) { return U.rn(this.vesselPrice(v.vc || "boat", b) * 0.6 * (v.damaged ? 0.5 : 1), 2); };
+  G.repairCost = function (b) { const v = this.s.vessel, C = (v && AZ.VCLASS[v.vc]) || AZ.VCLASS.boat; return U.rn(AZ.Prices.repair(this.w, b) * C.repair[0] + AZ.Prices.wage(this.w, b) * (C.repair[1] / 12), 2); };
+  G.beastPrice = function (vc, b) { return AZ.money(vc, b); };
+
+  // ------------------------------------------------------------------ quotes and the market screen
+  G.goodQuote = function (b, gid) {
+    const p = this.fieldPrice(b, gid);
+    if (p == null) return null;
+    const F = AZ.fieldOf(this.w);
+    return { price: p, buy: U.rn(p * (1 + AZ.Prices.tax(this.w, b)), 2), sell: U.rn(p * 0.85, 2), made: F.made(b, gid), canBuy: F.available(b, gid) };
+  };
+  G.priceWhy = function (b, gid) {
+    const S = AZ.fieldOf(this.w).shares(b, gid), parts = S.markets.filter(x => x.share >= 0.02).slice(0, 3).map(x => `${U.esc(x.name)} ${Math.round(x.share * 100)}%`);
+    return `${[...parts, `${U.esc(b.name)} itself ${Math.round(S.own * 100)}%`].join(", ")}${S.made ? "; made here" : "; brought in"}`;
+  };
+  G.trade = function (b, gid, n) { // n > 0 bought, n < 0 sold; one unit at a time, each moving the price
+    const s = this.s;
+    s.trades = s.trades || []; s.goods = s.goods || {}; s.basis = s.basis || {};
+    let total = 0;
+    for (let i = 0; i < Math.abs(n); i++) {
+      const q = this.goodQuote(b, gid);
+      if (n > 0) { if (s.purse < q.buy) break; const n0 = s.goods[gid] || 0; s.basis[gid] = U.rn(((s.basis[gid] || 0) * n0 + q.buy) / (n0 + 1), 2); s.goods[gid] = n0 + 1; s.purse = U.rn(s.purse - q.buy, 2); total -= q.buy; }
+      else { if (!(s.goods[gid] > 0)) break; s.goods[gid]--; s.purse = U.rn(s.purse + q.sell, 2); total += q.sell; }
+      s.trades.push({ b: b.i, m: b.market, g: +gid, n: n > 0 ? 1 : -1, t: s.clock });
+    }
+    this.dirty = true;
+    return U.rn(total, 2);
+  };
+  G.tradeGoods = async function (b) {
+    const s = this.s, w = this.w, F = AZ.fieldOf(w);
+    s.goods = s.goods || {}; s.basis = s.basis || {};
+    for (;;) {
+      const cap = this.capacity().goods, held = new Set(Object.entries(s.goods).filter(([, n]) => n > 0).map(([g]) => +g));
+      const ids = w.P.goods.map(g => g.i).filter(g => held.has(g) || F.available(b, g)).filter(g => this.goodQuote(b, g));
+      ids.sort((a, c) => (held.has(c) - held.has(a)) || (F.made(b, c) - F.made(b, a)) || this.know.good(a).localeCompare(this.know.good(c)));
+      const opts = ids.map(g => { const q = this.goodQuote(b, g), n = s.goods[g] || 0;
+        return { label: `${U.esc(this.know.good(g))} · buy 🟡 ${q.buy} · sell 🟡 ${q.sell}${q.made ? " · made here" : ""}${n ? ` · you have ${n}` : ""}`, g }; });
+      if (!opts.length) opts.push({ label: `${U.esc(b.name)} has no goods for sale`, disabled: true });
+      opts.push({ label: "Back", back: true });
+      const k = await this.ui.choose(`<b>${U.esc(b.name)}: goods</b> · 🟡 ${U.rn(s.purse, 2)} · carrying ${this.goodsCount()}/${cap} units<br><span class="dim">A day's food here costs 🟡 ${AZ.Prices.ration(w, b)}; a day's work is worth 🟡 ${AZ.Prices.wage(w, b)}. Prices blend the markets around ${U.esc(b.name)} with its own; buyers pay ${Math.round(AZ.Prices.tax(w, b) * 100)}% tax ${T("mixed")}.</span>`, opts, { cancel: opts.length - 1 });
+      const o = opts[k];
+      if (!o || o.back || o.g == null) return;
+      for (;;) {
+        const q = this.goodQuote(b, o.g), n = s.goods[o.g] || 0, room = cap - this.goodsCount();
+        const sub = [{ label: `Buy 1 for 🟡 ${q.buy}`, act: 1, disabled: !q.canBuy || room < 1 || s.purse < q.buy }, { label: "Buy 5", act: 5, disabled: !q.canBuy || room < 5 || s.purse < q.buy * 5 },
+          { label: `Sell 1 for 🟡 ${q.sell}`, act: -1, disabled: n < 1 }, { label: `Sell all ${n}`, act: -n, disabled: n < 2 }, { label: "Back", act: 0 }];
+        const k2 = await this.ui.choose(`<b>${U.esc(this.know.good(o.g))}</b> in ${U.esc(b.name)}: buy 🟡 ${q.buy}, sell 🟡 ${q.sell}${n ? ` · you have ${n}, paid 🟡 ${U.rn(s.basis[o.g] || 0, 2)} each` : ""}<br><span class="dim">Where the price comes from: ${this.priceWhy(b, o.g)} ${T("mixed")}.${q.canBuy ? "" : " Nobody here sells it, though they buy it."}</span>`, sub, { cancel: sub.length - 1 });
+        const a = sub[k2].act;
+        if (!a) break;
+        const got = this.trade(b, o.g, a);
+        if (a < 0) this.log(`Sold ${-a} ${U.esc(this.know.good(o.g).toLowerCase())} in ${U.esc(b.name)} for 🟡 ${got}.`);
+      }
+    }
+  };
+
+  // ------------------------------------------------------------------ F on foot or single-handed: a rest call at night and when tired
+  const tick4 = G.tick;
+  G.tick = function (...a) {
+    const r = tick4.apply(this, a), s = this.s;
+    if (!s || !s.auto || this.riding() || this.ui.busy() || s.carefree) return r;
+    const v = s.vessel;
+    if (v && s.aboard && v.crew > 0) return r; // crews call stops or keep watches
+    const sun = AZ.Clock.sun(s.clock, this.lat()), night = sun.dl < 24 && (sun.hour >= sun.set + 0.75 || sun.hour < sun.rise);
+    const day = Math.floor((s.clock + 12) / 24), awake = s.awake || 0;
+    const key = night && awake >= 12 ? `n${day}` : awake >= 18 ? `t${day}:${awake >= 30 ? 2 : 1}` : null;
+    if (key && s.restAsk !== key) { s.restAsk = key; this.setAuto(false); this.restCall(night); }
+    return r;
+  };
+  G.restCall = async function (night) {
+    const s = this.s, aboard = !!(s.aboard && s.vessel);
+    const k = await this.ui.choose(`<b>${night ? "Night falls." : "You are tired."}</b> You have been awake ${Math.round(s.awake || 0)} hours ${T("mixed")}. ${aboard ? "Anchor and sleep until dawn?" : "Make camp and sleep until dawn?"}`,
+      [{ label: aboard ? "Anchor until dawn" : "Make camp until dawn" }, { label: night ? "Go on through the night" : "Go on" }], { cancel: 1 });
+    if (k === 0) {
+      if (aboard) { s.clock = AZ.Clock.nextDawn(s.clock, this.lat()); this.slept(); this.ui.toast("You anchor and sleep until dawn."); this.dirty = true; }
+      else await this.campNight();
+    }
+    if (this.s && !this.ui.busy()) this.setAuto(true);
+  };
+
+  // ------------------------------------------------------------------ the days: old trades fall away
+  const nd5 = G.newDay;
+  G.newDay = function (...a) { const r = nd5.apply(this, a), s = this.s; if (s.trades && s.trades.length) s.trades = s.trades.filter(t => s.clock - t.t < 35 * 24); return r; };
+
+  // ------------------------------------------------------------------ the journal: money here
+  const carry1 = G.carryHtml;
+  G.carryHtml = function () {
+    const w = this.w, b = this.townNear();
+    let h = carry1.call(this);
+    if (b) {
+      const row = (id, x, label) => `<tr><td class="dim">${label || AZ.MONEY[id].label}</td><td>🟡 ${AZ.money(id, b, x)}</td></tr>`;
+      h += `<h3>Money at ${U.esc(b.name)} ${T("mixed")}</h3><table>${row("ration")}${row("wage", null, "A day's work")}${row("inn")}${row("fare", 100, "A sea passage, 100 miles")}${row("alms")}</table>`;
+    }
     return h;
   };
 })();

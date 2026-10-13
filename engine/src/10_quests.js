@@ -48,6 +48,11 @@ Object.assign(AZ.Game.prototype, {
       this.log(`${U.esc(th.title)}: the consignment is gone.`, "side");
       return this.ui.say(`<b class="side">${U.esc(th.title)}</b>: there is nothing to deliver. ${s.flags.boarded ? "The pirates who boarded you took it" : "You sold some of it elsewhere"} ${AZ.T("mixed")}.`);
     }
+    if (st.needs === "goods" && ((s.goods || {})[st.g] || 0) < st.units) {
+      th.done = true; th.outcome = "failed";
+      this.log(`${U.esc(th.title)}: the goods are gone.`, "side");
+      return this.ui.say(`<b class="side">${U.esc(th.title)}</b>: the ${st.units} ${U.esc(this.know.good(st.g).toLowerCase())} are gone from your packs, and the merchant will not pay for promises ${AZ.T("mixed")}.`);
+    }
     if (st.risk && U.rnd2(th.id, th.phase, s.seed % 9973) < st.risk) {
       th.done = true; th.outcome = "caught";
       const out = this.events.fx({ time: 24, stand: st.riskStand || [] }, `${U.esc(th.title)}: caught.`);
@@ -57,6 +62,7 @@ Object.assign(AZ.Game.prototype, {
     let late = "";
     if (th.deadline && s.clock > th.deadline && reward) { if (reward.coin > 0) reward.coin = U.rn(reward.coin / 2, 1); delete reward.stand; late = " You are late: half the pay, and no thanks."; }
     if (st.needs === "cargo") { s.goods[this.tv.cargo] -= 4; delete s.flags.cargo; }
+    if (st.needs === "goods") s.goods[st.g] -= st.units;
     const out = this.events.fx(reward, `${U.esc(th.title)}: ${U.esc(st.text)}${where ? " (" + U.esc(where.name || "") + ")" : ""}.`);
     th.phase++;
     if (th.phase >= th.steps.length) { th.done = true; th.outcome = "done"; }
@@ -104,10 +110,10 @@ Object.assign(AZ.Game.prototype, {
       const dest = near(8, 160).find(x => (P.trade.buy[x.i] || {})[g]);
       if (!dest) continue;
       const here = AZ.Prices.goodPrice(w, b, g) || 1, there = AZ.Prices.goodPrice(w, dest, g) || here * 1.2, units = 4;
-      const cost = U.rn(here * units, 1), pay = U.rn(Math.max(there, here * 1.1) * units * 1.1 + mi(dest) * 0.003, 1);
+      const cost = U.rn(here * units, 1), pay = AZ.money ? AZ.money("delivery", b, { there: Math.max(there, here * 1.05), units, days: days(dest) }) : U.rn(Math.max(there, here * 1.1) * units * 1.1 + mi(dest) * 0.003, 1);
       out.push({ title: `${gname(g)} for ${dest.name}`, cost, pay, why: `${b.name} makes ${gname(g).toLowerCase()}; ${dest.name} buys it on its market ${T("data")}. You buy ${units} units here at ${U.rn(here, 2)} and sell there at about ${U.rn(there, 2)} ${T("data")}.`,
-        dist: mi(dest), deadline: s.clock + days(dest) * 24, giver: b.i,
-        steps: [{ text: `Deliver ${units} ${gname(g).toLowerCase()} to the merchant in ${dest.name}`, goal: { burg: dest.i, role: "Merchant" }, reward: { coin: pay } }] });
+        dist: mi(dest), deadline: s.clock + days(dest) * 24, giver: b.i, goods: { g: +g, units, each: U.rn(here, 2) },
+        steps: [{ text: `Deliver ${units} ${gname(g).toLowerCase()} to the merchant in ${dest.name}`, goal: { burg: dest.i, role: "Merchant" }, needs: "goods", g: +g, units, reward: { coin: pay } }] });
       break;
     }
     // relief for a town in a zone
@@ -117,9 +123,9 @@ Object.assign(AZ.Game.prototype, {
       if (!tb || tb === b) continue;
       const need = z.type === "Disease" ? P.goods.find(x => /salt/i.test(x.name)) : P.goods.find(x => /grain/i.test(x.name));
       const price = need ? AZ.Prices.goodPrice(w, b, need.i) || 1 : 1, cost = U.rn(price * 2, 1);
-      out.push({ title: `Relief for ${tb.name}`, cost, pay: U.rn(cost * 0.6 + 1, 1), why: `${tb.name} lies in the ${z.name} (${z.type.toLowerCase()}) ${T("data")}. The temple here gathers ${need ? need.name.toLowerCase() : "supplies"} for it.`,
+      out.push({ title: `Relief for ${tb.name}`, cost, pay: (AZ.money ? AZ.money("relief", b, cost) : U.rn(cost * 0.6 + 1, 1)), why: `${tb.name} lies in the ${z.name} (${z.type.toLowerCase()}) ${T("data")}. The temple here gathers ${need ? need.name.toLowerCase() : "supplies"} for it.`,
         dist: mi(tb), deadline: s.clock + days(tb) * 24, giver: b.i,
-        steps: [{ text: `Bring ${need ? need.name.toLowerCase() : "supplies"} to the priests of ${tb.name}`, goal: { burg: tb.i, role: "Priest" }, reward: { coin: U.rn(cost * 0.6 + 1, 1), stand: [["s", tb.state, 2], ["f", w.C.religion[tb.cell], 1]] } }] });
+        steps: [{ text: `Bring ${need ? need.name.toLowerCase() : "supplies"} to the priests of ${tb.name}`, goal: { burg: tb.i, role: "Priest" }, reward: { coin: (AZ.money ? AZ.money("relief", b, cost) : U.rn(cost * 0.6 + 1, 1)), stand: [["s", tb.state, 2], ["f", w.C.religion[tb.cell], 1]] } }] });
       break;
     }
     // letters along the state's friendships and enmities
@@ -139,14 +145,14 @@ Object.assign(AZ.Game.prototype, {
       // dispatches to the state's army in a war
       const war = (st.campaigns || []).find(c => c.end == null);
       const reg = war && P.military.filter(u => u.state === b.state && !u.naval).sort((a, c) => d(a) - d(c)).find(u => d(u) > 6 && d(u) < 300);
-      if (reg) out.push({ title: `Dispatches for the ${reg.name}`, pay: U.rn(1 + mi(reg) * 0.005, 1), cost: 0, why: `${st.name} is at war: the ${war.name}, since ${war.start} ${T("data")}. The ${reg.name} is ${this.know.dirDist(b.t[0], b.t[1], reg.t).txt} ${T("data")}.`,
-        dist: mi(reg), deadline: s.clock + days(reg) * 24, giver: b.i, steps: [{ text: `Carry dispatches to the ${reg.name}`, goal: { unit: `${reg.state}:${reg.i}` }, reward: { coin: U.rn(1 + mi(reg) * 0.005, 1), stand: [["s", b.state, 1]] } }] });
+      if (reg) out.push({ title: `Dispatches for the ${reg.name}`, pay: (AZ.money ? AZ.money("dispatch", b, mi(reg)) : U.rn(1 + mi(reg) * 0.005, 1)), cost: 0, why: `${st.name} is at war: the ${war.name}, since ${war.start} ${T("data")}. The ${reg.name} is ${this.know.dirDist(b.t[0], b.t[1], reg.t).txt} ${T("data")}.`,
+        dist: mi(reg), deadline: s.clock + days(reg) * 24, giver: b.i, steps: [{ text: `Carry dispatches to the ${reg.name}`, goal: { unit: `${reg.state}:${reg.i}` }, reward: { coin: (AZ.money ? AZ.money("dispatch", b, mi(reg)) : U.rn(1 + mi(reg) * 0.005, 1)), stand: [["s", b.state, 1]] } }] });
     }
     // strange places nearby
     const m = w.near(b.t[0], b.t[1], 80).filter(n => n.kind === "marker" && /monster|ruin|dungeon|necrop|burial|rift|cave|portal|statue/.test(n.o.type) && !s.done_m.includes(n.o.i)).sort(() => rnd() - 0.5)[0];
-    if (m) out.push({ title: `The truth about the ${m.o.name}`, pay: U.rn(1.5 + m.d * w.miles * 0.004, 1), cost: 0, why: `${b.name} wants to know what is at the ${m.o.name}, ${this.know.dirDist(b.t[0], b.t[1], m.o.t).txt} ${T("data")}.`,
+    if (m) out.push({ title: `The truth about the ${m.o.name}`, pay: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)), cost: 0, why: `${b.name} wants to know what is at the ${m.o.name}, ${this.know.dirDist(b.t[0], b.t[1], m.o.t).txt} ${T("data")}.`,
       dist: Math.round(m.d * w.miles), deadline: s.clock + (Math.ceil((m.d * w.miles * 2) / 30) + 6) * 24, giver: b.i,
-      steps: [{ text: `See the ${m.o.name} for yourself (walk there and press Space beside it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: U.rn(1.5 + m.d * w.miles * 0.004, 1) } }] });
+      steps: [{ text: `See the ${m.o.name} for yourself (walk there and press Space beside it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)) } }] });
     // an offering for the faith's seat
     const rel = P.religions[w.C.religion[b.cell]], seat = rel && P.burgs.find(x => x && x.cell === rel.center);
     if (seat && seat !== b && d(seat) < 300) out.push({ title: `An offering for ${seat.name}`, pay: 0, cost: 0, why: `${b.name} keeps the ${rel.name}; its seat is ${seat.name} ${T("data")}.`,
@@ -164,10 +170,19 @@ Object.assign(AZ.Game.prototype, {
       const k = await this.ui.choose(`<b>${U.esc(b.name)}: notice board</b> · 🟡 ${U.rn(s.purse, 1)}`, opts, { cancel: opts.length - 1 });
       const o = opts[k].o;
       if (!o) return;
-      const k2 = await this.ui.choose(`<b class="side">${U.esc(o.title)}</b><br>${o.why}<br>${U.esc(o.steps.map(x => x.text).join(", then "))}.`, [{ label: `Take it${o.cost ? ` (pay 🟡 ${o.cost} now)` : ""}` }, { label: "Leave it" }], { cancel: 1 });
+      const taken = s.threads.some(t => t.title === o.title && !t.done), full = o.goods && this.goodsCount() + o.goods.units > this.capacity().goods;
+      const k2 = await this.ui.choose(`<b class="side">${U.esc(o.title)}</b><br>${o.why}<br>${U.esc(o.steps.map(x => x.text).join(", then "))}.`, [{ label: taken ? "You are already doing this" : full ? `You cannot carry ${o.goods.units} more units of goods (${this.goodsCount()}/${this.capacity().goods})` : `Take it${o.cost ? ` (pay 🟡 ${o.cost} now${o.goods ? ` for ${o.goods.units} ${U.esc(this.know.good(o.goods.g).toLowerCase())}` : ""})` : ""}`, disabled: taken || full || s.purse < (o.cost || 0) }, { label: "Leave it" }], { cancel: 1 });
       if (k2 !== 0) continue;
       if (o.cost) s.purse = U.rn(s.purse - o.cost, 2);
+      if (o.goods) { // the errand's goods are bought now, and carried to the buyer
+        s.goods = s.goods || {}; s.basis = s.basis || {};
+        const n0 = s.goods[o.goods.g] || 0;
+        s.basis[o.goods.g] = U.rn(((s.basis[o.goods.g] || 0) * n0 + o.goods.each * o.goods.units) / (n0 + o.goods.units), 2);
+        s.goods[o.goods.g] = n0 + o.goods.units;
+        this.ui.toast(`🟡 −${o.cost}: ${o.goods.units} ${U.esc(this.know.good(o.goods.g).toLowerCase())} bought for the errand.`);
+      }
       this.startThread({ title: o.title, steps: o.steps, deadline: o.deadline, giver: o.giver, why: o.why });
+      this.dirty = true; this.afterStep();
     }
   },
   // ------------------------------------------------------------------ why the plan goes this way

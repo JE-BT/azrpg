@@ -5,7 +5,9 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 3**.
+Current version: **Alpha 4**.
+
+Online demo: https://je-bt.github.io/azrpg/
 
 Online demo: https://je-bt.github.io/azrpg/
 
@@ -55,9 +57,10 @@ Touch screens get an on-screen pad.
   with her eat from it while you are away, as long as food and patience last. Vessels come in eight
   classes, from the skiff you row to the great ship, named and rigged by the culture of the port
   that built them; shipwrights hire and sell them. Pack animals, carts and wagons carry more on
-  land, and every town keeps a warehouse. Air journeys fly in
-  the company's own craft, and teleport circles cross a leg at once.
-- **Supplies and money.** Prices come from each town's market and the state's sales tax. Towns sell
+  land, and every town keeps a warehouse. Prices blend the markets around each town with what the
+  town makes, and every cost and payment follows the local price of food and a day's work.
+  Air journeys fly in the company's own craft, and teleport circles cross a leg at once.
+- **Supplies and money.** Prices come from the markets around each town and the state's sales tax. Towns sell
   a share of their food each week, varying with the harvest and with famine. Hunger, fever and lack
   of sleep slow you and, in the end, bring you down.
 - **A changing world.** Market stocks and prices move, passenger lines stop in war and quarantine,
@@ -142,6 +145,7 @@ node tests/play.js out/Pyeongak_rpg.html            # a scripted journey
 node tests/browser.js out/Pyeongak_rpg.html         # the page in a simulated browser
 node tests/vessels.js out/Pyeongak_rpg.html         # damage, the hold, crews ashore, watches, F's course
 node tests/alpha3.js out/Pyeongak_rpg.html          # classes, control, shipwright, porters, stables, warehouse
+node tests/alpha4.js out/Pyeongak_rpg.html          # the market field, money, trading, starting money
 ```
 
 The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.

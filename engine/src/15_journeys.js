@@ -104,7 +104,7 @@ AZ.TRAITS = {
     } else tv = make0(w, jr, seed, kindId);
     // variety: purse and one trait, seeded with the traveller
     const r2 = U.rng(`${seed}:trait`);
-    tv.purse = Math.max(5, Math.round(tv.purse * (0.6 + 0.8 * r2())));
+    tv.purse = Math.max(5, Math.round(tv.purse * (0.75 + 0.5 * r2()))); // Alpha 4: chance moves the purse a quarter either way
     const pool = Object.keys(AZ.TRAITS);
     tv.trait = /deck|net|fish|cook|shipmaster|skipper|steersman/i.test(tv.trade) ? "sea legs" : /soldier|archer|sergeant|scout|raider|mercenary/i.test(tv.kindLabel + tv.trade) && r2() < 0.5 ? "hardy" : pool[Math.floor(r2() * pool.length)];
     return tv;
@@ -465,7 +465,7 @@ AZ.TRAITS = {
   AZ.MARKERS.portals = { run: async (ev, m, head) => {
     const g = ev.g, s = ev.s, w = g.w, others = w.P.markers.filter(x => x.type === "portals" && x.i !== m.i);
     const town = w.near(m.t[0], m.t[1], 4).find(n => n.kind === "burg")?.o;
-    const fee = U.rn(1 + (town ? town.population * 0.15 : 0) + (town && w.P.cultures[town.culture]?.type === "Naval" ? 1 : 0), 2);
+    const fee = AZ.money ? AZ.money("portal", town || null) : U.rn(1 + (town ? town.population * 0.15 : 0), 2);
     const k = await g.ui.choose(`${head}<br>${U.esc(m.note)}<br><span class="dim">The keepers${town ? ` of ${U.esc(town.name)}` : ""} ask 🟡 ${fee} ${T("mixed")}. Whatever you carry goes with you; your ${s.vessel ? U.esc(s.vessel.kind.toLowerCase()) : "baggage train"} stays. Not every crossing goes as planned.</span>`,
       [...others.map(o => ({ label: `Step through to the ${U.esc(o.name)} (${U.num(g.know.dirDist(s.c, s.r, o.t).mi)} mi)`, disabled: s.purse < fee })), { label: "Stay on this side" }], { cancel: others.length });
     if (k >= others.length) return;
