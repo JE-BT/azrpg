@@ -142,18 +142,24 @@ AZ.TRAITS = {
   G.hasSaveFor = function (mode) { const m0 = this.mode; this.mode = mode; const k = this.key; this.mode = m0; try { return !!this.store.getItem(k); } catch (e) { return false; } };
 
   G.title = async function (fromMenu) {
-    const w = this.w, jr = this.jr0 || this.jr;
+    const w = this.w; let jr = this.jr0 || this.jr;
     this.jr0 = jr;
-    const head = `<div class="logo">${U.esc(jr ? jr.J.name : w.P.world.name)}</div><div class="sub">${U.esc(w.P.world.name)} (${U.esc(w.P.world.folder)}) · year ${w.W.calendar?.year || "?"} ${U.esc(w.W.calendar?.era || "")}</div>`;
+    let head = `<div class="logo">${U.esc(jr ? jr.J.name : w.P.world.name)}</div><div class="sub">${U.esc(w.P.world.name)} (${U.esc(w.P.world.folder)}) · year ${w.W.calendar?.year || "?"} ${U.esc(w.W.calendar?.era || "")}</div>`;
     const foot = `<div class="dim">${AZ.VERSION} · ${U.num(w.cols)} × ${U.num(w.rows)} tiles of ${U.num(w.miles, 2)} miles</div>`;
     for (;;) {
       const a = await this.pickList(head, [
         { id: "journey", html: jr ? `Journey: ${U.esc(jr.J.name)}<div class="dim small">${U.esc(AZ.archOf(jr))} from ${U.esc(jr.origin.name)} to ${U.esc(jr.dest.name)}</div>` : `Journey <span class="dim small">(this map has no journey)</span>`, disabled: !jr },
+        ...(w.P.journeys.length > 1 ? [{ id: "pick", html: `Choose another journey <span class="dim small">(${w.P.journeys.length} in this map)</span>` }] : []),
         { id: "sandbox", html: `Sandbox<div class="dim small">Explore the world</div>` },
         { id: "cont-j", html: "Continue the saved journey", disabled: !jr || !this.hasSaveFor("journey") },
         { id: "cont-s", html: "Continue the saved sandbox", disabled: !this.hasSaveFor("sandbox") },
         { id: "help", html: "How to play" }], foot);
       if (a === "help") { await new Promise(r => { this.help(); this.ui.onModalClose = r; }); continue; }
+      if (a === "pick") {
+        const k = await this.pickList(`${head}<div class="sub">Which journey?</div>`, [...w.P.journeys.map((J, i) => ({ id: `j${i}`, html: `${U.esc(J.name)}<div class="dim small">${U.esc(J.type || "")}</div>` })), { id: "back", html: "Back" }]);
+        if (k && k !== "back") { jr = new AZ.Journey(w, w.P.journeys[+k.slice(1)]); this.jr0 = this.jr = jr; this._arc = null; head = head.replace(/<div class="logo">[^<]*<\/div>/, `<div class="logo">${U.esc(jr.J.name)}</div>`); }
+        continue;
+      }
       if (a === "cont-j" || a === "cont-s") { this.ui.closeModal(); if (this.loadGame(a === "cont-j" ? "journey" : "sandbox")) { this.started(); this.ui.toast(`Welcome back, ${U.esc(this.tv.name)}.`); return; } continue; }
       if (a !== "journey" && a !== "sandbox") continue;
       const opts = { mode: a };
@@ -181,7 +187,7 @@ AZ.TRAITS = {
         const card = `<div class="card win"><div class="who">${U.esc(tv.kindLabel)} ${T("new")}</div><b>${U.esc(tv.name)}</b>, ${tv.age}, ${U.esc(tv.trade)} · ${U.esc(w.P.cultures[tv.culture].name)} · ${U.esc(w.P.religions[tv.faith]?.name || "no faith")}<br>${U.cap(U.esc(tv.why))}.<br><span class="dim">Purse 🟡 ${tv.purse} · ${U.esc(AZ.TRAITS[tv.trait].label)}: ${U.esc(AZ.TRAITS[tv.trait].text)}${tv.thread ? ` · side story: <span class="side">${U.esc(tv.thread.title)}</span>` : ""}${a === "sandbox" ? ` · ${opts.carefree ? "free roam" : opts.static ? "fixed world" : "changing world"}` : ""}</span></div>`;
         const items = [{ id: "begin", html: "Begin" }, { id: "roll", html: "Another traveller like this" },
           { id: "season", html: `Start: ${AZ.Clock.season(lat0, 6)} (${Math.round(AZ.Clock.dayLength(lat0, doys[di]))} h of daylight) ◀ ▶`, cycle: d => { di = (di + d + 4) % 4; } }, { id: "back", html: "Back" }];
-        const r = await this.pickList(head + card, items, "", this._sel || 0);
+        const r = await this.pickList(head + (AZ.premiseCard ? card.replace(/<\/div>\s*$/, AZ.premiseCard(w, jrX, tv) + "</div>") : card), items, "", this._sel || 0);
         this._sel = r === "__cycle" || r === "season" ? 2 : 0;
         if (r === "roll") { seed = (seed * 1664525 + 1013904223) >>> 0; continue; }
         if (r === "__cycle") continue;

@@ -56,7 +56,8 @@ const closeAll = async g => { for (let i = 0; i < 40 && g.ui.active; i++) { key(
     await until(() => g.s && g.ui.active, "intro");
     console.log("INTRO:", txt($("msg")).slice(0, 160));
     while (g.ui.active) { key("Enter"); await wait(3); }
-    tick(2);
+    tick(2); await wait(3);
+    while (g.ui.active) { key("Enter"); await wait(3); } // the story's opening scene (Alpha 5)
     console.log("HUD:", txt($("hud-loc")), "|", txt($("hud-trip")));
     if (AZ.Clock.doy0 !== 172) throw new Error("departure day not applied: " + AZ.Clock.doy0);
     // walk on land

@@ -5,7 +5,9 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 4**.
+Current version: **Alpha 5.1**.
+
+Online demo: https://je-bt.github.io/azrpg/
 
 Online demo: https://je-bt.github.io/azrpg/
 
@@ -146,6 +148,9 @@ node tests/browser.js out/Pyeongak_rpg.html         # the page in a simulated br
 node tests/vessels.js out/Pyeongak_rpg.html         # damage, the hold, crews ashore, watches, F's course
 node tests/alpha3.js out/Pyeongak_rpg.html          # classes, control, shipwright, porters, stables, warehouse
 node tests/alpha4.js out/Pyeongak_rpg.html          # the market field, money, trading, starting money
+node tests/alpha41.js out/Pyeongak_rpg.html         # goods where the map has them, skiffs, the harbourmaster, horses
+node tests/stories.js out/Pyeongak_rpg.html         # the story of every journey in the world, built and played
+node tests/alpha51.js out/Bernoy_rpg.html          # the premise, the company, regard, provisions, side-story focus
 ```
 
 The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.

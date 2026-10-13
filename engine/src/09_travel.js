@@ -363,7 +363,7 @@ Object.assign(AZ.Game.prototype, {
         this.doAct("book");
         this.log(`${crew ? "Signed on" : "Booked passage"} aboard ${U.esc(o.o.ship)} to ${U.esc(o.o.dest.name)}, sailing ${AZ.Clock.fmt(o.o.departAt)}.`, "hook");
         await this.ui.say([`${crew ? "You sign the ship's articles" : `🟡 ${o.o.fare} buys a berth`} aboard ${U.esc(o.o.ship)}, ${U.esc(o.o.captain)} master. ${U.cap(o.o.why)}.`,
-          `She sails <b>${AZ.Clock.fmt(o.o.departAt)}</b>, in ${AZ.Clock.span(o.o.departAt - s.clock)}, and will not wait. Bring your own food: you have ${s.sup.food} days' worth. Board from town (Space) before she sails.`]);
+          `She sails <b>${AZ.Clock.fmt(o.o.departAt)}</b>, in ${AZ.Clock.span(o.o.departAt - s.clock)}, and will not wait. ${this.foodHint ? this.foodHint() + " " : ""}Bring your own food: you have ${s.sup.food} days' worth. Board from town (Space) before she sails.`]);
         return;
       }
       if (o.act === "yard") { await this.shipwright(b); continue; }

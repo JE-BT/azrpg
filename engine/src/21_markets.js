@@ -256,9 +256,11 @@
       const opts = ids.map(g => { const q = this.goodQuote(b, g), n = s.goods[g] || 0;
         return { label: `${U.esc(this.know.good(g))} · buy 🟡 ${q.buy} · sell 🟡 ${q.sell}${q.made ? " · made here" : ""}${n ? ` · you have ${n}` : ""}`, g }; });
       if (!opts.length) opts.push({ label: `${U.esc(b.name)} has no goods for sale`, disabled: true });
+      if (this.merchantAdvice) opts.unshift({ label: "Ask the merchant what is worth your while", ask: true });
       opts.push({ label: "Back", back: true });
       const k = await this.ui.choose(`<b>${U.esc(b.name)}: goods</b> · 🟡 ${U.rn(s.purse, 2)} · carrying ${this.goodsCount()}/${cap} units<br><span class="dim">A day's food here costs 🟡 ${AZ.Prices.ration(w, b)}; a day's work is worth 🟡 ${AZ.Prices.wage(w, b)}. Prices blend the markets around ${U.esc(b.name)} with its own; buyers pay ${Math.round(AZ.Prices.tax(w, b) * 100)}% tax ${T("mixed")}.</span>`, opts, { cancel: opts.length - 1 });
       const o = opts[k];
+      if (o && o.ask) { await this.merchantAdvice(b); continue; }
       if (!o || o.back || o.g == null) return;
       for (;;) {
         const q = this.goodQuote(b, o.g), n = s.goods[o.g] || 0, room = cap - this.goodsCount();
