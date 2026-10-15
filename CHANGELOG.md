@@ -61,8 +61,9 @@ produced it, and measures it. The logs are in `docs/textlog/`.
 - A marked place whose name is its type is named once; place names starting a sentence are capitalised.
 
 ## Alpha 5.1: the story, hidden
+## Alpha 5.1
 
-The narrative engine now works out of sight, through people, places and objectives. The design is in
+The narrative engine works out of sight, through people, places and objectives. The design is in
 `docs/NARRATIVE.md`.
 
 **Who you are.** Every traveller comes with a tie to the journey (kin, a contract, a custom of your

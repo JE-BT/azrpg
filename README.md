@@ -9,12 +9,6 @@ Current version: **Alpha 5.2**.
 
 Online demo: https://je-bt.github.io/azrpg/
 
-Online demo: https://je-bt.github.io/azrpg/
-
-Online demo: https://je-bt.github.io/azrpg/
-
-Online demo: https://je-bt.github.io/azrpg/
-
 ## Play
 
 A built world is a single HTML file. Open it in a recent browser (Chrome, Firefox, Safari or Edge);
