@@ -214,7 +214,7 @@ AZ.TRAITS = {
     return [`<b class="hook">${U.esc(jr.J.name)}</b> · ${U.esc(arch)} ${T("data")}`,
       `You are ${U.esc(tv.name)}, ${tv.age}, ${U.esc(tv.trade)} ${T("new")}. ${U.cap(U.esc(tv.why))} ${T("mixed")}.`,
       o ? `You stand in ${U.esc(o.name)}, ${U.esc(o.group)} of ${U.esc(P.states[o.state]?.fullName || "unclaimed land")} ${T("data")}.` : "",
-      d ? `The road ends in ${U.esc(d.name)}, ${U.num(jr.totalMiles)} miles by the plan in ${Math.round((jr.planEnd - jr.t0) / 24)} days ${T("mixed")}${leader ? `. ${U.esc(leader)} leads; the name is the journey's own ${T("data")}` : ""}.` : "",
+      d ? `The road ends in ${U.esc(d.name)}, ${U.num(jr.totalMiles)} miles by the plan in ${Math.round((jr.planEnd - jr.t0) / 24)} days ${T("mixed")}${leader ? `. ${U.esc(leader)} backs it, and you lead it ${T("data")}` : ""}.` : "",
       first ? `<b class="hook">First: ${U.esc(first.label)}.</b> Press Space on the town.` : ""].filter(Boolean);
   };
   const fin0 = G.finish;
@@ -234,14 +234,14 @@ AZ.TRAITS = {
     const s = this.s, w = this.w, jr = this.jr, arch = AZ.archOf(jr), A = AZ.ARCH[arch], noun = A.noun;
     const leader = AZ.journeyLeader(w, jr), rnd = U.rng(`${s.seed}:party`);
     if (!s.party.length) {
-      if (leader) s.party.push({ name: leader, role: "leader" });
+      if (leader) s.patron = leader; // Alpha 5.2: you lead; the journey's named leader backs it
       for (let i = 0; i < A.party; i++) s.party.push({ name: this.know.person(`party:${s.seed}:${i}`, rnd() < 0.7 ? b.culture : this.tv.culture), role: A.roles[i % A.roles.length] });
     }
     this.doAct("gather");
     const next = this.cpNext(), leg = next && next.legIn;
     const who = s.party.map(p => `<b>${U.esc(p.name)}</b> (${U.esc(p.role)})`).join(", ");
     await this.ui.say([`In ${U.esc(b.name)} the company gathers: ${who || "no one but you"} ${T("new")}.`,
-      `${leader ? `${U.esc(leader)} leads the ${noun}` : `The ${noun} is yours to lead`}: “${U.esc(jr.J.name)}” ${T("data")}. ${U.esc(jr.dest.name)} is the end of it ${T("data")}.`,
+      `${leader ? `${U.esc(leader)} backs the ${noun}, and you lead it` : `The ${noun} is yours to lead`}: “${U.esc(jr.J.name)}” ${T("data")}. ${U.esc(jr.dest.name)} is the end of it ${T("data")}.`,
       leg ? `The plan from here: ${U.esc(leg.name)}, by ${U.esc(leg.transport.toLowerCase())}, to ${U.esc(next.place.name)} ${T("data")}. ${leg.transport.match(/boat/i) ? "Hire it together at the harbour: the company crews it, and you pay one hand's wage." : ""}` : "",
       `They travel with you and carry their own food. Ask them for advice any time: Space where there is nothing else to do.`].filter(Boolean));
   };
@@ -383,7 +383,7 @@ AZ.TRAITS = {
     const fuel = /grass|lush|needle|meadow|dry/.test(look.kind) || /forest|taiga|savann/i.test(b.name);
     const danger = w.near(c, r, 3).find(n => n.kind === "marker" && /brigand|monster|burial|pirate/.test(n.o.type)) || w.zonesOfCell(cell).find(z => /Rebels|Invasion/.test(z.type));
     const rnd = U.rng(`${s.seed}:camp:${c}:${r}:${Math.floor(t0 / 24)}`);
-    L.push(`You camp in the ${b.name.toLowerCase()} ${T("data")}.`);
+    L.push(this.w.isLand(this.s.c, this.s.r) ? `You camp in the ${b.name.toLowerCase()} ${T("data")}.` : "You sleep aboard, at anchor.");
     if (/forest|rainforest|taiga/i.test(b.name)) { s.sup.food += 1; L.push("The trees give shelter, and you find nuts and roots for breakfast (+1 ration)."); }
     if (water) { s.sup.food += rnd() < 0.5 ? 1 : 0; L.push("Water close by; a line in it overnight."); }
     if (today < 0) { if (fuel) L.push(`A cold night (about ${w.temp(today)}), but there is wood for a fire.`); else { rest += 6; s.sup.food = Math.max(0, s.sup.food - 1); L.push(`A cold night (about ${w.temp(today)}) with nothing to burn: you eat more and sleep little.`); } }

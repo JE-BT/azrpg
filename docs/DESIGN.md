@@ -602,6 +602,93 @@ journey's end. Every scene touches the game's own systems:
 
 ---
 
+## Alpha 5.2: the clock
+
+### Why
+
+A journey is a race against its plan: the stops and their par times are the course, and the map is
+the obstacles. Alpha 5.2 makes the clock the first layer. Every other layer plays to it: the story
+says what being early or late means for this kind of journey, money and vessels and horses buy time,
+the camp and the corner keep the count, and the end is a report card. The sandbox has no clock.
+
+You always lead (the journey's named leader, if any, backs it). The company's votes and following
+someone else's lead are set aside while the clock is the challenge.
+
+### Control table: the clock for each journey type
+
+Every stop scores up to 100 points; waiting for the day or arriving early where speed counts can add
+more. Inside the window (days either side of par) a stop scores 100. Early beyond it: *bonus* adds 5
+points a day (up to 20), *wait* scores 85 unless you wait for the day (then 100 and the wait bonus),
+*penalty* takes points a day (down to 40), *no matter* scores 100. Late beyond it takes points a day,
+down to 0; arriving at the target later than *lost after* ends the journey.
+
+| Type | The deadline | At the target: window · early · late | Other stops: window · early · late | After the target | Words: early / on / late |
+|---|---|---|---|---|---|
+| Pilgrimage | the holy day | ±1 d · wait for the feast · −15/day | ±3 d · no matter · −4/day | as other stops | with days to spare before the holy day / in time for the holy day / after the holy day has passed |
+| Quest | the appointed time | ±3 d · bonus · −6/day | ±5 d · bonus · −3/day | as other stops | ahead of the appointed time / at the appointed time / late for the appointed time |
+| Caravan | market day | ±2 d · wait for market day · −12/day | ±2 d · no matter · −6/day | as other stops | before the market opens / on market day / after the market has closed |
+| Military campaign | the battle | ±1 d · penalty (−5/day) · −20/day; lost after 5 d | ±2 d · no matter · −8/day | as other stops | early, eating the campaign's stores / in time for the battle / after the battle |
+| Embassy | the audience | ±1 d · wait for the audience · −15/day | ±3 d · no matter · −4/day | as other stops | before the court will see you / on the day of the audience / late for the audience |
+| Raid | the alarm | ±2 d · bonus · −12/day | ±3 d · bonus · −5/day | ±2 d · bonus · −15/day | before the alarm is raised / with the coast still asleep / with the coast alarmed |
+| Smuggling run | the buyer's night | ±1 d · wait for the buyer's night · −15/day | ±2 d · no matter · −5/day | as other stops | before the buyer is ready / on the buyer's night / after the buyer has gone |
+| Courier ride | the deadline | ±0.5 d · bonus (+8/day) · −25/day; lost after 10 d | ±1 d · bonus · −8/day | as other stops | ahead of the deadline / on the deadline / past the deadline |
+| Expedition | the season | ±7 d · bonus · −3/day | ±7 d · bonus · −2/day | as other stops | with the season still young / within the season / with the season closing |
+| Refugee flight | the closing border | ±3 d · bonus · −8/day | ±3 d · bonus · −4/day | as other stops | well ahead of the danger / just ahead of the danger / with the danger close behind |
+| Treasure hunt | the rivals | ±3 d · bonus · −6/day | ±5 d · bonus · −3/day | as other stops | ahead of any rival / level with your rivals / behind your rivals |
+| Monster hunt | the dark of the moon | ±2 d · wait for the dark of the moon · −8/day | ±4 d · no matter · −3/day | as other stops | before the dark of the moon / in the dark of the moon / after the dark of the moon |
+| Exile's flight | the pursuit | ±2 d · bonus · −10/day; lost after 15 d | ±2 d · bonus · −6/day | as other stops | well ahead of the pursuit / a step ahead of the pursuit / with the pursuit closing |
+| Royal progress | the court's calendar | ±1 d · penalty (−8/day) · −15/day | ±1 d · penalty (−6/day) · −8/day | as other stops | before the town is ready / on the day the town expects you / late, with the town kept waiting |
+| Airship voyage | the timetable | ±1 d · no matter · −10/day | ±1 d · no matter · −8/day | as other stops | ahead of the timetable / on the timetable / behind the timetable |
+| Arcane errand | the conjunction | ±0.5 d · wait for the conjunction · −30/day; lost after 3 d | ±3 d · no matter · −4/day | as other stops | before the conjunction / at the conjunction / after the conjunction |
+| Mercenary contract | the muster | ±2 d · no matter · −15/day; lost after 7 d | ±3 d · no matter · −6/day | as other stops | early for the muster / in time for the fighting / after the fighting has begun |
+| Wandering | no one's clock | ±30 d · no matter · −1/day | ±30 d · no matter · −1/day | as other stops | in your own time / in your own time / in your own time |
+
+### The score and the report card
+
+- **Against the clock**: 1,000 × the weighted points ÷ the weighted maximum. The target counts three
+  times, the last stop twice, other stops once; a skipped stop scores nothing. Grades: S (1,000 and
+  over), A (900), B (750), C (600), D (400), E (below); F if the journey is lost.
+- **Total**: the clock score, plus 50 for each step of the story's measure (0–200), plus the share of
+  the plan's tasks done (0–100). Your best total on each journey is kept, with its grade.
+- **The card** comes at the end, after an epilogue in the story's voice (the ending in words, your
+  tie, the deeds people will remember), and stays in the journal.
+
+### Where the clock shows
+
+| Where | What it says |
+|---|---|
+| The opening | the number of stops, the deadline and its par, and how this journey reads early and late |
+| The corner | ⏱ the next stop's par and whether you are on pace, by what is left of the plan's course |
+| Arrival | one page: ★ on par, or ahead, or behind, in large type; par and arrival; the verdict in the journey's own words; the points; what the plan has you do here; the next objective and its par |
+| The target, early | the wait: wait for the day (lodging for the days), or go ahead now |
+| The target, too late | the journey is lost, in its own words |
+| Camp | the race line, and every third night or when the race turns, a companion's word on it |
+| Choices that cost time | "still ahead of par", "still on par", "puts you behind par" |
+| The journal | the race so far, stop by stop; the card at the end |
+
+### Worked example: The Leg Keels (Raid), from the text log
+
+The scripted run in `docs/textlog/raid.md` arrived at Anholdhol 11 days 12 hours ahead of par: other
+stops before the target take a bonus for speed, so 8.5 days beyond the 3-day window score 100 + 20
+(capped) = **120**. Vr'seramant came 5 days 9 hours late: 2.4 days beyond the window at 5 a day,
+**88**. Negnud, the target, came 130 days late, with the coast long alarmed: **0**, counted three
+times. Against the clock: 1,000 × (120 + 88 + 0) ÷ 500 = **416, grade D**. A run that reached
+Negnud within two days of par would score 1,000 × (120 + 88 + 300) ÷ 500 = 1,016, grade S.
+
+### Also in Alpha 5.2
+
+- **The narrator.** Arrival is one page. A camp report tells a new country in full and a known one in
+  what changed since last night, with the race and, now and then, a companion. The crew asks once how
+  to spend the nights and keeps your standing order (change it in town).
+- **Deeds are remembered.** Standing changes from what you do are kept as deeds, and people in that
+  state or faith see you by them, and say so.
+- **The false lead** answers with confidence; at the next stop it proves false.
+- **People you know.** People you talk to remember you; companions can settle in a town during or at
+  the end of a journey, greet you when you come back, put you up for a night, or come with you again.
+- **Story beats** scale with the leg: about one every four days of travel, up to six a leg.
+
+---
+
 ## Alpha 6: traffic and knowledge
 
 ### What Alpha 2 has

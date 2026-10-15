@@ -116,7 +116,7 @@
         if (k % 2 === 0) for (const x of w.near(c, r, 3)) {
           if (x.kind !== "marker" || seenM.has(x.o.i)) continue; seenM.add(x.o.i);
           const ty = x.o.type || "", kind = /monster|dragon|brigand|pirate|beast|troll|giant|kraken/i.test(ty) ? "monster" : /ruin|dungeon|cave|burial|necropol|tomb|crypt|battlefield/i.test(ty) ? "ruin" : /sacred|shrine|temple|pilgrim|monaster/i.test(ty) ? "shrine" : /inn/i.test(ty) ? "inn" : /mine/i.test(ty) ? "mine" : "wonder";
-          add(kind, `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
+          add(kind, x.o.name.toLowerCase() === ty.toLowerCase() || x.o.name.toLowerCase().includes(ty.toLowerCase().replace(/s$/, "")) ? x.o.name : `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
         }
         for (const z of w.zonesOfCell(cell)) {
           if (seenZ.has(z.i)) continue; seenZ.add(z.i);
@@ -257,10 +257,9 @@
       flight: `You cannot go back to ${home}.`,
       curiosity: `You have read of ${d ? d.name : jr.dest.name} since you were a child.`,
     }[id];
-    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "the books" : "eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
-    const leader = AZ.journeyLeader(w, jr), canLead = S.lead && !leader;
-    const leads = canLead ? rnd() < 0.5 : false;
-    return { tie: { id, text, who }, leads, leader: leader || (!leads && who && who.joins ? who.name : null) };
+    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "bookkeeper" : "the eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
+    // Alpha 5.2: the player always leads; the journey's named leader, if any, backs it
+    return { tie: { id, text, who }, leads: true, leader: null, patron: AZ.journeyLeader(w, jr) || null };
   };
   const mt0 = AZ.makeTraveller;
   AZ.makeTraveller = function (w, jr, seed, ...rest) {
@@ -268,7 +267,7 @@
     if (jr && tv) Object.assign(tv, AZ.tieFor(w, jr, tv, seed));
     return tv;
   };
-  AZ.premiseCard = (w, jr, tv) => !jr || !tv || !tv.tie ? "" : `<div class="small" style="margin-top:6px">${U.esc(tv.tie.text)} ${tv.leads ? `<b>You lead the ${U.esc(AZ.noun(jr))}.</b>` : tv.leader ? `${U.esc(tv.leader)} leads; you follow.` : "You follow the company's lead."}</div>`;
+  AZ.premiseCard = (w, jr, tv) => !jr || !tv || !tv.tie ? "" : `<div class="small" style="margin-top:6px">${U.esc(tv.tie.text)} <b>You lead the ${U.esc(AZ.noun(jr))}${tv.patron ? `, with ${U.esc(tv.patron)}'s backing` : ""}.</b></div>`;
 
   // ------------------------------------------------------------------ the plan: roles for every leg
   const pickShape = (type, seed) => { const W = AZ.SHAPE_WEIGHTS[type] || { three: 1 }, tot = Object.values(W).reduce((a, x) => a + x, 0); let r = U.rng(`${seed}:shape`)() * tot; for (const [k, x] of Object.entries(W)) { r -= x; if (r <= 0) return k; } return Object.keys(W)[0]; };
@@ -333,17 +332,18 @@
       // moments: what the company meets on this leg
       const moments = [];
       const chain = (leg && leg.chain) || [], seen = new Set(cps.map(cp => cp.place.burg && cp.place.burg.i));
-      const want = arc.purpose, half = Math.floor(chain.length / 2);
-      if (R.kind === "purpose" || i === tcp) for (let k = 0; k < chain.length && moments.length < 2; k += 3) {
-        if (moments.length === 1 && k < half) continue;
+      const want = arc.purpose, legDays = leg ? leg.miles / Math.max(1, (leg.speed || 3) * (leg.hoursPerDay || 8)) : 0;
+      const nWant = U.clamp(Math.round(legDays / 4), 1, 6), gap = Math.max(3, Math.floor(chain.length / (nWant + 1)));
+      if (R.kind === "purpose" || i === tcp || legDays >= 8) for (let k = gap; k < chain.length && moments.length < nWant; k += 3) {
+        if (moments.length && k < moments[moments.length - 1].k + gap) continue;
         const [c, r] = chain[k];
         const site = w.near(c, r, 5).find(n => {
           if (n.kind === "burg") { const b = n.o; if (seen.has(b.i)) return false; return /harry|forage|shelter/.test(want) ? (b.population || 0) < 10 : want === "pilgrims" ? !!b.temple : /trade|procession|relay/.test(want) ? (b.population || 0) >= 1 : false; }
           return n.kind === "marker" && (/survey|search/.test(want) ? /ruin|dungeon|cave|wonder|portal|monument|statue|spring|waterfall|library/i.test(n.o.type) : want === "track" ? /monster|beast|dragon|troll|brigand/i.test(n.o.type) : false);
         });
-        if (site) { seen.add(site.o.i); moments.push({ kind: "purpose", sub: want, tile: site.o.t, burg: site.kind === "burg" ? site.o.i : null, marker: site.kind === "marker" ? site.o.i : null, name: site.o.name }); }
+        if (site) { seen.add(site.o.i); moments.push({ k, kind: "purpose", sub: want, tile: site.o.t, burg: site.kind === "burg" ? site.o.i : null, marker: site.kind === "marker" ? site.o.i : null, name: site.o.name }); }
       }
-      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
+      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind) && !(h.kind === "monster" && h.tile && !w.isLand(h.tile[0], h.tile[1])) && !/pirate|sea-monster/i.test(h.text)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
       legs.push({ i, fn, role, kind, carrier: R.carrier || null, what: R.what || null, objective, sea, moments, hook: best });
     }
     return { type, family: S.family, arc, shape, shapeName: AZ.SHAPES[shape].name, move: S.move, climax: S.climax, early: S.early, target: tcp, legs, hooks };
@@ -359,7 +359,7 @@
   };
   G.measureWords = function () { const A = this.arc(); if (!A) return ""; const m = U.clamp(Math.floor(this.s.story.measure), 0, 4); return `${A.arc.label}: ${A.arc.measure[m]}`; };
   G.storyNote = function (html, step = 0) { const st = this.s.story; st.measure = U.clamp(st.measure + step, 0, 4.99); st.record.push({ t: this.s.clock, html }); this.log(html, "hook"); this.dirty = true; };
-  G.leaderName = function () { const tv = this.tv; if (tv.leads) return null; return tv.leader || (this.s.party || []).find(p => p.role === "leader")?.name || null; };
+  G.leaderName = function () { return null; }; // Alpha 5.2: you lead
   G.objective = function () {
     const s = this.s, A = this.arc();
     if (!A || !s.story.opened) return "";
@@ -382,7 +382,7 @@
     s.party = s.party || [];
     if (!s.party.length && (A.party || 0) > 0 && !gathers) {
       const b = jr.origin.burg || this.townNear(), rnd = U.rng(`${s.seed}:party`), leader = AZ.journeyLeader(this.w, jr);
-      if (leader) s.party.push({ name: leader, role: "leader" });
+      if (leader) s.patron = leader;
       for (let i = 0; i < A.party; i++) s.party.push({ name: this.know.person(`party:${s.seed}:${i}`, rnd() < 0.7 && b ? b.culture : tv.culture), role: A.roles[i % A.roles.length] });
     }
     if (tv.tie && tv.tie.who && tv.tie.who.joins && s.party.length && !s.party.some(p => p.tie)) { const k = s.party.findIndex(p => p.role !== "leader"); if (k >= 0) s.party[k] = { ...s.party[k], name: tv.tie.who.name, tie: tv.tie.who.role }; }
@@ -405,10 +405,11 @@
     const s = this.s, w = this.w, tv = this.tv, jr = this.jr, A = this.arc(), P = w.P, o = jr.origin;
     const leg = A.legs[1], noun = AZ.noun(jr), lead = this.leaderName();
     const sun = AZ.Clock.light(s.clock, this.lat()), season = AZ.Clock.season(this.lat(), s.clock);
-    const who = (s.party || []).filter(p => p.role !== "leader").map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+    const who = (s.party || []).filter(p => p.role !== "leader" && p.name !== lead).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
     const L = [`You are <b>${U.esc(tv.name)}</b>, ${U.esc(tv.trade)} of ${U.esc(P.burgs[tv.home]?.name || o.name)}, ${U.esc(P.cultures[tv.culture].name)} by birth and of the ${U.esc(P.religions[tv.faith]?.name || "old ways")} by faith. ${U.esc(tv.tie ? tv.tie.text : "")}`,
-      `You stand in <b>${U.esc(o.name)}</b>, in ${season}, ${sun.phase === "night" ? "after dark" : "by day"}. ${lead ? `${U.esc(lead)} leads the ${U.esc(noun)}` : `The ${U.esc(noun)} is yours to lead`}${who ? `; with you go ${who}` : ""}.`,
-      leg ? `${leg.objective}.` : "",
+      `You stand in <b>${U.esc(o.name)}</b>, in ${season}, ${sun.phase === "night" ? "after dark" : "by day"}. The ${U.esc(noun)} is yours to lead${s.patron || tv.patron ? `, with ${U.esc(s.patron || tv.patron)}'s backing` : ""}${who ? `; with you go ${who}` : ""}.`,
+      this.raceBrief ? this.raceBrief() : "",
+      leg && leg.objective !== this.objective() ? `${leg.objective}.` : "",
       `<b>${U.esc(this.objective())}.</b>`];
     await this.ui.say(L.filter(Boolean));
   };
@@ -470,8 +471,7 @@
     this.storyNote(`Reached ${U.esc(cp.place.name)}.`, step);
     if ((leg.kind === "seek" || leg.kind === "mislead") && cp.place.burg) s.story.seek = { cp: i, place: cp.place.name, carrier: leg.carrier, what: leg.what, mislead: leg.kind === "mislead", done: false };
     if (i === A.target && i < this.jr.cps.length - 1) this.storyQueue("climax");
-    const next = A.legs[i + 1];
-    if (next && !s.story.seek) await this.ui.say([`${U.esc(cp.place.name)}. ${next.objective}.`]);
+    // the next objective is said on the race's arrival page (Alpha 5.2)
   };
   // the person the story needs: a seek completes when you ask them
   G.storyTalk = function (b, role) {
@@ -482,7 +482,7 @@
     k.done = true;
     const A = this.arc(), next = A.legs[k.cp + 1], nextName = next ? this.jr.cps[k.cp + 1].place.name : null;
     this.storyNote(`In ${U.esc(k.place)} you learned of ${U.esc(k.what)}.`, k.mislead ? 0 : 0.5);
-    if (k.mislead) return `<b class="hook">About ${U.esc(k.what)}:</b> what they tell you sounds right, and is wrong; you will find it out on the road${nextName ? ` to ${U.esc(nextName)}` : ""}. ${T("new")}`;
+    if (k.mislead) { s.story.mislead = { at: k.cp, what: k.what }; return `<b class="hook">About ${U.esc(k.what)}:</b> they are sure of it, and point you on${nextName ? ` to ${U.esc(nextName)}` : ""} ${T("new")}.`; }
     return `<b class="hook">About ${U.esc(k.what)}:</b> they tell you what you came to learn${nextName ? `, and point you on to ${U.esc(nextName)}` : ""} ${T("new")}.`;
   };
   // a later stop reached early: count it now, or only visit (from Alpha 5)
@@ -551,7 +551,8 @@
     const s = this.s, A = this.arc();
     if (A && !s.storyEarly && !s.story.climaxed && A.target === this.jr.cps.length - 1) await this.climax();
     if (A) { const m = U.clamp(Math.floor(s.story.measure), 0, 4); this.storyNote(`The end of it: ${U.esc(A.arc.endings[m])}.`, 0); }
-    await finish1.call(this, A ? `${msg || ""} ${U.esc(U.cap(A.arc.endings[U.clamp(Math.floor(s.story.measure), 0, 4)]))}.` : msg);
+    const pages = Array.isArray(msg) ? msg.slice() : msg ? [msg] : []; // finish takes a list of pages; the ending is in the epilogue
+    await finish1.call(this, pages);
     if (s.party && s.party.length) await this.disband();
   };
   // morale, food and suspicion as effects
@@ -585,8 +586,9 @@
       const m = s.partyMorale ?? 70, wage = U.rn(1.5 * W, 2);
       const lean = p.tie && KIN.includes(p.tie) ? (m >= 30 ? "would stay with you: you are family" : "goes home, and will tell the family how it went") : p.role === "leader" ? "goes their own way: the journey was theirs" : hired.test(p.role) ? (m >= 50 ? `would stay for 🟡 ${wage} a day` : "takes their pay and goes") : kin.test(p.role) ? (m >= 40 ? "would stay with you" : "goes their own way") : m >= 70 ? "might stay, if you ask" : "goes home";
       const can = !/goes|takes/.test(lean);
-      const k = await this.ui.choose(`<b>${U.esc(p.name)}</b> (${U.esc(p.tie || p.role)}) ${lean} ${T("mixed")}.`, [{ label: can ? "Ask them to stay" : "Thank them" }, { label: "Part ways" }], { cancel: 1 });
+      const k = await this.ui.choose(`<b>${U.esc(p.name)}</b> (${U.esc(p.tie || p.role)}) ${lean} ${T("mixed")}.`, [{ label: can ? "Ask them to stay" : "Thank them" }, { label: b ? `Let them settle here, in ${U.esc(b.name)}` : "Let them settle", disabled: !b || !this.settleCompanion }, { label: "Part ways" }], { cancel: 2 });
       if (k === 0 && can) keep.push({ ...p, wage: hired.test(p.role) ? wage : 0 });
+      else if (k === 1 && b && this.settleCompanion) this.settleCompanion(p, b);
       else this.log(`${U.esc(p.name)} went their own way.`);
     }
     s.party = keep;

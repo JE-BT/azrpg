@@ -80,7 +80,9 @@
   };
   G.personLines = function (b, role, name) {
     const s = this.s, w = this.w, P = w.P, R = this.regard(b, role), L = [], who = name ? U.esc(name) : `The ${role.toLowerCase()}`;
-    L.push(`${who} ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.`);
+    const key = `${b.i}:${Math.floor(s.clock / 24)}`, first = s.regardSaid !== key;
+    s.regardSaid = key;
+    L.push(first ? `${who}, for one, ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.` : `${who}, too, ${BAND[R.band]}.`);
     const next = this.jr && !s.done ? this.jr.cps[s.cp] : null, prov = next ? this.provisions(s.cp) : null;
     if (/Innkeeper|Host/.test(role)) {
       if (prov) L.push(`For the road to ${U.esc(prov.to)} (${U.num(prov.miles)} mi ${U.esc(prov.how)}${prov.sea && next.legIn.domain === "land" ? ", with a sea crossing the plan does not show" : ""}), ${who.split(" ")[0]} reckons ${prov.days} days: ${prov.rations} rations for ${prov.eaters === 1 ? "you" : `the ${prov.eaters} of you`}. You carry ${s.sup.food} ${T("mixed")}.`);
@@ -88,7 +90,6 @@
     } else if (/Priest|Shrine/.test(role)) {
       if (/Theocracy/.test(R.form) && R.faith !== this.tv.faith) L.push("The faith's law is the law here, and you keep another faith: no blessing for you, and healing only at a price.");
       else if (R.faith === this.tv.faith) L.push("You are among your own: alms here are counted, and help is given.");
-      else L.push("Strangers of other faiths may give alms here, and are tended if they fall ill.");
     } else if (/Captain|Elder/.test(role)) {
       L.push(WATCH[R.watch]);
       const heat = (s.heat || {})[b.state] || 0;
@@ -117,7 +118,9 @@
     const b = w.burgAt.get(w.idx(s.c, s.r)) || w.near(s.c, s.r, 3).find(n => n.kind === "burg")?.o;
     if (b && !s.aboard) {
       const R = this.regard(b, "Townsfolk");
-      if (R.band === "hostile" && U.rnd2(b.i, Math.floor(s.clock / 24), 41) < 0.15) {
+      s.robbed = s.robbed || {};
+      if (R.band === "hostile" && !(s.clock - (s.robbed[b.i] ?? -1e9) < 168) && U.rnd2(b.i * 7919 + Math.floor(s.clock / 24), s.seed % 997, 41) < 0.15) {
+        s.robbed[b.i] = s.clock;
         const loss = U.rn(s.purse * 0.1, 2);
         if (R.watch === "protects") { this.ui.toast(`A thief in the night: the watch of ${U.esc(b.name)} caught them, and your purse is whole.`); this.log(`A thief in ${U.esc(b.name)}, caught by the watch.`); }
         else { s.purse = U.rn(s.purse - loss, 2); this.ui.toast(`A thief in the night took 🟡 ${loss}. The watch of ${U.esc(b.name)} shrugs ${T("mixed")}.`); this.log(`Robbed of 🟡 ${loss} in ${U.esc(b.name)}; the watch did nothing.`, "hook"); }
@@ -161,22 +164,25 @@
   };
 
   // ------------------------------------------------------------------ the journal: the journey, the road ahead, side stories you can pick
+  // the journal's page for the journey: who you are, the objective, the measure, what happened, the road ahead
+  G.journeyHtml = function () {
+    const s = this.s, tv = this.tv, A = this.arc ? this.arc() : null;
+    if (!A || !s.story) return "";
+    const rows = [];
+    for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
+    const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+    return `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
+        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
+        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
+        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
+  };
   const journal2 = G.journal;
   G.journal = function () {
     journal2.call(this);
     const s = this.s, w = this.w, tv = this.tv, A = this.arc ? this.arc() : null, sheet = this.ui.el.modal && this.ui.el.modal.querySelector(".sheet");
     if (!sheet) return;
-    if (A && s.story) {
-      const rows = [];
-      for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
-      const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
-      const d = document.createElement("div");
-      d.innerHTML = `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
-        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
-        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
-        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
-      sheet.insertBefore(d, sheet.children[1] || null);
-    }
+    const jh = this.journeyHtml();
+    if (jh) { const d = document.createElement("div"); d.innerHTML = jh; sheet.insertBefore(d, sheet.children[1] || null); }
     const act = (s.threads || []);
     const divs = [...sheet.querySelectorAll("div")].filter(x => /^◆ /.test(x.textContent));
     divs.forEach((div, k) => {

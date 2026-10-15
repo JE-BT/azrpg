@@ -102,7 +102,8 @@
       if (v && leg && leg.domain !== "land") {
         const C = AZ.VCLASS[v.vc] || AZ.VCLASS.boat, sun = AZ.Clock.sun(s.clock, this.lat()), hrs = this.keepsWatches(v) ? 24 : Math.max(4, Math.min(v.hpd || 12, sun.dl + 0.75)), days = Math.ceil(leg.miles * 1.15 / ((v.speed || C.speed) * hrs));
         L.push(`In your ${U.esc(v.kind.toLowerCase())}, ${this.keepsWatches(v) ? "sailing round the clock" : `sailing ${Math.round(hrs)} hours a day at this season`}, call it ${days} days: ${days * this.eaters()} rations for ${this.eaters()} mouths, and more if the weather turns ${T("mixed")}.`);
-      } else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
+      } else if (leg && leg.domain !== "land" && (this.jr.cps[s.cp - 1]?.acts || cp.acts || []).some(a => a.id === "board")) L.push("The company's own vessel waits at the quay: board her when the company is ready (★).");
+      else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
     }
     L.push("F follows the plan's gold line; with a waypoint it takes the shortest water. Boats keep near the coast, ships keep off it. A boat's hands stop at dusk; a ship with hands for two watches sails on. In a storm, small hulls want a beach and ships want open water.");
     if (s.beast || s.mount) L.push(`Animals go aboard small ships and larger; ${v && !ANIMALS_ABOARD.has(v.vc) ? `your ${U.esc(v.kind.toLowerCase())} cannot take them` : "a skiff or a boat cannot take them"}, and the stables here will keep them.`);

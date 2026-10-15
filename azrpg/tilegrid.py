@@ -2,10 +2,10 @@
 
 Azgaar does not store a grid as data; the overlay is a pattern (src/index.html) transformed by
 the saved style options with patternTransform="scale(s) translate(dx dy)", so a pattern point p
-lands at s * (p + d). The square pattern is 25 by 25 units with lines at multiples of 25: on
-Pyeongak (s = 0.05, dx = -2, dy = 3) squares are 1.25 px, which at 5 mi per px is 6.25 mi, and
+lands at s * (p + d). The square pattern is 25 by 25 units with lines at multiples of 25: for
+(s = 0.05, dx = -2, dy = 3) squares are 1.25 px, which at 5 mi per px is 6.25 mi, and
 the first lines are at x = -0.1, y = 0.15 px. An overlay whose cells are smaller than 1 mile or
-larger than 20 miles is ignored in favour of 5-mile squares. A hex overlay (Lania's pointyHex) is replaced by
+larger than 20 miles is ignored in favour of 5-mile squares. A hex overlay is replaced by
 squares as wide as its hexes, on the same origin. Without a usable overlay a 5-mile square is
 used. Tiles are numbered from the top-left tile that touches the map.
 """

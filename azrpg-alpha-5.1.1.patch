@@ -1,0 +1,705 @@
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/CHANGELOG.md azrpg-alpha5.1.1/CHANGELOG.md
+--- azrpg-main/CHANGELOG.md	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/CHANGELOG.md	2026-10-14 19:29:07.244283345 +0000
+@@ -1,8 +1,30 @@
+ # Changelog
+ 
+-## Alpha 5.1
++## Alpha 5.1.1: the text review
+ 
+-The narrative engine works out of sight, through people, places and objectives. The design is in
++**A review of what the player reads.** `docs/TEXT_REVIEW.md` sets out a method for reading the game's
++text as story, built from Carlquist's *Playing the Story* (2002), applies it to a log of eight
++scripted games, and plans the fixes. `tests/textlog.js` builds the log: every page, prompt, option,
++toast, banner, journal page, status-line change and log line, with the game time and the system that
++produced it, and measures it. The logs are in `docs/textlog/`.
++
++**Fixes.**
++- The last checkpoint's message arrives as whole pages, never one character at a time: the ending is passed as a
++  page, and the message box joins any list of single letters into one page.
++- In a town, the first person says why they see you as they do; the others say how.
++- The temple speaks with one voice; the watch's regard is the person's own.
++- At most one night thief a week in any one town.
++- The harbourmaster points to the company's vessel waiting at the quay.
++- The opening names the leader once and says the objective once.
++- Companions tied to you by contract or custom are the bookkeeper and the eldest.
++- Nights at sea read "You sleep aboard, at anchor."
++- "Visit the The ..." loses its doubled article.
++- Pirates and sea monsters at sea are told once, by the sea's own encounters.
++- A marked place whose name is its type is named once; place names starting a sentence are capitalised.
++
++## Alpha 5.1: the story, hidden
++
++The narrative engine now works out of sight, through people, places and objectives. The design is in
+ `docs/NARRATIVE.md`.
+ 
+ **Who you are.** Every traveller comes with a tie to the journey (kin, a contract, a custom of your
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/README.md azrpg-alpha5.1.1/README.md
+--- azrpg-main/README.md	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/README.md	2026-10-14 19:28:54.658203752 +0000
+@@ -5,7 +5,13 @@
+ map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
+ roads and markets, and you can read all of it as you go.
+ 
+-Current version: **Alpha 5.1**.
++Current version: **Alpha 5.1.1**.
++
++Online demo: https://je-bt.github.io/azrpg/
++
++Online demo: https://je-bt.github.io/azrpg/
++
++Online demo: https://je-bt.github.io/azrpg/
+ 
+ Online demo: https://je-bt.github.io/azrpg/
+ 
+@@ -143,6 +149,7 @@
+ node tests/alpha41.js out/Pyeongak_rpg.html         # goods where the map has them, skiffs, the harbourmaster, horses
+ node tests/stories.js out/Pyeongak_rpg.html         # the story of every journey in the world, built and played
+ node tests/alpha51.js out/Bernoy_rpg.html          # the premise, the company, regard, provisions, side-story focus
++node tests/textlog.js out                           # logs and measures the text of eight games (docs/textlog, docs/TEXT_REVIEW.md)
+ ```
+ 
+ The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/docs/TEXT_REVIEW.md azrpg-alpha5.1.1/docs/TEXT_REVIEW.md
+--- azrpg-main/docs/TEXT_REVIEW.md	1970-01-01 00:00:00.000000000 +0000
++++ azrpg-alpha5.1.1/docs/TEXT_REVIEW.md	2026-10-14 19:28:54.656199786 +0000
+@@ -0,0 +1,272 @@
++# What the player reads: a review of azrpg's text as story
++
++This review asks how well the text azrpg puts on screen tells a story. It sets out a method built
++from Jonas Carlquist's *Playing the Story: Computer Games as a Narrative Genre* (Human IT 6.3, 2002),
++logs every piece of text across eight scripted games, measures and reads the log by that method, and
++ends with the fixes made now and a plan for the rest. Decisions for you are in section 6.
++
++**In short.** The text is clean now: the one-letter pages are gone, along with the other faults the
++log found. Its story is thin on the page. Across seven journeys the story systems produce 1–5% of
++what the player reads; the camp, the weather and the ledger produce most of the rest, and repeat
++themselves nightly. The frame ("You are...") and the people work. The ending reads as a scorecard,
++the reversal is announced before it happens, nothing opposes the player, and the world rarely
++remembers what the player did. The fix is a narrator: one layer through which every system speaks,
++which merges, quiets, orders and remembers.
++
++---
++
++## 1. The method
++
++Carlquist reads games through several lenses. Each becomes a question about the text, a measure in
++the log, and a target.
++
++| Lens (source in the article) | The question for azrpg's text | Measured in the log by | Target |
++|---|---|---|---|
++| **Where the story is told** (Rouse's three layers: in-game, out-of-game, external materials) | Is the story where the player acts (choices, people), or only in pages they read and in the journal? | Entries by channel (choice, page, toast, banner, journal, status line, log) and by system | Story carried by choices and people at least as much as by pages |
++| **The frame and the address** ("You are...", the player as the focus: Moore) | Does a frame story make the player's actions logical, in the second person, present tense? | Share of pages and prompts addressing *you*; the opening; whether objectives give reasons | A frame at the start of every game; most pages address the player |
++| **Immersion, agency, transformation** (Murray) | Does the text make places distinct, offer choices with visible results, and show the world changed by the player? | Place-specific lines; choices and their stated costs; later lines that refer back to the player's deeds | Distinct places; every story choice shows its cost; deeds come back |
++| **Structure** (Vogler's hero's journey; Siegel's nine acts) | Which stages and acts does the text reach, and in what proportion? Games keep the ordinary world short, rarely refuse the call, spend 80–90% in tests, and leave reward and return to a closing page | Entries per stage, from the system that produced them | Every stage the journey type needs is present and told in the story's voice |
++| **Narrative operators** (Pearce) | Which operators are present: experiential, performative, augmentary, descriptive, meta-story, story system? | Which systems produce which kind of text | Meta-story and story system as strong as the experiential and augmentary |
++| **Branching** (linear; branching with a fixed start and end; open) | Does the text show the player what is open, what closed, and where the end is? | Objectives, out-of-order prompts, the sandbox's frame | The structure legible in the text |
++| **Motivation** (Littlejohn: the reason matters more than the action) | Does every conflict and choice carry a want or need? | Prompts with a stated reason; story choices with a stake | Every story choice has a reason |
++| **Cohesion** (textuality: Beaugrande and Dressler) | Does the text hold together: no contradictions, no repeats across systems, clean form, consistent names? | Repeated sentences within a day; contradictions; markup, missing values, split pages | No faults; repeats only by design |
++| **Pacing** | How much text per day, how much of it story, and how much routine? | Entries per game day by system; routine reports per day | Routine quiet; a story beat every few days of travel |
++
++The lenses come from the article; the measures and targets are this review's.
++
++## 2. The log
++
++`tests/textlog.js` plays eight games through an instrumented interface that records every page,
++prompt with its options, toast, banner, journal page, status-line change and log line, with the game
++time and the engine module and function that produced it. A scripted player buys food, sleeps at
++night, talks to every person in every stop town, asks the merchant, the harbourmaster and the
++wainwright, hires vessels for water legs, and follows the plan's course. It takes the default choice
++at every prompt. The logs are in `docs/textlog/` (one readable transcript per game, `textlog.jsonl`
++with everything, and `measures.json`).
++
++| Game | World | Entries | Game days | Words | Story | Journey and scenes | Mechanics | Frame | Second person | Choices | Per day |
++|---|---|---|---|---|---|---|---|---|---|---|---|
++| Pilgrimage | Pyeongak | 1,415 | 338 | 33,529 | 1% | 6% | 76% | 18% | 45% | 392 | 4.2 |
++| Raid (The Leg Keels) | Bernoy | 1,218 | 365 | 26,922 | 2% | 3% | 78% | 17% | 49% | 346 | 3.3 |
++| Treasure hunt | Bernoy | 334 | 34 | 10,918 | 5% | 18% | 27% | 50% | 43% | 106 | 9.7 |
++| Caravan | Bernoy | 436 | 81 | 9,526 | 5% | 5% | 64% | 26% | 45% | 129 | 5.4 |
++| Courier ride | Bernoy | 781 | 190 | 17,402 | 2% | 25% | 53% | 20% | 48% | 220 | 4.1 |
++| Quest | Nouileland | 2,439 | 594 | 62,327 | 2% | 25% | 56% | 17% | 47% | 671 | 4.1 |
++| Airship voyage | Presia | 1,002 | 140 | 32,473 | 3% | 15% | 46% | 36% | 41% | 234 | 7.2 |
++| Sandbox | Pyeongak | 113 | 6 | 2,328 | 0% | 14% | 27% | 58% | 42% | 43 | 18.8 |
++
++*Story* is the narrative engine and the people (modules 23, 24 and the frame text of 04); *journey and
++scenes* the plan, the stops, the scenes and side stories (07, 10, 15); *mechanics* travel, food, camp,
++vessels, markets and the world's changes (09, 12–14, 16, 18–22); *frame* the town menu, the status
++line, banners and the journal (06, 11).
++
++**Limits.** The scripted player presses R each night, so the rest prompt (about one a day) is the
++script's habit; a person decides when to rest. The plan's long Bernoy legs run for months, so totals
++are large. Default choices mean one path through each story. These shape the numbers; the findings
++below rest on what happens whatever the player does.
++
++## 3. Faults found and fixed
++
++| Fault | Where | Cause | Fix (in this patch) |
++|---|---|---|---|
++| The last checkpoint's message one character per page, with markup showing | every journey's end | the story's ending was handed to the journey's finish as a string, which spread into letters | the ending is passed as a page; the message box also joins any list of single letters into one page |
++| The same reasons said by every person in a town ("the Uruk here think little of yours; you keep another faith") | town talk | each person gave their regard with its reasons | the first person says why; the others say how they see you |
++| The priest said both "given water and courtesy, no more" and "strangers may give alms here" | temples of another faith | two systems spoke for the priest | one voice: the temple's own line stands |
++| The watch said "Neutral" and then "will hardly look at you" | towns | the state's stance and the person's regard read as one | the person speaks for themselves ("Kogri, for one, ...") |
++| A thief several nights running in one town | hostile towns | a weak roll | at most one theft a week in any one town |
++| "You have no vessel of your own" while the company's boat waited | the harbourmaster | he did not know of the company's vessel | he points to the quay |
++| The opening named the leader twice and said the objective twice | the opening | the list and the leg line repeated | each said once |
++| "Domramaruma (the books)" | companions | the tie's role label | "bookkeeper", "the eldest" |
++| "You camp in the marine" | nights at sea | the camp text names the biome | "You sleep aboard, at anchor." |
++| "Visit the The Light Wolf" | town menu | a name starting with *The* | the article is dropped |
++| Pirates and sea monsters told twice, once as "Something on the road ahead" | at sea | the story's hooks and the sea's own encounters both fired | encounters at sea belong to the sea's events |
++| "Pirates (pirates)" | hooks | a name that is its type | said once |
++| "near Slof. On the way to Froi" | arrivals | a place name starting a sentence | capitalised |
++
++After the fixes the log shows no faults: no single-letter pages, no markup, no missing values, no
++pages over 700 characters, no errors.
++
++## 4. The review
++
++### 4.1 Where the story is told
++
++The story lives in pages the player reads. The opening, arrivals and endings are pages; the moments
++on the road are choices, but there are few of them. Almost every choice in the log belongs to the
++mechanics: where to sleep, what to buy, how to answer the crew. People carry real story when a leg
++ends in a question ("About who would join the company: they tell you what you came to learn"), and
++the town menu brings everything together, though a town visit runs to thirty or forty pages and prompts.
++The journal is the only place the whole story can be seen, and its "The journey" page is the best
++piece of story text in the game.
++
++### 4.2 The frame and the address
++
++The frame works. Every journey opens in the second person with who you are, why you go and what to do
++first:
++
++> You are Eldraltirek, envoy's secretary of Vr'seramant, Rake (Drakonic) by birth and of the Rake
++> (Drakonic)ism by faith. Your father Raugauraraut goes with the raid, and you go too.
++
++Fewer than half of the pages and prompts address *you* (41–49%); the rest are reports in the
++third person ("Weather: rain", "Sails: the 1st Fleet of Uzd, 15 mi north-east"). The frame is
++strongest at the start and fades: after the opening, the player's tie is mentioned again only in the
++journal and at the end. The sandbox has no frame at all.
++
++### 4.3 Immersion, agency, transformation
++
++**Immersion is strong in detail and weak in repetition.** The camp report is the most vivid text in
++the game ("You camp in the taiga. The trees give shelter, and you find nuts and roots for breakfast
++(+1 ration). A cold night (about 18°F), but there is wood for a fire."), and it comes every night:
++"Water close by; a line in it overnight" appears 492 times in the quest. Repetition turns the
++world's texture into noise.
++
++**Agency is wide and shallow.** There are hundreds of choices, and most show their cost ("Go round
++them (8 h)", "Pay the toll (🟡 1.36)"). Story choices are few: two or three a leg, sometimes none on
++a long leg.
++
++**Transformation is promised more than shown.** Choices say "They will remember it" and "The village
++remembers who paid". Nothing in the log refers back to a deed later: no person mentions the food you
++shared or the village you struck. Standing changes appear as numbers in the log and nowhere in what
++people say. This is what Spector calls the illusion of freedom: the text claims consequences the
++world does not keep.
++
++### 4.4 Structure
++
++| Stage (Vogler) | Present? | How it reads |
++|---|---|---|
++| Ordinary world | briefly | one page: "You stand in Leg, in spring, by day." |
++| Call to adventure | yes | the tie and the first objective |
++| Refusal of the call | no | (games rarely have it; a follower's journey could) |
++| Meeting the mentor | yes, in pieces | the people who advise: innkeeper, merchant, harbourmaster, wainwright, the right person for a question |
++| Crossing the first threshold | weakly | the first leg's objective; borders as moments |
++| Tests, allies, enemies | yes, thin | moments on the road; no enemies who recur |
++| Approach to the inmost cave | in the objective | "Come to Negnud unseen..." with nothing on the way that is about the approach |
++| The ordeal | yes, one scene | "Strike Negnud with the company. [Strike] [Hold back]" |
++| Reward | in the log | "The haul: a good haul" |
++| The road back | rarely | only where the target comes before the last stop |
++| Resurrection | no | |
++| Return with the elixir | as a scorecard | "Checkpoints skipped: 0. The plan's tasks done: 1 of 1. Purse: 🟡 54.5. Side stories finished: 0." |
++
++Against Siegel's nine acts, two are missing: **act 2, something bad happens** (no harm or opposition
++sets anything in motion), and **acts 5–6, the wrong goal and the reversal**, which the false lead
++ought to supply: its truth is told at once ("what they tell you sounds right, and is wrong; you will
++find it out on the road"), so there is no reversal to find.
++
++Carlquist notes that games spend most of their time in tests and leave the return to a closing
++page. The log goes further: most of the text belongs to no stage at all. It belongs to the daily
++round of sleeping, eating and weather.
++
++### 4.5 Narrative operators
++
++| Operator (Pearce) | Present? | In azrpg |
++|---|---|---|
++| Experiential | strong | hunger, weather, storms, crews, tiredness: the conflicts the systems make |
++| Performative | n/a | a single-player game; the journal's log is the nearest thing |
++| Augmentary | strong | facts from the map, rumours, news, the people's lines |
++| Descriptive | moderate | the journal's log and record; cluttered with dates ("(happened Day 23, 00:00)") and ledger lines |
++| Meta-story | thin | the opening and the objective in the corner |
++| Story system | built, quiet | arcs, roles and moments exist, and produce one story line every 4–16 game days |
++
++The two operators the game was built for, meta-story and story system, are the weakest on the
++page. The narrative engine runs out of sight as intended, but too little of it reaches the page.
++
++### 4.6 Branching
++
++The journeys are Carlquist's second structure: a fixed start (A) and end (E), and a middle that can
++be played in any order. The text shows E (the objective, the plan) but rarely what is open or closed
++on the way there. The out-of-order prompt is the one place where the text names a closed path. The sandbox is the third
++structure, fully open, and its text has no frame and no story (0%): it encourages exploring and
++gives the explorer nothing to make a story of.
++
++### 4.7 Motivation
++
++The tie gives a reason to go. After the opening, reasons thin out. A toll post asks whether to pay
++without saying what lies past it; a priest's offering has no stake beyond standing; "Look the place
++over" has a reason only for raids. The objectives say what to do and seldom why.
++
++### 4.8 Cohesion
++
++After the fixes there are no form faults. What remains:
++
++- **Several systems announce the same event.** Arriving at a checkpoint brings a banner, a "Reached"
++  log line, a checkpoint page with par, a story page with the next objective, and a story-record line:
++  five texts for one arrival, in two voices.
++- **Toasts and log lines pair by design**, and the journal's log then holds both the event and its
++  story echo ("Vr'seramant: open the market." twice).
++- **Fidelity tags** (data, mixed, new) average 2–3 per hundred words. They are useful for a
++  worldbuilder and break the voice for a player.
++- **Long objectives** stack roles, crossings and the climax in one line: "Reach Vr'seramant with the
++  company whole: a long crossing of taiga; the way there crosses the sea, so look for a passage. Then:
++  Sell the company's goods in Vr'seramant."
++- **Raw labels** stand in for prose: "But first: Tide and weather in Leg".
++- **Many voices.** The story, the ledger, the clerk ("Checkpoint: Freys · Day 27, 17:00. Par was Day
++  42, 09:59"), the naturalist and the news crier all speak in the same box.
++
++### 4.9 Pacing
++
++A journey produces 3–10 entries a game day, and about one camp report, half a weather toast and
++under a tenth of a story line each day. A town visit is a burst of thirty to forty. Story beats are spread
++by the map's hooks, so a 1,500-mile leg through empty country can pass with none.
++
++## 5. The fix: a narrator, and a story that keeps its promises
++
++The fixes in section 3 are made. The rest needs one new layer and several changes to the story. In
++build order:
++
++### 5.1 The narrator (one layer between every system and the screen)
++
++Every system sends messages to the narrator; the narrator decides what reaches the player.
++
++| Rule | What it does | Example |
++|---|---|---|
++| **One event, one telling** | messages with the same event key in the same moment merge into one page, story line first, ledger line after | arrival: one page ("Freys. The company...") with the par and record on a dim line, and one log entry |
++| **Voices** | each message has a voice (story, person, world, ledger, system), and each voice has a place: story and people in pages and choices, the world in toasts, the ledger in the status line and journal | par times go to the status line and the journal |
++| **Routine goes quiet** | a routine report (camp, weather, crew stops) is shown when it differs from the last one, or every fifth time, and otherwise goes to the status line | camp: the first night in a new country, a catch, a storm, a cold night; otherwise "camped (+1 ration)" in the status line |
++| **No repeats within a day** | the same sentence from any system is said once a day | |
++| **Escalation** | alarms (hunger, tiredness, unpaid crews) escalate once and then hold in the status line | "Your food is gone" once; then "food 0" in red |
++| **Tags as a setting** | fidelity tags shown in worldbuilding mode, hidden in play mode | |
++| **Style guard** | sentences start with capitals; objectives under about twenty words (a second line for notes); act labels turned into prose | "But first, wait out the tide and weather in Leg." |
++
++### 5.2 The story keeps its promises
++
++| Change | Lens | What it does |
++|---|---|---|
++| **Memory of deeds** | transformation | raids, gifts, shared food, offerings, thefts and broken contracts are kept; people mention them in their regard ("You shared your bread at Bozgrun; word travels"), and the ending names them |
++| **A story beat every few days** | pacing, story system | moments per leg scale with its length (about one per three to five travel days), from towns near the route, the map's hooks, strangers met on the road, and the company at camp |
++| **The company speaks** | frame, allies | the tie's character and the companions speak at camp, in place of a repeated camp line: about the leg, the last deed, the country, their stake |
++| **Opposition** | acts 2–3, tests and enemies | each arc gets an opposing party (the target's watch, a rival company, pursuers, the creditor's men) named at the opening and met again on the road |
++| **A real reversal** | acts 5–6 | the false lead sends the player on; the truth comes out at the next stop, and the objective changes there |
++| **The return** | reward, return with the elixir | an epilogue in the story's voice before the scorecard: the measure in words, the tie's fate, the deeds remembered, standing changes as people put them; the scorecard moves to the journal |
++| **Reasons in choices** | motivation | each story choice names its stake ("Past the toll lies Geg, where the Sigil's keepers live") |
++| **A frame for the sandbox** | branching, meta-story | a sandbox traveller gets a tie to their start town and an open objective (find work, make a name, see the world), with leads as hooks |
++
++### 5.3 Control of the company
++
++The company forms at the start or at a Gathering, and today it shows only in the opening and the
++journal. The player needs to see it form, see who is in it, and end it.
++
++| Piece | What it does |
++|---|---|
++| **The company forms** | a page and a banner: who joins, who leads, what holds them together |
++| **The company panel** (C, and the journal) | members with their role, tie, heart and wage; for each, *part ways*; for all, *disband* |
++| **A home** | in any town, *make a home here*: the company's kin and followers settle there, and leave the party. Home is marked on the map. At home you rest for free, store goods without a fee, and find your people; they go with you again if you ask. One home at a time for now. |
++| **Ending a journey** | as now, each companion chooses; family can also be sent home, or settled at your home |
++| **Later** | property, lines and households at home (with the version that builds them) |
++
++### 5.4 The text as a test
++
++`tests/textlog.js` becomes a regression test, with thresholds: no faults; no sentence repeated across
++systems within a day; story text at least a set share of pages; story beats at least one per given
++number of travel days; no page over 700 characters; no forbidden forms (raw labels, lower-case
++sentence starts, doubled articles).
++
++## 6. Questions for you
++
++1. **Routine reports.** Should camp, weather and crew stops go to the status line by default, with
++   full reports as a setting?
++2. **Tags.** Hide the fidelity tags in play, and keep them in a worldbuilding mode?
++3. **The clerk's voice.** Should par times leave the arrival page for the status line and journal?
++4. **Opposition.** Should each arc's opposing party be built now in a simple form (a named rival
++   who appears on the road and at the target), or wait for Alpha 6's traffic and Alpha 7's war?
++5. **The home.** One home at a time, giving free rest and storage and holding your kin, until
++   property comes: is that the right scope?
++6. **Story density.** Is one story beat every three to five travel days the right pace?
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/05_ui.js azrpg-alpha5.1.1/engine/src/05_ui.js
+--- azrpg-main/engine/src/05_ui.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/05_ui.js	2026-10-14 19:19:11.215969901 +0000
+@@ -12,7 +12,9 @@
+   }
+   busy() { return !!this.active || !!this.modalKey; }
+   say(pages, who) {
+-    pages = (Array.isArray(pages) ? pages : [pages]).filter(Boolean);
++    pages = (Array.isArray(pages) ? pages : [pages]).flat().filter(p => p != null && p !== "").map(String);
++    // a string spread into characters by mistake reads as one page, never one letter at a time
++    if (pages.length > 3 && pages.every(p => p.length <= 1)) pages = [pages.join("")];
+     if (!pages.length) return Promise.resolve();
+     return new Promise(res => {
+       let i = 0;
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/06_game.js azrpg-alpha5.1.1/engine/src/06_game.js
+--- azrpg-main/engine/src/06_game.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/06_game.js	2026-10-14 19:25:20.408893904 +0000
+@@ -388,7 +388,7 @@
+       opts.push({ label: `Give alms at the ${b.temple ? "temple" : "shrine"} (🟡 ${P.alms(w, b)})`, act: "alms", disabled: s.purse < P.alms(w, b) });
+       opts.push({ label: "Notice board: work and errands", act: "board", cls: "side" });
+       // marked places in or beside the town can be visited from the town itself
+-      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit the ${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
++      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit ${/^the /i.test(n.o.name) ? "" : "the "}${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
+       for (const p of people) if (p.role !== "Notice board") opts.push({ label: `${p.role}${p.name ? `: ${U.esc(p.name)}` : ""}`, act: p });
+       if (s.cond.fever || s.cond.gravely) opts.push({ label: `Ask the ${b.temple ? "priest" : "shrine-keeper"} to treat your fever (${this.healCost(b) ? "🟡 " + this.healCost(b) : "free"})`, act: "heal", disabled: s.purse < this.healCost(b) });
+       opts.push(...this.townExtras(b));
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/15_journeys.js azrpg-alpha5.1.1/engine/src/15_journeys.js
+--- azrpg-main/engine/src/15_journeys.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/15_journeys.js	2026-10-14 19:25:20.406943095 +0000
+@@ -383,7 +383,7 @@
+     const fuel = /grass|lush|needle|meadow|dry/.test(look.kind) || /forest|taiga|savann/i.test(b.name);
+     const danger = w.near(c, r, 3).find(n => n.kind === "marker" && /brigand|monster|burial|pirate/.test(n.o.type)) || w.zonesOfCell(cell).find(z => /Rebels|Invasion/.test(z.type));
+     const rnd = U.rng(`${s.seed}:camp:${c}:${r}:${Math.floor(t0 / 24)}`);
+-    L.push(`You camp in the ${b.name.toLowerCase()} ${T("data")}.`);
++    L.push(this.w.isLand(this.s.c, this.s.r) ? `You camp in the ${b.name.toLowerCase()} ${T("data")}.` : "You sleep aboard, at anchor.");
+     if (/forest|rainforest|taiga/i.test(b.name)) { s.sup.food += 1; L.push("The trees give shelter, and you find nuts and roots for breakfast (+1 ration)."); }
+     if (water) { s.sup.food += rnd() < 0.5 ? 1 : 0; L.push("Water close by; a line in it overnight."); }
+     if (today < 0) { if (fuel) L.push(`A cold night (about ${w.temp(today)}), but there is wood for a fire.`); else { rest += 6; s.sup.food = Math.max(0, s.sup.food - 1); L.push(`A cold night (about ${w.temp(today)}) with nothing to burn: you eat more and sleep little.`); } }
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/22_hosts.js azrpg-alpha5.1.1/engine/src/22_hosts.js
+--- azrpg-main/engine/src/22_hosts.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/22_hosts.js	2026-10-14 19:20:51.786416898 +0000
+@@ -102,7 +102,8 @@
+       if (v && leg && leg.domain !== "land") {
+         const C = AZ.VCLASS[v.vc] || AZ.VCLASS.boat, sun = AZ.Clock.sun(s.clock, this.lat()), hrs = this.keepsWatches(v) ? 24 : Math.max(4, Math.min(v.hpd || 12, sun.dl + 0.75)), days = Math.ceil(leg.miles * 1.15 / ((v.speed || C.speed) * hrs));
+         L.push(`In your ${U.esc(v.kind.toLowerCase())}, ${this.keepsWatches(v) ? "sailing round the clock" : `sailing ${Math.round(hrs)} hours a day at this season`}, call it ${days} days: ${days * this.eaters()} rations for ${this.eaters()} mouths, and more if the weather turns ${T("mixed")}.`);
+-      } else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
++      } else if (leg && leg.domain !== "land" && (this.jr.cps[s.cp - 1]?.acts || cp.acts || []).some(a => a.id === "board")) L.push("The company's own vessel waits at the quay: board her when the company is ready (★).");
++      else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
+     }
+     L.push("F follows the plan's gold line; with a waypoint it takes the shortest water. Boats keep near the coast, ships keep off it. A boat's hands stop at dusk; a ship with hands for two watches sails on. In a storm, small hulls want a beach and ships want open water.");
+     if (s.beast || s.mount) L.push(`Animals go aboard small ships and larger; ${v && !ANIMALS_ABOARD.has(v.vc) ? `your ${U.esc(v.kind.toLowerCase())} cannot take them` : "a skiff or a boat cannot take them"}, and the stables here will keep them.`);
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/23_stories.js azrpg-alpha5.1.1/engine/src/23_stories.js
+--- azrpg-main/engine/src/23_stories.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/23_stories.js	2026-10-14 19:25:20.415261283 +0000
+@@ -116,7 +116,7 @@
+         if (k % 2 === 0) for (const x of w.near(c, r, 3)) {
+           if (x.kind !== "marker" || seenM.has(x.o.i)) continue; seenM.add(x.o.i);
+           const ty = x.o.type || "", kind = /monster|dragon|brigand|pirate|beast|troll|giant|kraken/i.test(ty) ? "monster" : /ruin|dungeon|cave|burial|necropol|tomb|crypt|battlefield/i.test(ty) ? "ruin" : /sacred|shrine|temple|pilgrim|monaster/i.test(ty) ? "shrine" : /inn/i.test(ty) ? "inn" : /mine/i.test(ty) ? "mine" : "wonder";
+-          add(kind, `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
++          add(kind, x.o.name.toLowerCase() === ty.toLowerCase() || x.o.name.toLowerCase().includes(ty.toLowerCase().replace(/s$/, "")) ? x.o.name : `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
+         }
+         for (const z of w.zonesOfCell(cell)) {
+           if (seenZ.has(z.i)) continue; seenZ.add(z.i);
+@@ -257,7 +257,7 @@
+       flight: `You cannot go back to ${home}.`,
+       curiosity: `You have read of ${d ? d.name : jr.dest.name} since you were a child.`,
+     }[id];
+-    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "the books" : "eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
++    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "bookkeeper" : "the eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
+     const leader = AZ.journeyLeader(w, jr), canLead = S.lead && !leader;
+     const leads = canLead ? rnd() < 0.5 : false;
+     return { tie: { id, text, who }, leads, leader: leader || (!leads && who && who.joins ? who.name : null) };
+@@ -343,7 +343,7 @@
+         });
+         if (site) { seen.add(site.o.i); moments.push({ kind: "purpose", sub: want, tile: site.o.t, burg: site.kind === "burg" ? site.o.i : null, marker: site.kind === "marker" ? site.o.i : null, name: site.o.name }); }
+       }
+-      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
++      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind) && !(h.kind === "monster" && h.tile && !w.isLand(h.tile[0], h.tile[1])) && !/pirate|sea-monster/i.test(h.text)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
+       legs.push({ i, fn, role, kind, carrier: R.carrier || null, what: R.what || null, objective, sea, moments, hook: best });
+     }
+     return { type, family: S.family, arc, shape, shapeName: AZ.SHAPES[shape].name, move: S.move, climax: S.climax, early: S.early, target: tcp, legs, hooks };
+@@ -405,10 +405,10 @@
+     const s = this.s, w = this.w, tv = this.tv, jr = this.jr, A = this.arc(), P = w.P, o = jr.origin;
+     const leg = A.legs[1], noun = AZ.noun(jr), lead = this.leaderName();
+     const sun = AZ.Clock.light(s.clock, this.lat()), season = AZ.Clock.season(this.lat(), s.clock);
+-    const who = (s.party || []).filter(p => p.role !== "leader").map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
++    const who = (s.party || []).filter(p => p.role !== "leader" && p.name !== lead).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+     const L = [`You are <b>${U.esc(tv.name)}</b>, ${U.esc(tv.trade)} of ${U.esc(P.burgs[tv.home]?.name || o.name)}, ${U.esc(P.cultures[tv.culture].name)} by birth and of the ${U.esc(P.religions[tv.faith]?.name || "old ways")} by faith. ${U.esc(tv.tie ? tv.tie.text : "")}`,
+       `You stand in <b>${U.esc(o.name)}</b>, in ${season}, ${sun.phase === "night" ? "after dark" : "by day"}. ${lead ? `${U.esc(lead)} leads the ${U.esc(noun)}` : `The ${U.esc(noun)} is yours to lead`}${who ? `; with you go ${who}` : ""}.`,
+-      leg ? `${leg.objective}.` : "",
++      leg && leg.objective !== this.objective() ? `${leg.objective}.` : "",
+       `<b>${U.esc(this.objective())}.</b>`];
+     await this.ui.say(L.filter(Boolean));
+   };
+@@ -471,7 +471,7 @@
+     if ((leg.kind === "seek" || leg.kind === "mislead") && cp.place.burg) s.story.seek = { cp: i, place: cp.place.name, carrier: leg.carrier, what: leg.what, mislead: leg.kind === "mislead", done: false };
+     if (i === A.target && i < this.jr.cps.length - 1) this.storyQueue("climax");
+     const next = A.legs[i + 1];
+-    if (next && !s.story.seek) await this.ui.say([`${U.esc(cp.place.name)}. ${next.objective}.`]);
++    if (next && !s.story.seek) await this.ui.say([`${U.esc(U.cap(cp.place.name))}. ${next.objective}.`]);
+   };
+   // the person the story needs: a seek completes when you ask them
+   G.storyTalk = function (b, role) {
+@@ -551,7 +551,9 @@
+     const s = this.s, A = this.arc();
+     if (A && !s.storyEarly && !s.story.climaxed && A.target === this.jr.cps.length - 1) await this.climax();
+     if (A) { const m = U.clamp(Math.floor(s.story.measure), 0, 4); this.storyNote(`The end of it: ${U.esc(A.arc.endings[m])}.`, 0); }
+-    await finish1.call(this, A ? `${msg || ""} ${U.esc(U.cap(A.arc.endings[U.clamp(Math.floor(s.story.measure), 0, 4)]))}.` : msg);
++    const pages = Array.isArray(msg) ? msg.slice() : msg ? [msg] : []; // finish takes a list of pages
++    if (A) pages.push(`<b class="hook">${U.esc(U.cap(A.arc.endings[U.clamp(Math.floor(s.story.measure), 0, 4)]))}.</b>`);
++    await finish1.call(this, pages);
+     if (s.party && s.party.length) await this.disband();
+   };
+   // morale, food and suspicion as effects
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/engine/src/24_people.js azrpg-alpha5.1.1/engine/src/24_people.js
+--- azrpg-main/engine/src/24_people.js	2026-10-13 20:21:18.000000000 +0000
++++ azrpg-alpha5.1.1/engine/src/24_people.js	2026-10-14 19:20:51.785716906 +0000
+@@ -80,7 +80,9 @@
+   };
+   G.personLines = function (b, role, name) {
+     const s = this.s, w = this.w, P = w.P, R = this.regard(b, role), L = [], who = name ? U.esc(name) : `The ${role.toLowerCase()}`;
+-    L.push(`${who} ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.`);
++    const key = `${b.i}:${Math.floor(s.clock / 24)}`, first = s.regardSaid !== key;
++    s.regardSaid = key;
++    L.push(first ? `${who}, for one, ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.` : `${who}, too, ${BAND[R.band]}.`);
+     const next = this.jr && !s.done ? this.jr.cps[s.cp] : null, prov = next ? this.provisions(s.cp) : null;
+     if (/Innkeeper|Host/.test(role)) {
+       if (prov) L.push(`For the road to ${U.esc(prov.to)} (${U.num(prov.miles)} mi ${U.esc(prov.how)}${prov.sea && next.legIn.domain === "land" ? ", with a sea crossing the plan does not show" : ""}), ${who.split(" ")[0]} reckons ${prov.days} days: ${prov.rations} rations for ${prov.eaters === 1 ? "you" : `the ${prov.eaters} of you`}. You carry ${s.sup.food} ${T("mixed")}.`);
+@@ -88,7 +90,6 @@
+     } else if (/Priest|Shrine/.test(role)) {
+       if (/Theocracy/.test(R.form) && R.faith !== this.tv.faith) L.push("The faith's law is the law here, and you keep another faith: no blessing for you, and healing only at a price.");
+       else if (R.faith === this.tv.faith) L.push("You are among your own: alms here are counted, and help is given.");
+-      else L.push("Strangers of other faiths may give alms here, and are tended if they fall ill.");
+     } else if (/Captain|Elder/.test(role)) {
+       L.push(WATCH[R.watch]);
+       const heat = (s.heat || {})[b.state] || 0;
+@@ -117,7 +118,9 @@
+     const b = w.burgAt.get(w.idx(s.c, s.r)) || w.near(s.c, s.r, 3).find(n => n.kind === "burg")?.o;
+     if (b && !s.aboard) {
+       const R = this.regard(b, "Townsfolk");
+-      if (R.band === "hostile" && U.rnd2(b.i, Math.floor(s.clock / 24), 41) < 0.15) {
++      s.robbed = s.robbed || {};
++      if (R.band === "hostile" && !(s.clock - (s.robbed[b.i] ?? -1e9) < 168) && U.rnd2(b.i * 7919 + Math.floor(s.clock / 24), s.seed % 997, 41) < 0.15) {
++        s.robbed[b.i] = s.clock;
+         const loss = U.rn(s.purse * 0.1, 2);
+         if (R.watch === "protects") { this.ui.toast(`A thief in the night: the watch of ${U.esc(b.name)} caught them, and your purse is whole.`); this.log(`A thief in ${U.esc(b.name)}, caught by the watch.`); }
+         else { s.purse = U.rn(s.purse - loss, 2); this.ui.toast(`A thief in the night took 🟡 ${loss}. The watch of ${U.esc(b.name)} shrugs ${T("mixed")}.`); this.log(`Robbed of 🟡 ${loss} in ${U.esc(b.name)}; the watch did nothing.`, "hook"); }
+@@ -161,22 +164,25 @@
+   };
+ 
+   // ------------------------------------------------------------------ the journal: the journey, the road ahead, side stories you can pick
++  // the journal's page for the journey: who you are, the objective, the measure, what happened, the road ahead
++  G.journeyHtml = function () {
++    const s = this.s, tv = this.tv, A = this.arc ? this.arc() : null;
++    if (!A || !s.story) return "";
++    const rows = [];
++    for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
++    const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
++    return `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
++        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
++        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
++        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
++  };
+   const journal2 = G.journal;
+   G.journal = function () {
+     journal2.call(this);
+     const s = this.s, w = this.w, tv = this.tv, A = this.arc ? this.arc() : null, sheet = this.ui.el.modal && this.ui.el.modal.querySelector(".sheet");
+     if (!sheet) return;
+-    if (A && s.story) {
+-      const rows = [];
+-      for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
+-      const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+-      const d = document.createElement("div");
+-      d.innerHTML = `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
+-        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
+-        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
+-        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
+-      sheet.insertBefore(d, sheet.children[1] || null);
+-    }
++    const jh = this.journeyHtml();
++    if (jh) { const d = document.createElement("div"); d.innerHTML = jh; sheet.insertBefore(d, sheet.children[1] || null); }
+     const act = (s.threads || []);
+     const divs = [...sheet.querySelectorAll("div")].filter(x => /^◆ /.test(x.textContent));
+     divs.forEach((div, k) => {
+diff -ruN -x node_modules -x out -x __pycache__ -x package.json -x package-lock.json -x index.html -x textlog -x 'azrpg-alpha-*.patch' azrpg-main/tests/textlog.js azrpg-alpha5.1.1/tests/textlog.js
+--- azrpg-main/tests/textlog.js	1970-01-01 00:00:00.000000000 +0000
++++ azrpg-alpha5.1.1/tests/textlog.js	2026-10-14 19:20:51.780632608 +0000
+@@ -0,0 +1,179 @@
++// The text the player receives, logged and measured. Plays scripted runs (journeys of several types
++// and a sandbox) through an instrumented UI that records every page, prompt, option, toast, banner,
++// journal page, status-line change and log entry, with the game time and the system (engine module
++// and function) that produced it. Then measures the log for the review in docs/TEXT_REVIEW.md.
++// Run: node tests/textlog.js out [--out docs/textlog]   (out = the folder with built worlds)
++const fs = require("fs"), path = require("path");
++const { loadWorld, ROOT } = require("./harness.js");
++const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("--out") + 1] : path.join(ROOT, "docs/textlog");
++const DIR = process.argv[2] || path.join(ROOT, "out");
++const RUNS = [
++  { id: "pilgrimage", world: "Pyeongak", journey: "Pilgrimage to Chelhazpo", seed: 21 },
++  { id: "raid", world: "Bernoy", journey: "The Leg Keels", seed: 22 },
++  { id: "treasure", world: "Bernoy", journey: "Digging for the Bitter Sigil", seed: 23 },
++  { id: "caravan", world: "Bernoy", journey: "Lapis out of Leg", seed: 24 },
++  { id: "courier", world: "Bernoy", journey: "Dhez carries word to Leg", seed: 25 },
++  { id: "quest", world: "Nouileland", journey: null, seed: 26 },
++  { id: "airship", world: "Presia", journey: null, seed: 27 },
++  { id: "sandbox", world: "Pyeongak", sandbox: true, seed: 28 },
++];
++// engine line -> module file, to say which system produced each text
++const files = fs.readdirSync(path.join(ROOT, "engine/src")).filter(f => f.endsWith(".js")).sort();
++const starts = []; { let line = 1; for (const f of files) { starts.push([line, f]); line += fs.readFileSync(path.join(ROOT, "engine/src", f), "utf8").split("\n").length; } }
++const modOf = ln => { let m = files[0]; for (const [l, f] of starts) if (ln >= l) m = f; return m.replace(/\.js$/, ""); };
++const origin = () => {
++  const frames = (new Error().stack || "").split("\n").map(l => l.match(/at (?:async )?([^\s(]*)\s*\(?engine\.js:(\d+)/)).filter(Boolean).map(m => ({ fn: m[1] || "?", mod: modOf(+m[2]) }));
++  const f = frames.find(x => !/05_ui/.test(x.mod)) || frames[0] || { fn: "?", mod: "?" };
++  return { mod: f.mod, fn: f.fn, chain: frames.slice(0, 6).map(x => `${x.mod}:${x.fn}`).join(" < ") };
++};
++const plain = h => String(h ?? "").replace(/<span class="tag[^"]*">[^<]*<\/span>/g, "").replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
++const tagsIn = h => (String(h ?? "").match(/class="tag t-(data|mixed|new)"/g) || []).length;
++
++function makeUI(log) {
++  const ui = {
++    said: [], el: { loc: { innerHTML: "" }, trip: { innerHTML: "" }, modal: { querySelectorAll: () => [], querySelector: () => null } }, script: [], busy: () => false,
++    rec(ch, html, extra = {}) { const o = origin(); log.push({ ch, html: String(html ?? ""), text: plain(html), tags: tagsIn(html), ...o, ...extra, t: log.g && log.g.s ? log.g.s.clock : 0 }); },
++    say: async function (pages, who) { const arr = Array.isArray(pages) ? pages : [pages]; arr.filter(p => p != null && p !== "").forEach((p, k) => this.rec("SAY", p, { who: who || "", page: k + 1, pages: arr.length })); this.said.push(...arr); },
++    choose: async function (prompt, options) {
++      this.rec("CHOOSE", prompt, { options: options.map(o => ({ label: plain(o.label), disabled: !!o.disabled })) });
++      this.said.push("CHOOSE " + prompt + " :: " + options.map(o => o.label).join(" | "));
++      while (this.script.length) { const want = this.script[0], k0 = options.findIndex(o => !o.disabled && want.test(plain(o.label))); if (k0 >= 0) { this.script.shift(); return k0; } this.script.shift(); }
++      let k = options.findIndex(o => o.act === "stage"); if (k < 0) k = options.findIndex(o => o.act === "thread");
++      if (k < 0 && /Leave|Never mind|Stay aboard|Back|Thank|Go on|Walk on|Press on|Pass by/.test(plain(options[options.length - 1].label))) k = options.length - 1;
++      if (k < 0) k = options.findIndex(o => !o.disabled);
++      return Math.max(0, k);
++    },
++    toast(h) { this.rec("TOAST", h); this.said.push("TOAST " + h); },
++    banner(t, s) { this.rec("BANNER", `${t} / ${s}`); },
++    modal(h) { this.rec("MODAL", h); }, closeModal() {},
++  };
++  return ui;
++}
++const flush = () => new Promise(r => setImmediate(r));
++async function drain(g) { for (let n = 0; n < 40; n++) { await flush(); const q = g.s.storyQ; if (q && q.length) { const k = q.shift(); try { await g.playStory(k); } catch (e) { g.ui.rec("ERROR", `${e.message}`); } } else break; } }
++
++async function runOne(R) {
++  const { AZ, P, w, mk } = await loadWorld(path.join(DIR, `${R.world}_rpg.html`));
++  const log = [], ui = makeUI(log);
++  const J = R.sandbox ? null : (R.journey ? P.journeys.find(j => j.name === R.journey) : P.journeys[0]);
++  const jr = J ? new AZ.Journey(w, J) : null;
++  const g = new AZ.Game(w, new AZ.Renderer(w, new AZ.Art(w, mk), mk(10, 10), mk), ui, jr, { getItem: () => null, setItem: () => {} });
++  AZ.game = g; g.jr0 = jr; log.g = g;
++  const lg0 = g.log.bind(g); g.log = (html, cls) => { ui.rec("LOG", html, { cls: cls || "" }); return lg0(html, cls); };
++  let lastTrip = "";
++  const hud = () => { try { g.hud(); const t = plain(ui.el.trip.innerHTML); if (t && t !== lastTrip) { ui.rec("HUD", ui.el.trip.innerHTML); lastTrip = t; } } catch (e) { /* the status line needs a canvas in places */ } };
++  const step = async (c, r, pc, pr) => {
++    const s = g.s; let h = 1;
++    try { h = g.stepHours(c, r, Math.sign(c - pc), Math.sign(r - pr)); } catch (e) { h = 1; }
++    if (!isFinite(h) || h <= 0 || h > 48) h = 1;
++    s.c = c; s.r = r; if (s.vessel && s.aboard) { s.vessel.c = c; s.vessel.r = r; }
++    s.clock += h; try { g.awakeTick(h); } catch (e) {}
++    const night = AZ.Clock.light(s.clock, g.lat()).phase === "night";
++    if (((s.awake || 0) >= 16 && night) || (s.awake || 0) >= 20) { ui.script = [/until dawn|Camp|camp|Anchor/]; try { await g.rest(); } catch (e) {} ui.script = []; }
++    try { g.afterStep(); g.tick(); } catch (e) { ui.rec("ERROR", e.message); }
++    await drain(g); hud();
++  };
++  const visit = async b => {
++    ui.script = [/^Market/, /Food for 20 days/, /Food for 20 days/, /Food for 10 days/, /^Back/, /^Innkeeper|^Host/, /^Priest|^Shrine/, /^Captain|^Elder/, /^Townsfolk/, /^Harbourmaster: directions/, /^Thank/, /^Wainwright/, /^Thank/, /^Market/, /goods/i, /^Ask the merchant/, /^Thank/, /^Back/, /^Back/];
++    try { await g.town(b); } catch (e) { ui.rec("ERROR", `town: ${e.message}`); }
++    await drain(g);
++  };
++  if (R.sandbox) {
++    const start = P.burgs.filter(b => b && b.port && b.population > 5).sort((a, c) => c.population - a.population)[2];
++    g.fresh(R.seed, null, 80, { mode: "sandbox", start: start.i }); g.started(); await drain(g); hud();
++    ui.rec("NOTE", `(sandbox start: ${start.name})`);
++    await visit(start);
++    const dest = P.burgs.filter(b => b && b !== start && b.population > 2).map(b => ({ b, d: Math.hypot(b.t[0] - start.t[0], b.t[1] - start.t[1]) })).filter(o => o.d > 12 && o.d < 40).sort((a, c) => a.d - c.d)[0]?.b;
++    const p = dest && w.path(start.t, dest.t, (c, r) => w.isLand(c, r), { limit: 200000 });
++    if (p) { for (let k = 1; k < p.length; k++) await step(p[k][0], p[k][1], p[k - 1][0], p[k - 1][1]); await visit(dest); }
++    ui.script = [/Camp|camp/]; try { await g.rest(); } catch (e) {} await drain(g);
++    ui.script = []; try { g.journal(); } catch (e) { ui.rec("ERROR", `journal: ${e.message}`); }
++  } else {
++    g.fresh(R.seed, null, 80, { mode: "journey" });
++    ui.rec("NOTE", `(traveller: ${g.tv.name}, ${g.tv.kindLabel}; tie: ${g.tv.tie ? g.tv.tie.id : "-"}; ${g.tv.leads ? "leads" : "follows"})`);
++    g.started(); await drain(g); hud();
++    const cps = g.jr.cps;
++    for (let i = 0; i < cps.length && !g.s.done; i++) {
++      const cp = cps[i], b = cp.place.burg;
++      if (i > 0) {
++        const leg = cp.legIn, ch = leg && leg.chain;
++        if (leg && leg.domain !== "land" && !g.s.vessel && !g.riding()) { // a vessel for water legs: through the yard, so its text is logged
++          const from = cps[i - 1].place.burg;
++          if (from && (from.port || w.harbour(from, "boat"))) { ui.script = [/^Hire a .* with/]; try { await g.shipwright(from); } catch (e) {} }
++          if (!g.s.vessel) { const port = [from, ...P.burgs].find(x => x && w.harbour(x, "boat")); if (port) g.s.vessel = g.newVessel("boat", "hired", port, 3); }
++          if (g.s.vessel) g.s.aboard = true;
++        }
++        if (ch) for (let k = 1; k < ch.length; k++) { await step(ch[k][0], ch[k][1], ch[k - 1][0], ch[k - 1][1]); if (g.s.done) break; if (k === Math.floor(ch.length / 2)) { try { g.journal(); ui.rec("MODAL", g.journeyHtml ? g.journeyHtml() : ""); } catch (e) { ui.rec("ERROR", `journal: ${e.message}`); } } }
++        if (b) { g.s.aboard = false; await step(b.t[0], b.t[1], g.s.c, g.s.r); }
++        try { g.checkCheckpoints(); } catch (e) { ui.rec("ERROR", `checkpoint: ${e.message}`); }
++        await drain(g); hud();
++      }
++      if (b && !g.s.done) await visit(b);
++    }
++    try { g.journal(); ui.rec("MODAL", g.journeyHtml ? g.journeyHtml() : ""); } catch (e) { ui.rec("ERROR", `journal: ${e.message}`); }
++  }
++  return log.map(e => ({ run: R.id, world: R.world, ...e, day: +(e.t / 24).toFixed(2) }));
++}
++
++// ------------------------------------------------------------------ measures
++const STAGE = [ // which system speaks for which stage of the hero's journey (Vogler) and act (Siegel)
++  [/intro|opening/, "ordinary world / the call"], [/gather|formCompany/, "allies"], [/storyTalk|personLines/, "mentor"],
++  [/moment/, "tests, allies, enemies"], [/arrival/, "crossing / approach"], [/climax/, "ordeal"],
++  [/outOfOrder/, "a shortcut"], [/finish|disband/, "reward / return"], [/merchantAdvice|harbourmaster|wainwright/, "mentor"],
++];
++const SYS = m => /2[34]_|04_story/.test(m) ? "story" : /2[0-2]_|09_|12_|13_|14_|16_|18_|19_/.test(m) ? "mechanics" : /15_|10_|07_/.test(m) ? "journey and scenes" : "frame";
++function measure(entries) {
++  const M = { n: entries.length, ch: {}, words: 0, you: 0, youOf: 0, tags: 0, faults: [], sys: {}, stages: {}, choices: 0, withReason: 0, withCost: 0, days: 0 };
++  const seen = new Map(), dups = new Map();
++  for (const e of entries) {
++    M.ch[e.ch] = (M.ch[e.ch] || 0) + 1;
++    const words = e.text.split(/\s+/).filter(Boolean).length; M.words += words; M.tags += e.tags;
++    M.sys[SYS(e.mod)] = (M.sys[SYS(e.mod)] || 0) + 1;
++    if (/SAY|CHOOSE/.test(e.ch)) { M.youOf++; if (/\byou(r|rs|rself)?\b/i.test(e.text)) M.you++; }
++    if (e.ch === "SAY" && e.text.length <= 1) M.faults.push(["a page of one character", e]);
++    if (/<\/?[a-z][^>]*>|&lt;|class=/.test(e.text)) M.faults.push(["markup shown as text", e]);
++    if (/\bundefined\b|\bNaN\b|\bnull\b|\[object/.test(e.text)) M.faults.push(["a missing value printed", e]);
++    if (e.ch === "SAY" && e.text.length > 700) M.faults.push(["a page over 700 characters", e]);
++    if (e.ch === "ERROR") M.faults.push(["an error", e]);
++    for (const [re, st] of STAGE) if (re.test(e.chain)) { M.stages[st] = (M.stages[st] || 0) + 1; break; }
++    if (e.ch === "CHOOSE") { M.choices++; if (/\b(because|so that|to |for |if |unless)\b|: /.test(e.text)) M.withReason++; if ((e.options || []).some(o => /🟡|\d+ ?h\b|ration|morale|day/.test(o.label))) M.withCost++; }
++    // the same sentence twice in a day, from the same or another system
++    for (const sen of e.text.split(/(?<=[.!?])\s+/).filter(x => x.length > 24)) {
++      const key = sen.toLowerCase().replace(/[\d.,🟡]+/g, "#").replace(/\s+/g, " ");
++      const prev = seen.get(key);
++      if (prev && e.t - prev.t <= 24 && !(e.ch === "HUD" && prev.ch === "HUD")) { const d = dups.get(key) || { sen, n: 1, systems: new Set([prev.mod]), chans: new Set([prev.ch]) }; d.n++; d.systems.add(e.mod); d.chans.add(e.ch); dups.set(key, d); }
++      seen.set(key, e);
++    }
++  }
++  M.days = entries.length ? (entries[entries.length - 1].t - entries[0].t) / 24 : 0;
++  M.dups = [...dups.values()].sort((a, b) => b.n - a.n).map(d => ({ sen: d.sen, n: d.n, systems: [...d.systems], chans: [...d.chans] }));
++  M.crossDups = M.dups.filter(d => d.systems.length > 1 || d.chans.length > 1).length;
++  M.places = new Set((entries.map(e => e.text).join(" ").match(/\b[A-Z][a-z'’-]{3,}(?: [A-Z][a-z'’-]+)?\b/g) || [])).size;
++  return M;
++}
++(async () => {
++  fs.mkdirSync(OUT, { recursive: true });
++  const only = process.argv.includes("--run") ? process.argv[process.argv.indexOf("--run") + 1] : null;
++  if (only) { // one run per process: the engine loads once per process
++    const R = RUNS.find(x => x.id === only);
++    let entries = [];
++    try { entries = await runOne(R); } catch (e) { entries = [{ run: R.id, ch: "ERROR", text: e.stack.split("\n").slice(0, 3).join(" "), html: "", mod: "?", fn: "?", chain: "", t: 0, tags: 0, day: 0 }]; }
++    fs.writeFileSync(path.join(OUT, `${R.id}.json`), JSON.stringify(entries.map(e => ({ ...e, html: undefined }))));
++    return;
++  }
++  const { execFileSync } = require("child_process");
++  const all = [], summary = [];
++  for (const R of RUNS) {
++    try { execFileSync(process.execPath, [__filename, DIR, "--out", OUT, "--run", R.id], { stdio: "inherit", timeout: 600000 }); } catch (e) { console.error(`${R.id}: ${e.message}`); }
++    const entries = fs.existsSync(path.join(OUT, `${R.id}.json`)) ? JSON.parse(fs.readFileSync(path.join(OUT, `${R.id}.json`), "utf8")) : [];
++    fs.rmSync(path.join(OUT, `${R.id}.json`), { force: true });
++    all.push(...entries);
++    const M = measure(entries); summary.push({ run: R.id, ...M });
++    const md = [`# Text log: ${R.id} (${R.world}${R.journey ? `, ${R.journey}` : R.sandbox ? ", sandbox" : ""})\n`, `${entries.length} entries over ${M.days.toFixed(1)} game days.\n`, "| Day | Channel | System | Text |", "|---|---|---|---|",
++      ...entries.map(e => `| ${e.day.toFixed(1)} | ${e.ch}${e.page ? ` ${e.page}/${e.pages}` : ""} | ${e.mod}:${String(e.fn).replace(/^.*\./, "")} | ${(e.text + (e.options ? ` ⟶ ${e.options.map(o => `[${o.label}]${o.disabled ? "×" : ""}`).join(" ")}` : "")).replace(/\|/g, "/").slice(0, 400)} |`)];
++    fs.writeFileSync(path.join(OUT, `${R.id}.md`), md.join("\n"));
++    console.log(`${R.id}: ${entries.length} entries, ${M.days.toFixed(1)} days, ${M.words} words; faults ${M.faults.length}; repeated sentences ${M.dups.length} (${M.crossDups} across systems or channels)`);
++  }
++  fs.writeFileSync(path.join(OUT, "textlog.jsonl"), all.map(e => JSON.stringify({ run: e.run, day: e.day, ch: e.ch, mod: e.mod, fn: e.fn, text: e.text, options: e.options, tags: e.tags })).join("\n"));
++  fs.writeFileSync(path.join(OUT, "measures.json"), JSON.stringify(summary.map(m => ({ ...m, faults: m.faults.map(([k, e]) => ({ kind: k, run: e.run, day: e.day, ch: e.ch, mod: e.mod, fn: e.fn, text: String(e.text).slice(0, 200) })), dups: m.dups.slice(0, 25) })), null, 1));
++})().catch(e => { console.error(e); process.exit(1); });
