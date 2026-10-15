@@ -1,5 +1,66 @@
 # Changelog
 
+## Alpha 5.2: the clock
+
+**The race.** A journey is a race against its plan. Every stop has a par time, and each journey type
+reads early and late its own way: a pilgrim can arrive early and wait for the holy day; a courier
+wants every hour; a raid must beat the alarm; a caravan wants market day; a royal progress must not
+arrive before the town is ready; a campaign that comes after the battle is lost. Each stop scores up
+to 100 points (more for waiting for the day, or for speed where speed counts); the target counts
+three times.
+
+**Arrival** is one page, in large type: ★ on par, or ahead of par, or behind; par and arrival; the
+verdict in the journey's own words; the points; what the plan has you do; the next objective and its
+par.
+
+**The report card.** At the end: an epilogue in the story's voice, then the card: every stop with
+par, arrival, verdict and points; the score against the clock, with a grade (S to E, F if lost); the
+story and the plan's tasks; the total; and your best on that journey, kept between runs.
+
+**The clock everywhere.** The opening says how this journey reads the clock. The corner shows ⏱ the
+next stop's par and your pace along the plan's course. Camp reports carry the race line; companions
+speak of it. Choices that cost time say whether you stay ahead of par.
+
+**You lead.** The player always leads; the journey's named leader backs it. Votes and following are
+set aside while the clock is the challenge.
+
+**The narrator.** Camp reports in a country you know say only what changed. The crew asks once how
+to spend the nights and keeps your standing order (change it in town).
+
+**Deeds remembered.** What you do to a state or a faith is kept, and its people see you by it.
+
+**The false lead** proves false at the next stop.
+
+**People you know.** People you talk to remember you. Companions can settle in a town, during the
+journey (the company, in town) or at its end, and greet you there, put you up, or come with you again.
+
+**Story beats** scale with the leg's length, about one every four days of travel.
+
+**Tests.** `tests/alpha52.js`; the text log (`docs/textlog/`) rerun under 5.2.
+
+## Alpha 5.1.1: the text review
+
+**A review of what the player reads.** `docs/TEXT_REVIEW.md` sets out a method for reading the game's
+text as story, built from Carlquist's *Playing the Story* (2002), applies it to a log of eight
+scripted games, and plans the fixes. `tests/textlog.js` builds the log: every page, prompt, option,
+toast, banner, journal page, status-line change and log line, with the game time and the system that
+produced it, and measures it. The logs are in `docs/textlog/`.
+
+**Fixes.**
+- The last checkpoint's message arrives as whole pages, never one character at a time: the ending is passed as a
+  page, and the message box joins any list of single letters into one page.
+- In a town, the first person says why they see you as they do; the others say how.
+- The temple speaks with one voice; the watch's regard is the person's own.
+- At most one night thief a week in any one town.
+- The harbourmaster points to the company's vessel waiting at the quay.
+- The opening names the leader once and says the objective once.
+- Companions tied to you by contract or custom are the bookkeeper and the eldest.
+- Nights at sea read "You sleep aboard, at anchor."
+- "Visit the The ..." loses its doubled article.
+- Pirates and sea monsters at sea are told once, by the sea's own encounters.
+- A marked place whose name is its type is named once; place names starting a sentence are capitalised.
+
+## Alpha 5.1: the story, hidden
 ## Alpha 5.1
 
 The narrative engine works out of sight, through people, places and objectives. The design is in

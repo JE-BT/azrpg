@@ -1702,7 +1702,9 @@ AZ.UI = class {
   }
   busy() { return !!this.active || !!this.modalKey; }
   say(pages, who) {
-    pages = (Array.isArray(pages) ? pages : [pages]).filter(Boolean);
+    pages = (Array.isArray(pages) ? pages : [pages]).flat().filter(p => p != null && p !== "").map(String);
+    // a string spread into characters by mistake reads as one page, never one letter at a time
+    if (pages.length > 3 && pages.every(p => p.length <= 1)) pages = [pages.join("")];
     if (!pages.length) return Promise.resolve();
     return new Promise(res => {
       let i = 0;
@@ -1895,9 +1897,10 @@ AZ.Game = class {
       this.log(`Checkpoint ${k}: ${U.esc(cp.place.name)}, ${AZ.Clock.fmt(s.clock)} (${this.deltaTextAt(d)}).`, "hook");
       const L = [`<b class="hook">Checkpoint: ${U.esc(cp.place.name)}</b> · ${AZ.Clock.fmt(s.clock)}. Par was ${AZ.Clock.fmt(cp.parArrive)}: ${this.deltaTextAt(d)} ${AZ.T("mixed")}.`];
       if (cp.acts.length) L.push(`The plan has you do here: ${cp.acts.map(a => `<span class="hook">${U.esc(a.label)}</span>`).join("; ")}. ${cp.place.at ? "Go into town with Space." : "Press R here."}`);
-      if (k === jr.cps.length - 1) return this.finish(L);
+      const pages = this.arrivalPages ? this.arrivalPages(cp, k, d, L) : L;
+      if (k === jr.cps.length - 1 || s.failed) return this.finish(pages);
       this.saveGame();
-      this.ui.say(L);
+      this.ui.say(pages);
       return;
     }
   }
@@ -1928,6 +1931,7 @@ AZ.Game = class {
     s.done = true; this.saveGame();
     const acts = jr.cps.reduce((a, cp) => a + cp.acts.length, 0), done = s.cpRec.reduce((a, r) => a + Object.keys(r?.acts || {}).length, 0);
     const skipped = s.cpRec.filter(r => r && r.skipped).length;
+    if (this.finishPages) return this.ui.say([...msg, ...this.finishPages()]);
     await this.ui.say([...msg, `<b class="hook">The pilgrimage is complete.</b> ${U.esc(this.tv.name)} reaches ${U.esc(jr.dest.name)} on ${AZ.Clock.fmt(s.clock)}: ${this.deltaTextAt(s.clock - jr.planEnd)}.`,
       `Checkpoints skipped: ${skipped}. The plan's tasks done: ${done} of ${acts}. Purse: 🟡 ${U.rn(s.purse, 1)}. Side stories finished: ${s.threads.filter(t => t.outcome === "done").length}. The journal (J) has the full record; you can keep exploring.`]);
   }
@@ -2170,7 +2174,7 @@ AZ.Game = class {
       opts.push({ label: `Give alms at the ${b.temple ? "temple" : "shrine"} (🟡 ${P.alms(w, b)})`, act: "alms", disabled: s.purse < P.alms(w, b) });
       opts.push({ label: "Notice board: work and errands", act: "board", cls: "side" });
       // marked places in or beside the town can be visited from the town itself
-      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit the ${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
+      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit ${/^the /i.test(n.o.name) ? "" : "the "}${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
       for (const p of people) if (p.role !== "Notice board") opts.push({ label: `${p.role}${p.name ? `: ${U.esc(p.name)}` : ""}`, act: p });
       if (s.cond.fever || s.cond.gravely) opts.push({ label: `Ask the ${b.temple ? "priest" : "shrine-keeper"} to treat your fever (${this.healCost(b) ? "🟡 " + this.healCost(b) : "free"})`, act: "heal", disabled: s.purse < this.healCost(b) });
       opts.push(...this.townExtras(b));
@@ -4946,7 +4950,7 @@ AZ.TRAITS = {
     return [`<b class="hook">${U.esc(jr.J.name)}</b> · ${U.esc(arch)} ${T("data")}`,
       `You are ${U.esc(tv.name)}, ${tv.age}, ${U.esc(tv.trade)} ${T("new")}. ${U.cap(U.esc(tv.why))} ${T("mixed")}.`,
       o ? `You stand in ${U.esc(o.name)}, ${U.esc(o.group)} of ${U.esc(P.states[o.state]?.fullName || "unclaimed land")} ${T("data")}.` : "",
-      d ? `The road ends in ${U.esc(d.name)}, ${U.num(jr.totalMiles)} miles by the plan in ${Math.round((jr.planEnd - jr.t0) / 24)} days ${T("mixed")}${leader ? `. ${U.esc(leader)} leads; the name is the journey's own ${T("data")}` : ""}.` : "",
+      d ? `The road ends in ${U.esc(d.name)}, ${U.num(jr.totalMiles)} miles by the plan in ${Math.round((jr.planEnd - jr.t0) / 24)} days ${T("mixed")}${leader ? `. ${U.esc(leader)} backs it, and you lead it ${T("data")}` : ""}.` : "",
       first ? `<b class="hook">First: ${U.esc(first.label)}.</b> Press Space on the town.` : ""].filter(Boolean);
   };
   const fin0 = G.finish;
@@ -4966,14 +4970,14 @@ AZ.TRAITS = {
     const s = this.s, w = this.w, jr = this.jr, arch = AZ.archOf(jr), A = AZ.ARCH[arch], noun = A.noun;
     const leader = AZ.journeyLeader(w, jr), rnd = U.rng(`${s.seed}:party`);
     if (!s.party.length) {
-      if (leader) s.party.push({ name: leader, role: "leader" });
+      if (leader) s.patron = leader; // Alpha 5.2: you lead; the journey's named leader backs it
       for (let i = 0; i < A.party; i++) s.party.push({ name: this.know.person(`party:${s.seed}:${i}`, rnd() < 0.7 ? b.culture : this.tv.culture), role: A.roles[i % A.roles.length] });
     }
     this.doAct("gather");
     const next = this.cpNext(), leg = next && next.legIn;
     const who = s.party.map(p => `<b>${U.esc(p.name)}</b> (${U.esc(p.role)})`).join(", ");
     await this.ui.say([`In ${U.esc(b.name)} the company gathers: ${who || "no one but you"} ${T("new")}.`,
-      `${leader ? `${U.esc(leader)} leads the ${noun}` : `The ${noun} is yours to lead`}: “${U.esc(jr.J.name)}” ${T("data")}. ${U.esc(jr.dest.name)} is the end of it ${T("data")}.`,
+      `${leader ? `${U.esc(leader)} backs the ${noun}, and you lead it` : `The ${noun} is yours to lead`}: “${U.esc(jr.J.name)}” ${T("data")}. ${U.esc(jr.dest.name)} is the end of it ${T("data")}.`,
       leg ? `The plan from here: ${U.esc(leg.name)}, by ${U.esc(leg.transport.toLowerCase())}, to ${U.esc(next.place.name)} ${T("data")}. ${leg.transport.match(/boat/i) ? "Hire it together at the harbour: the company crews it, and you pay one hand's wage." : ""}` : "",
       `They travel with you and carry their own food. Ask them for advice any time: Space where there is nothing else to do.`].filter(Boolean));
   };
@@ -5115,7 +5119,7 @@ AZ.TRAITS = {
     const fuel = /grass|lush|needle|meadow|dry/.test(look.kind) || /forest|taiga|savann/i.test(b.name);
     const danger = w.near(c, r, 3).find(n => n.kind === "marker" && /brigand|monster|burial|pirate/.test(n.o.type)) || w.zonesOfCell(cell).find(z => /Rebels|Invasion/.test(z.type));
     const rnd = U.rng(`${s.seed}:camp:${c}:${r}:${Math.floor(t0 / 24)}`);
-    L.push(`You camp in the ${b.name.toLowerCase()} ${T("data")}.`);
+    L.push(this.w.isLand(this.s.c, this.s.r) ? `You camp in the ${b.name.toLowerCase()} ${T("data")}.` : "You sleep aboard, at anchor.");
     if (/forest|rainforest|taiga/i.test(b.name)) { s.sup.food += 1; L.push("The trees give shelter, and you find nuts and roots for breakfast (+1 ration)."); }
     if (water) { s.sup.food += rnd() < 0.5 ? 1 : 0; L.push("Water close by; a line in it overnight."); }
     if (today < 0) { if (fuel) L.push(`A cold night (about ${w.temp(today)}), but there is wood for a fire.`); else { rest += 6; s.sup.food = Math.max(0, s.sup.food - 1); L.push(`A cold night (about ${w.temp(today)}) with nothing to burn: you eat more and sleep little.`); } }
@@ -6671,7 +6675,8 @@ AZ.whyDest = function (w, jr) {
       if (v && leg && leg.domain !== "land") {
         const C = AZ.VCLASS[v.vc] || AZ.VCLASS.boat, sun = AZ.Clock.sun(s.clock, this.lat()), hrs = this.keepsWatches(v) ? 24 : Math.max(4, Math.min(v.hpd || 12, sun.dl + 0.75)), days = Math.ceil(leg.miles * 1.15 / ((v.speed || C.speed) * hrs));
         L.push(`In your ${U.esc(v.kind.toLowerCase())}, ${this.keepsWatches(v) ? "sailing round the clock" : `sailing ${Math.round(hrs)} hours a day at this season`}, call it ${days} days: ${days * this.eaters()} rations for ${this.eaters()} mouths, and more if the weather turns ${T("mixed")}.`);
-      } else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
+      } else if (leg && leg.domain !== "land" && (this.jr.cps[s.cp - 1]?.acts || cp.acts || []).some(a => a.id === "board")) L.push("The company's own vessel waits at the quay: board her when the company is ready (★).");
+      else if (leg && leg.domain !== "land") L.push("You have no vessel of your own: book a passage at the office, or hire one from the yard.");
     }
     L.push("F follows the plan's gold line; with a waypoint it takes the shortest water. Boats keep near the coast, ships keep off it. A boat's hands stop at dusk; a ship with hands for two watches sails on. In a storm, small hulls want a beach and ships want open water.");
     if (s.beast || s.mount) L.push(`Animals go aboard small ships and larger; ${v && !ANIMALS_ABOARD.has(v.vc) ? `your ${U.esc(v.kind.toLowerCase())} cannot take them` : "a skiff or a boat cannot take them"}, and the stables here will keep them.`);
@@ -6921,7 +6926,7 @@ AZ.whyDest = function (w, jr) {
         if (k % 2 === 0) for (const x of w.near(c, r, 3)) {
           if (x.kind !== "marker" || seenM.has(x.o.i)) continue; seenM.add(x.o.i);
           const ty = x.o.type || "", kind = /monster|dragon|brigand|pirate|beast|troll|giant|kraken/i.test(ty) ? "monster" : /ruin|dungeon|cave|burial|necropol|tomb|crypt|battlefield/i.test(ty) ? "ruin" : /sacred|shrine|temple|pilgrim|monaster/i.test(ty) ? "shrine" : /inn/i.test(ty) ? "inn" : /mine/i.test(ty) ? "mine" : "wonder";
-          add(kind, `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
+          add(kind, x.o.name.toLowerCase() === ty.toLowerCase() || x.o.name.toLowerCase().includes(ty.toLowerCase().replace(/s$/, "")) ? x.o.name : `${x.o.name} (${ty})`, { tile: x.o.t, leg: i, at: at(k), marker: x.o.i, strength: kind === "monster" || kind === "ruin" ? 1 : 0.8 });
         }
         for (const z of w.zonesOfCell(cell)) {
           if (seenZ.has(z.i)) continue; seenZ.add(z.i);
@@ -7062,10 +7067,9 @@ AZ.whyDest = function (w, jr) {
       flight: `You cannot go back to ${home}.`,
       curiosity: `You have read of ${d ? d.name : jr.dest.name} since you were a child.`,
     }[id];
-    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "the books" : "eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
-    const leader = AZ.journeyLeader(w, jr), canLead = S.lead && !leader;
-    const leads = canLead ? rnd() < 0.5 : false;
-    return { tie: { id, text, who }, leads, leader: leader || (!leads && who && who.joins ? who.name : null) };
+    const who = id === "kin" ? { name: nm, role: rel, joins: true } : id === "contract" || id === "custom" ? { name: nm, role: id === "contract" ? "bookkeeper" : "the eldest", joins: true } : id === "flight" || id === "curiosity" ? null : { name: nm, role: id, joins: false };
+    // Alpha 5.2: the player always leads; the journey's named leader, if any, backs it
+    return { tie: { id, text, who }, leads: true, leader: null, patron: AZ.journeyLeader(w, jr) || null };
   };
   const mt0 = AZ.makeTraveller;
   AZ.makeTraveller = function (w, jr, seed, ...rest) {
@@ -7073,7 +7077,7 @@ AZ.whyDest = function (w, jr) {
     if (jr && tv) Object.assign(tv, AZ.tieFor(w, jr, tv, seed));
     return tv;
   };
-  AZ.premiseCard = (w, jr, tv) => !jr || !tv || !tv.tie ? "" : `<div class="small" style="margin-top:6px">${U.esc(tv.tie.text)} ${tv.leads ? `<b>You lead the ${U.esc(AZ.noun(jr))}.</b>` : tv.leader ? `${U.esc(tv.leader)} leads; you follow.` : "You follow the company's lead."}</div>`;
+  AZ.premiseCard = (w, jr, tv) => !jr || !tv || !tv.tie ? "" : `<div class="small" style="margin-top:6px">${U.esc(tv.tie.text)} <b>You lead the ${U.esc(AZ.noun(jr))}${tv.patron ? `, with ${U.esc(tv.patron)}'s backing` : ""}.</b></div>`;
 
   // ------------------------------------------------------------------ the plan: roles for every leg
   const pickShape = (type, seed) => { const W = AZ.SHAPE_WEIGHTS[type] || { three: 1 }, tot = Object.values(W).reduce((a, x) => a + x, 0); let r = U.rng(`${seed}:shape`)() * tot; for (const [k, x] of Object.entries(W)) { r -= x; if (r <= 0) return k; } return Object.keys(W)[0]; };
@@ -7138,17 +7142,18 @@ AZ.whyDest = function (w, jr) {
       // moments: what the company meets on this leg
       const moments = [];
       const chain = (leg && leg.chain) || [], seen = new Set(cps.map(cp => cp.place.burg && cp.place.burg.i));
-      const want = arc.purpose, half = Math.floor(chain.length / 2);
-      if (R.kind === "purpose" || i === tcp) for (let k = 0; k < chain.length && moments.length < 2; k += 3) {
-        if (moments.length === 1 && k < half) continue;
+      const want = arc.purpose, legDays = leg ? leg.miles / Math.max(1, (leg.speed || 3) * (leg.hoursPerDay || 8)) : 0;
+      const nWant = U.clamp(Math.round(legDays / 4), 1, 6), gap = Math.max(3, Math.floor(chain.length / (nWant + 1)));
+      if (R.kind === "purpose" || i === tcp || legDays >= 8) for (let k = gap; k < chain.length && moments.length < nWant; k += 3) {
+        if (moments.length && k < moments[moments.length - 1].k + gap) continue;
         const [c, r] = chain[k];
         const site = w.near(c, r, 5).find(n => {
           if (n.kind === "burg") { const b = n.o; if (seen.has(b.i)) return false; return /harry|forage|shelter/.test(want) ? (b.population || 0) < 10 : want === "pilgrims" ? !!b.temple : /trade|procession|relay/.test(want) ? (b.population || 0) >= 1 : false; }
           return n.kind === "marker" && (/survey|search/.test(want) ? /ruin|dungeon|cave|wonder|portal|monument|statue|spring|waterfall|library/i.test(n.o.type) : want === "track" ? /monster|beast|dragon|troll|brigand/i.test(n.o.type) : false);
         });
-        if (site) { seen.add(site.o.i); moments.push({ kind: "purpose", sub: want, tile: site.o.t, burg: site.kind === "burg" ? site.o.i : null, marker: site.kind === "marker" ? site.o.i : null, name: site.o.name }); }
+        if (site) { seen.add(site.o.i); moments.push({ k, kind: "purpose", sub: want, tile: site.o.t, burg: site.kind === "burg" ? site.o.i : null, marker: site.kind === "marker" ? site.o.i : null, name: site.o.name }); }
       }
-      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
+      for (const h of legHooks(i).filter(h => h.leg === i && /Border|disease|famine|disaster|invasion|rebels|war|regiment|monster|hardCrossing|cold|heat|wetland|desert/.test(h.kind) && !(h.kind === "monster" && h.tile && !w.isLand(h.tile[0], h.tile[1])) && !/pirate|sea-monster/i.test(h.text)).sort((a, b) => b.strength * b.rel - a.strength * a.rel).slice(0, 2)) moments.push({ kind: "hook", sub: h.kind, tile: h.tile, text: h.text, zone: h.zone, marker: h.marker });
       legs.push({ i, fn, role, kind, carrier: R.carrier || null, what: R.what || null, objective, sea, moments, hook: best });
     }
     return { type, family: S.family, arc, shape, shapeName: AZ.SHAPES[shape].name, move: S.move, climax: S.climax, early: S.early, target: tcp, legs, hooks };
@@ -7164,7 +7169,7 @@ AZ.whyDest = function (w, jr) {
   };
   G.measureWords = function () { const A = this.arc(); if (!A) return ""; const m = U.clamp(Math.floor(this.s.story.measure), 0, 4); return `${A.arc.label}: ${A.arc.measure[m]}`; };
   G.storyNote = function (html, step = 0) { const st = this.s.story; st.measure = U.clamp(st.measure + step, 0, 4.99); st.record.push({ t: this.s.clock, html }); this.log(html, "hook"); this.dirty = true; };
-  G.leaderName = function () { const tv = this.tv; if (tv.leads) return null; return tv.leader || (this.s.party || []).find(p => p.role === "leader")?.name || null; };
+  G.leaderName = function () { return null; }; // Alpha 5.2: you lead
   G.objective = function () {
     const s = this.s, A = this.arc();
     if (!A || !s.story.opened) return "";
@@ -7187,7 +7192,7 @@ AZ.whyDest = function (w, jr) {
     s.party = s.party || [];
     if (!s.party.length && (A.party || 0) > 0 && !gathers) {
       const b = jr.origin.burg || this.townNear(), rnd = U.rng(`${s.seed}:party`), leader = AZ.journeyLeader(this.w, jr);
-      if (leader) s.party.push({ name: leader, role: "leader" });
+      if (leader) s.patron = leader;
       for (let i = 0; i < A.party; i++) s.party.push({ name: this.know.person(`party:${s.seed}:${i}`, rnd() < 0.7 && b ? b.culture : tv.culture), role: A.roles[i % A.roles.length] });
     }
     if (tv.tie && tv.tie.who && tv.tie.who.joins && s.party.length && !s.party.some(p => p.tie)) { const k = s.party.findIndex(p => p.role !== "leader"); if (k >= 0) s.party[k] = { ...s.party[k], name: tv.tie.who.name, tie: tv.tie.who.role }; }
@@ -7210,10 +7215,11 @@ AZ.whyDest = function (w, jr) {
     const s = this.s, w = this.w, tv = this.tv, jr = this.jr, A = this.arc(), P = w.P, o = jr.origin;
     const leg = A.legs[1], noun = AZ.noun(jr), lead = this.leaderName();
     const sun = AZ.Clock.light(s.clock, this.lat()), season = AZ.Clock.season(this.lat(), s.clock);
-    const who = (s.party || []).filter(p => p.role !== "leader").map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+    const who = (s.party || []).filter(p => p.role !== "leader" && p.name !== lead).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
     const L = [`You are <b>${U.esc(tv.name)}</b>, ${U.esc(tv.trade)} of ${U.esc(P.burgs[tv.home]?.name || o.name)}, ${U.esc(P.cultures[tv.culture].name)} by birth and of the ${U.esc(P.religions[tv.faith]?.name || "old ways")} by faith. ${U.esc(tv.tie ? tv.tie.text : "")}`,
-      `You stand in <b>${U.esc(o.name)}</b>, in ${season}, ${sun.phase === "night" ? "after dark" : "by day"}. ${lead ? `${U.esc(lead)} leads the ${U.esc(noun)}` : `The ${U.esc(noun)} is yours to lead`}${who ? `; with you go ${who}` : ""}.`,
-      leg ? `${leg.objective}.` : "",
+      `You stand in <b>${U.esc(o.name)}</b>, in ${season}, ${sun.phase === "night" ? "after dark" : "by day"}. The ${U.esc(noun)} is yours to lead${s.patron || tv.patron ? `, with ${U.esc(s.patron || tv.patron)}'s backing` : ""}${who ? `; with you go ${who}` : ""}.`,
+      this.raceBrief ? this.raceBrief() : "",
+      leg && leg.objective !== this.objective() ? `${leg.objective}.` : "",
       `<b>${U.esc(this.objective())}.</b>`];
     await this.ui.say(L.filter(Boolean));
   };
@@ -7275,8 +7281,7 @@ AZ.whyDest = function (w, jr) {
     this.storyNote(`Reached ${U.esc(cp.place.name)}.`, step);
     if ((leg.kind === "seek" || leg.kind === "mislead") && cp.place.burg) s.story.seek = { cp: i, place: cp.place.name, carrier: leg.carrier, what: leg.what, mislead: leg.kind === "mislead", done: false };
     if (i === A.target && i < this.jr.cps.length - 1) this.storyQueue("climax");
-    const next = A.legs[i + 1];
-    if (next && !s.story.seek) await this.ui.say([`${U.esc(cp.place.name)}. ${next.objective}.`]);
+    // the next objective is said on the race's arrival page (Alpha 5.2)
   };
   // the person the story needs: a seek completes when you ask them
   G.storyTalk = function (b, role) {
@@ -7287,7 +7292,7 @@ AZ.whyDest = function (w, jr) {
     k.done = true;
     const A = this.arc(), next = A.legs[k.cp + 1], nextName = next ? this.jr.cps[k.cp + 1].place.name : null;
     this.storyNote(`In ${U.esc(k.place)} you learned of ${U.esc(k.what)}.`, k.mislead ? 0 : 0.5);
-    if (k.mislead) return `<b class="hook">About ${U.esc(k.what)}:</b> what they tell you sounds right, and is wrong; you will find it out on the road${nextName ? ` to ${U.esc(nextName)}` : ""}. ${T("new")}`;
+    if (k.mislead) { s.story.mislead = { at: k.cp, what: k.what }; return `<b class="hook">About ${U.esc(k.what)}:</b> they are sure of it, and point you on${nextName ? ` to ${U.esc(nextName)}` : ""} ${T("new")}.`; }
     return `<b class="hook">About ${U.esc(k.what)}:</b> they tell you what you came to learn${nextName ? `, and point you on to ${U.esc(nextName)}` : ""} ${T("new")}.`;
   };
   // a later stop reached early: count it now, or only visit (from Alpha 5)
@@ -7356,7 +7361,8 @@ AZ.whyDest = function (w, jr) {
     const s = this.s, A = this.arc();
     if (A && !s.storyEarly && !s.story.climaxed && A.target === this.jr.cps.length - 1) await this.climax();
     if (A) { const m = U.clamp(Math.floor(s.story.measure), 0, 4); this.storyNote(`The end of it: ${U.esc(A.arc.endings[m])}.`, 0); }
-    await finish1.call(this, A ? `${msg || ""} ${U.esc(U.cap(A.arc.endings[U.clamp(Math.floor(s.story.measure), 0, 4)]))}.` : msg);
+    const pages = Array.isArray(msg) ? msg.slice() : msg ? [msg] : []; // finish takes a list of pages; the ending is in the epilogue
+    await finish1.call(this, pages);
     if (s.party && s.party.length) await this.disband();
   };
   // morale, food and suspicion as effects
@@ -7390,8 +7396,9 @@ AZ.whyDest = function (w, jr) {
       const m = s.partyMorale ?? 70, wage = U.rn(1.5 * W, 2);
       const lean = p.tie && KIN.includes(p.tie) ? (m >= 30 ? "would stay with you: you are family" : "goes home, and will tell the family how it went") : p.role === "leader" ? "goes their own way: the journey was theirs" : hired.test(p.role) ? (m >= 50 ? `would stay for 🟡 ${wage} a day` : "takes their pay and goes") : kin.test(p.role) ? (m >= 40 ? "would stay with you" : "goes their own way") : m >= 70 ? "might stay, if you ask" : "goes home";
       const can = !/goes|takes/.test(lean);
-      const k = await this.ui.choose(`<b>${U.esc(p.name)}</b> (${U.esc(p.tie || p.role)}) ${lean} ${T("mixed")}.`, [{ label: can ? "Ask them to stay" : "Thank them" }, { label: "Part ways" }], { cancel: 1 });
+      const k = await this.ui.choose(`<b>${U.esc(p.name)}</b> (${U.esc(p.tie || p.role)}) ${lean} ${T("mixed")}.`, [{ label: can ? "Ask them to stay" : "Thank them" }, { label: b ? `Let them settle here, in ${U.esc(b.name)}` : "Let them settle", disabled: !b || !this.settleCompanion }, { label: "Part ways" }], { cancel: 2 });
       if (k === 0 && can) keep.push({ ...p, wage: hired.test(p.role) ? wage : 0 });
+      else if (k === 1 && b && this.settleCompanion) this.settleCompanion(p, b);
       else this.log(`${U.esc(p.name)} went their own way.`);
     }
     s.party = keep;
@@ -7491,7 +7498,9 @@ AZ.whyDest = function (w, jr) {
   };
   G.personLines = function (b, role, name) {
     const s = this.s, w = this.w, P = w.P, R = this.regard(b, role), L = [], who = name ? U.esc(name) : `The ${role.toLowerCase()}`;
-    L.push(`${who} ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.`);
+    const key = `${b.i}:${Math.floor(s.clock / 24)}`, first = s.regardSaid !== key;
+    s.regardSaid = key;
+    L.push(first ? `${who}, for one, ${BAND[R.band]}: ${U.esc(R.why.slice(0, 2).join("; "))} ${T("mixed")}.` : `${who}, too, ${BAND[R.band]}.`);
     const next = this.jr && !s.done ? this.jr.cps[s.cp] : null, prov = next ? this.provisions(s.cp) : null;
     if (/Innkeeper|Host/.test(role)) {
       if (prov) L.push(`For the road to ${U.esc(prov.to)} (${U.num(prov.miles)} mi ${U.esc(prov.how)}${prov.sea && next.legIn.domain === "land" ? ", with a sea crossing the plan does not show" : ""}), ${who.split(" ")[0]} reckons ${prov.days} days: ${prov.rations} rations for ${prov.eaters === 1 ? "you" : `the ${prov.eaters} of you`}. You carry ${s.sup.food} ${T("mixed")}.`);
@@ -7499,7 +7508,6 @@ AZ.whyDest = function (w, jr) {
     } else if (/Priest|Shrine/.test(role)) {
       if (/Theocracy/.test(R.form) && R.faith !== this.tv.faith) L.push("The faith's law is the law here, and you keep another faith: no blessing for you, and healing only at a price.");
       else if (R.faith === this.tv.faith) L.push("You are among your own: alms here are counted, and help is given.");
-      else L.push("Strangers of other faiths may give alms here, and are tended if they fall ill.");
     } else if (/Captain|Elder/.test(role)) {
       L.push(WATCH[R.watch]);
       const heat = (s.heat || {})[b.state] || 0;
@@ -7528,7 +7536,9 @@ AZ.whyDest = function (w, jr) {
     const b = w.burgAt.get(w.idx(s.c, s.r)) || w.near(s.c, s.r, 3).find(n => n.kind === "burg")?.o;
     if (b && !s.aboard) {
       const R = this.regard(b, "Townsfolk");
-      if (R.band === "hostile" && U.rnd2(b.i, Math.floor(s.clock / 24), 41) < 0.15) {
+      s.robbed = s.robbed || {};
+      if (R.band === "hostile" && !(s.clock - (s.robbed[b.i] ?? -1e9) < 168) && U.rnd2(b.i * 7919 + Math.floor(s.clock / 24), s.seed % 997, 41) < 0.15) {
+        s.robbed[b.i] = s.clock;
         const loss = U.rn(s.purse * 0.1, 2);
         if (R.watch === "protects") { this.ui.toast(`A thief in the night: the watch of ${U.esc(b.name)} caught them, and your purse is whole.`); this.log(`A thief in ${U.esc(b.name)}, caught by the watch.`); }
         else { s.purse = U.rn(s.purse - loss, 2); this.ui.toast(`A thief in the night took 🟡 ${loss}. The watch of ${U.esc(b.name)} shrugs ${T("mixed")}.`); this.log(`Robbed of 🟡 ${loss} in ${U.esc(b.name)}; the watch did nothing.`, "hook"); }
@@ -7572,22 +7582,25 @@ AZ.whyDest = function (w, jr) {
   };
 
   // ------------------------------------------------------------------ the journal: the journey, the road ahead, side stories you can pick
+  // the journal's page for the journey: who you are, the objective, the measure, what happened, the road ahead
+  G.journeyHtml = function () {
+    const s = this.s, tv = this.tv, A = this.arc ? this.arc() : null;
+    if (!A || !s.story) return "";
+    const rows = [];
+    for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
+    const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
+    return `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
+        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
+        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
+        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
+  };
   const journal2 = G.journal;
   G.journal = function () {
     journal2.call(this);
     const s = this.s, w = this.w, tv = this.tv, A = this.arc ? this.arc() : null, sheet = this.ui.el.modal && this.ui.el.modal.querySelector(".sheet");
     if (!sheet) return;
-    if (A && s.story) {
-      const rows = [];
-      for (let i = Math.max(1, s.cp); i < this.jr.cps.length; i++) { const p = this.provisions(i); if (p) rows.push(`<tr><td>${U.esc(p.to)}</td><td>${U.esc(p.how)}${p.sea && this.jr.cps[i].legIn.domain === "land" ? " (a sea crossing)" : ""}</td><td>${U.num(p.miles)} mi</td><td>${p.days} d</td><td>${p.rations}</td></tr>`); }
-      const comp = (s.party || []).map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ");
-      const d = document.createElement("div");
-      d.innerHTML = `<h3>The journey ${T("mixed")}</h3><p>${U.esc(tv.tie ? tv.tie.text : "")} ${tv.leads ? "You lead." : this.leaderName() ? `${U.esc(this.leaderName())} leads.` : ""}${comp ? ` With you: ${comp}.` : ""}</p>
-        <p class="hook">◇ ${U.esc(this.objective())}</p><p>${U.esc(this.measureWords())}</p>
-        ${s.story.record.length ? `<div class="log">${s.story.record.slice(-8).reverse().map(e => `<div><span class="dim">${AZ.Clock.fmt(e.t)}</span> ${e.html}</div>`).join("")}</div>` : ""}
-        ${rows.length ? `<h3>The road ahead</h3><table class="plan"><tr><th>To</th><th>How</th><th>Miles</th><th>Days</th><th>Rations for ${this.eaters()}</th></tr>${rows.join("")}</table>` : ""}`;
-      sheet.insertBefore(d, sheet.children[1] || null);
-    }
+    const jh = this.journeyHtml();
+    if (jh) { const d = document.createElement("div"); d.innerHTML = jh; sheet.insertBefore(d, sheet.children[1] || null); }
     const act = (s.threads || []);
     const divs = [...sheet.querySelectorAll("div")].filter(x => /^◆ /.test(x.textContent));
     divs.forEach((div, k) => {
@@ -7626,6 +7639,352 @@ AZ.whyDest = function (w, jr) {
     const ok = load2.apply(this, a), s = this.s, P = this.w.P;
     if (ok && s && s.jIdx != null && P.journeys[s.jIdx] && (!this.jr || this.jr.J !== P.journeys[s.jIdx])) { this.jr = this.jr0 = new AZ.Journey(this.w, P.journeys[s.jIdx]); this._arc = null; }
     return ok;
+  };
+})();
+
+// =============================================================================================
+// 25_race.js · Alpha 5.2: the clock.
+//   A journey is a race against its plan. Every stop has a par time; each journey type reads early
+//   and late in its own way (a pilgrim waits for the holy day, a courier wants every hour, a raid
+//   must beat the alarm, a campaign that arrives after the battle is lost). Arriving scores points,
+//   the arrival page says how the race stands, the corner and the camp keep the count, choices that
+//   cost time say what they cost against par, and the end is a report card to compare runs by.
+// =============================================================================================
+(() => {
+  const G = AZ.Game.prototype, U = AZ.U, T = AZ.T;
+  // early: bonus (each day early beyond the window adds points) | wait (offer to wait for the day) |
+  // neutral | penalty; tol: the window, in days either side of par; k: points lost per day late
+  // beyond it; fail: days late at the target that end the journey; waitBonus: points for waiting.
+  const R = (deadline, target, stops, after, words, lost) => ({ deadline, target, stops, after: after || stops, words, lost });
+  AZ.CLOCK = {
+    "Pilgrimage": R("the holy day", { early: "wait", tol: 1, k: 15, waitBonus: 15, wait: "the feast" }, { early: "neutral", tol: 3, k: 4 }, null, ["with days to spare before the holy day", "in time for the holy day", "after the holy day has passed"]),
+    "Quest": R("the appointed time", { early: "bonus", tol: 3, k: 6 }, { early: "bonus", tol: 5, k: 3 }, null, ["ahead of the appointed time", "at the appointed time", "late for the appointed time"]),
+    "Caravan": R("market day", { early: "wait", tol: 2, k: 12, waitBonus: 10, wait: "market day" }, { early: "neutral", tol: 2, k: 6 }, null, ["before the market opens", "on market day", "after the market has closed"]),
+    "Military campaign": R("the battle", { early: "penalty", earlyK: 5, tol: 1, k: 20, fail: 5 }, { early: "neutral", tol: 2, k: 8 }, null, ["early, eating the campaign's stores", "in time for the battle", "after the battle"], "The battle was fought without you, and the campaign is lost."),
+    "Embassy": R("the audience", { early: "wait", tol: 1, k: 15, waitBonus: 5, wait: "the audience" }, { early: "neutral", tol: 3, k: 4 }, null, ["before the court will see you", "on the day of the audience", "late for the audience"]),
+    "Raid": R("the alarm", { early: "bonus", tol: 2, k: 12 }, { early: "bonus", tol: 3, k: 5 }, { early: "bonus", tol: 2, k: 15 }, ["before the alarm is raised", "with the coast still asleep", "with the coast alarmed"]),
+    "Smuggling run": R("the buyer's night", { early: "wait", tol: 1, k: 15, waitBonus: 5, wait: "the buyer's night" }, { early: "neutral", tol: 2, k: 5 }, null, ["before the buyer is ready", "on the buyer's night", "after the buyer has gone"]),
+    "Courier ride": R("the deadline", { early: "bonus", perDay: 8, tol: 0.5, k: 25, fail: 10 }, { early: "bonus", tol: 1, k: 8 }, null, ["ahead of the deadline", "on the deadline", "past the deadline"], "Too late: the message is worth nothing now."),
+    "Expedition": R("the season", { early: "bonus", tol: 7, k: 3 }, { early: "bonus", tol: 7, k: 2 }, null, ["with the season still young", "within the season", "with the season closing"]),
+    "Refugee flight": R("the closing border", { early: "bonus", tol: 3, k: 8 }, { early: "bonus", tol: 3, k: 4 }, null, ["well ahead of the danger", "just ahead of the danger", "with the danger close behind"]),
+    "Treasure hunt": R("the rivals", { early: "bonus", tol: 3, k: 6 }, { early: "bonus", tol: 5, k: 3 }, null, ["ahead of any rival", "level with your rivals", "behind your rivals"]),
+    "Monster hunt": R("the dark of the moon", { early: "wait", tol: 2, k: 8, waitBonus: 10, wait: "the dark of the moon" }, { early: "neutral", tol: 4, k: 3 }, null, ["before the dark of the moon", "in the dark of the moon", "after the dark of the moon"]),
+    "Exile's flight": R("the pursuit", { early: "bonus", tol: 2, k: 10, fail: 15 }, { early: "bonus", tol: 2, k: 6 }, null, ["well ahead of the pursuit", "a step ahead of the pursuit", "with the pursuit closing"], "The pursuit catches up with you."),
+    "Royal progress": R("the court's calendar", { early: "penalty", earlyK: 8, tol: 1, k: 15 }, { early: "penalty", earlyK: 6, tol: 1, k: 8 }, null, ["before the town is ready", "on the day the town expects you", "late, with the town kept waiting"]),
+    "Airship voyage": R("the timetable", { early: "neutral", tol: 1, k: 10 }, { early: "neutral", tol: 1, k: 8 }, null, ["ahead of the timetable", "on the timetable", "behind the timetable"]),
+    "Arcane errand": R("the conjunction", { early: "wait", tol: 0.5, k: 30, fail: 3, waitBonus: 10, wait: "the conjunction" }, { early: "neutral", tol: 3, k: 4 }, null, ["before the conjunction", "at the conjunction", "after the conjunction"], "The conjunction has passed; the working cannot be done."),
+    "Mercenary contract": R("the muster", { early: "neutral", tol: 2, k: 15, fail: 7 }, { early: "neutral", tol: 3, k: 6 }, null, ["early for the muster", "in time for the fighting", "after the fighting has begun"], "The fighting is over, and the contract is void."),
+    "Wandering": R("no one's clock", { early: "neutral", tol: 30, k: 1 }, { early: "neutral", tol: 30, k: 1 }, null, ["in your own time", "in your own time", "in your own time"]),
+  };
+  AZ.stopPoints = function (rule, dDays, waited) {
+    if (waited) return { p: 100 + (rule.waitBonus || 0), how: "on", waited: true };
+    if (Math.abs(dDays) <= rule.tol) return { p: 100, how: "on" };
+    if (dDays < 0) {
+      const e = -dDays - rule.tol;
+      if (rule.early === "bonus") return { p: Math.round(100 + Math.min(20, (rule.perDay || 5) * e)), how: "early" };
+      if (rule.early === "wait") return { p: 85, how: "early" };
+      if (rule.early === "penalty") return { p: Math.round(Math.max(40, 100 - (rule.earlyK || 8) * e)), how: "early" };
+      return { p: 100, how: "early" };
+    }
+    const l = dDays - rule.tol;
+    return { p: Math.round(Math.max(0, 100 - rule.k * l)), how: "late", fail: rule.fail != null && dDays > rule.fail };
+  };
+  G.clockRules = function () { const A = this.arc ? this.arc() : null; return A ? AZ.CLOCK[A.type] || AZ.CLOCK.Quest : null; };
+  G.ruleFor = function (k) { const C = this.clockRules(), A = this.arc(); if (!C) return null; return k === A.target ? C.target : k > A.target ? C.after : C.stops; };
+  const span = h => AZ.Clock.span(Math.abs(h));
+  const policyWords = r => `${r.early === "bonus" ? "every day early counts for you" : r.early === "wait" ? `early, you wait for ${r.wait || "the day"}` : r.early === "penalty" ? "early is no better than late" : "early costs you nothing"}; ${r.fail != null ? "too late, and it is lost" : "late costs you"}`;
+
+  // ------------------------------------------------------------------ how the race stands
+  G.raceStatus = function () {
+    const s = this.s, A = this.arc ? this.arc() : null;
+    if (!A || s.done || !this.jr) return null;
+    const cp = this.jr.cps[s.cp]; if (!cp) return null;
+    const p = this.provisions ? this.provisions(s.cp) : null, ch = cp.legIn && cp.legIn.chain;
+    let left = Math.hypot(cp.tile[0] - s.c, cp.tile[1] - s.r) * this.w.miles * 1.25;
+    if (ch && ch.length > 1 && cp.legIn.miles) { // what is left of the plan's course, from the nearest point on it
+      let bi = 0, bd = Infinity; for (let i = 0; i < ch.length; i += 2) { const dd = Math.abs(ch[i][0] - s.c) + Math.abs(ch[i][1] - s.r); if (dd < bd) { bd = dd; bi = i; } }
+      left = cp.legIn.miles * (1 - bi / (ch.length - 1)) + bd * this.w.miles;
+    }
+    const hpm = p && p.miles ? (p.days * 24) / p.miles : 1 / 3;
+    const eta = s.clock + left * hpm, ahead = cp.parArrive - eta; // hours ahead of par (negative: behind)
+    return { cp, ahead, eta, rule: this.ruleFor(s.cp), target: s.cp === A.target, C: this.clockRules() };
+  };
+  G.raceLine = function () {
+    const r = this.raceStatus(); if (!r) return "";
+    const tol = (r.rule.tol || 1) * 24, place = r.cp.place.name;
+    const pace = Math.abs(r.ahead) <= tol ? "on pace for par" : r.ahead > 0 ? `on pace to arrive ${span(r.ahead)} ahead of par` : `on pace to arrive ${span(r.ahead)} behind par`;
+    return r.target ? `${U.cap(r.C.deadline)} at ${place}: par ${AZ.Clock.fmt(r.cp.parArrive)}, and you are ${pace}.` : `${place} by ${AZ.Clock.fmt(r.cp.parArrive)} (par): ${pace}.`;
+  };
+  G.raceBrief = function () {
+    const A = this.arc(), C = this.clockRules(); if (!A || !C) return "";
+    const tcp = this.jr.cps[A.target], last = this.jr.cps[this.jr.cps.length - 1];
+    return `<b class="hook">The clock:</b> ${this.jr.cps.length - 1} stops, each with a par time; ${U.esc(C.deadline)} at ${U.esc(tcp.place.name)} is par ${AZ.Clock.fmt(tcp.parArrive)}${tcp !== last ? `, and the end at ${U.esc(last.place.name)} is par ${AZ.Clock.fmt(last.parArrive)}` : ""}. There, ${policyWords(C.target)} ${T("mixed")}.`;
+  };
+  const tl1 = G.threadLine;
+  G.threadLine = function () {
+    const h = tl1.call(this), line = this.raceLine ? this.raceLine() : "";
+    if (!line) return h;
+    const i = h.indexOf("</div>");
+    return i >= 0 && /◇/.test(h.slice(0, i)) ? `${h.slice(0, i + 6)}<div class="hook">⏱ ${U.esc(line)}</div>${h.slice(i + 6)}` : `<div class="hook">⏱ ${U.esc(line)}</div>${h}`;
+  };
+  // choices that cost time say what they cost against par
+  const scene1 = AZ.Events.prototype.scene;
+  AZ.Events.prototype.scene = async function (head, note, options, key) {
+    const g = this.g, r = g.raceStatus ? g.raceStatus() : null;
+    if (r && Array.isArray(options)) for (const o of options) {
+      const t = o && o.fx && typeof o.fx === "object" ? o.fx.time || 0 : 0;
+      if (t >= 3 && !o._race) { o._race = true; const after = r.ahead - t, tol = (r.rule.tol || 1) * 24; o.label = `${o.label} · ${after >= -tol ? (after > tol ? "still ahead of par" : "still on par") : r.ahead >= -tol ? "puts you behind par" : "further behind par"}`; }
+    }
+    return scene1.call(this, head, note, options, key);
+  };
+
+  // ------------------------------------------------------------------ arriving: one page for the event
+  G.arrivalPages = function (cp, k, d, L) {
+    const s = this.s, A = this.arc ? this.arc() : null;
+    if (!A) return L;
+    const rule = this.ruleFor(k), C = this.clockRules(), dd = d / 24, P = AZ.stopPoints(rule, dd), isT = k === A.target;
+    const words = isT ? C.words[P.how === "early" ? 0 : P.how === "on" ? 1 : 2] : P.how === "early" ? "ahead of par" : P.how === "on" ? "on par" : "behind par";
+    const head = P.how === "on" ? `★ ${U.esc(cp.place.name)}: on par!` : P.how === "early" ? `★ ${U.esc(cp.place.name)}: ${span(d)} ahead of par!` : `${U.esc(cp.place.name)}: ${span(d)} behind par.`;
+    const parts = [`<div style="font-size:1.35em;line-height:1.3"><b class="hook">${head}</b></div><div>Par ${AZ.Clock.fmt(cp.parArrive)} · arrived ${AZ.Clock.fmt(s.clock)} · ${U.esc(words)} · <b>${P.p} points</b> against the clock ${T("mixed")}.</div>`];
+    if (isT && rule.early === "wait" && P.how === "early") { s.waitOffer = { k, until: cp.parArrive - rule.tol * 24 }; parts.push(`<div>${U.cap(U.esc(rule.wait))} is ${span(cp.parArrive - rule.tol * 24 - s.clock)} off. You can wait for it here.</div>`); }
+    if (P.fail && isT) { s.failed = true; parts.push(`<div class="late"><b>${U.esc(C.lost || "Too late.")}</b></div>`); this.log(`Too late at ${U.esc(cp.place.name)}: ${U.esc(C.lost || "the journey is lost")}.`, "hook"); }
+    const mis = s.story && s.story.mislead;
+    if (mis && k === mis.at + 1) { parts.push(`<div>The lead was false: what you were told of ${U.esc(mis.what)} came to nothing here. The trail runs on.</div>`); s.story.mislead = null; if (this.storyNote) this.storyNote(`At ${U.esc(cp.place.name)} the lead proved false.`, -0.25); }
+    if (L[1]) parts.push(`<div>${L[1]}</div>`);
+    const next = A.legs[k + 1];
+    if (next && !s.failed) parts.push(`<div class="hook">◇ ${U.esc(next.objective)}. Next par: ${AZ.Clock.fmt(this.jr.cps[k + 1].parArrive)}.</div>`);
+    this.dirty = true;
+    return [parts.join("")];
+  };
+  // waiting for the day at the target
+  const climax1 = G.climax;
+  G.climax = async function () {
+    const s = this.s, A = this.arc(), wo = s.waitOffer;
+    if (wo && wo.k === A.target && s.clock < wo.until && !s.story.climaxed) {
+      const rule = this.ruleFor(wo.k), days = Math.ceil((wo.until - s.clock) / 24), town = this.jr.cps[wo.k].place.burg;
+      const cost = U.rn(days * (town ? AZ.Prices.inn(this.w, town) : 0), 2);
+      const k = await this.ui.choose(`<b>${U.cap(U.esc(rule.wait))}</b> is ${days} day${days > 1 ? "s" : ""} off ${T("mixed")}. Waiting for it scores as on the day, with ${rule.waitBonus || 0} points more; going ahead now scores as early.`,
+        [{ label: `Wait for ${U.esc(rule.wait)} (${days} d; lodging 🟡 ${cost})` }, { label: "Go ahead now" }], { cancel: 1 });
+      if (k === 0) { const rec = s.cpRec[wo.k] = s.cpRec[wo.k] || { acts: {} }; rec.waited = true; s.purse = U.rn(Math.max(0, s.purse - cost), 2); s.clock = wo.until; this.slept && this.slept(); this.log(`Waited ${days} days in ${U.esc(this.jr.cps[wo.k].place.name)} for ${U.esc(rule.wait)}.`, "hook"); }
+      s.waitOffer = null;
+    }
+    return climax1.call(this);
+  };
+
+  // ------------------------------------------------------------------ the report card
+  G.raceCard = function () {
+    const s = this.s, A = this.arc ? this.arc() : null, jr = this.jr;
+    if (!A) return null;
+    const rows = []; let num = 0, den = 0;
+    for (let k = 1; k < jr.cps.length; k++) {
+      const cp = jr.cps[k], rec = s.cpRec[k], rule = this.ruleFor(k), w = k === A.target ? 3 : k === jr.cps.length - 1 ? 2 : 1;
+      if (!rec || (!rec.arrive && !rec.skipped)) { if (s.done) { den += w * 100; rows.push({ k, name: cp.place.name, par: cp.parArrive, how: "never reached", p: 0, w }); } continue; }
+      if (rec.skipped) { den += w * 100; rows.push({ k, name: cp.place.name, par: cp.parArrive, how: "skipped", p: 0, w }); continue; }
+      const P = AZ.stopPoints(rule, (rec.arrive - cp.parArrive) / 24, rec.waited);
+      num += w * P.p; den += w * 100;
+      rows.push({ k, name: cp.place.name, par: cp.parArrive, at: rec.arrive, d: rec.arrive - cp.parArrive, how: P.waited ? "waited for the day" : P.how, p: P.p, w });
+    }
+    const clock = den ? Math.round((1000 * num) / den) : 0;
+    const grade = s.failed ? "F" : clock >= 1000 ? "S" : clock >= 900 ? "A" : clock >= 750 ? "B" : clock >= 600 ? "C" : clock >= 400 ? "D" : "E";
+    const acts = jr.cps.reduce((a, cp) => a + cp.acts.length, 0), done = s.cpRec.reduce((a, r) => a + Object.keys((r && r.acts) || {}).length, 0);
+    const story = 50 * U.clamp(Math.floor((s.story && s.story.measure) || 0), 0, 4), tasks = acts ? Math.round((100 * done) / acts) : 100;
+    return { rows, clock, grade, story, tasks, total: clock + story + tasks, acts, done, run: `${this.w.P.world.name} · ${jr.J.name} · ${s.seed}` };
+  };
+  G.bestKey = function () { return `azrpg:best:${this.w.P.world.name}:${this.w.P.journeys.indexOf(this.jr.J)}`; };
+  G.finishPages = function () {
+    const s = this.s, A = this.arc ? this.arc() : null, card = this.raceCard();
+    if (!A || !card) return [];
+    const noun = AZ.noun(this.jr), m = U.clamp(Math.floor(s.story.measure), 0, 4), tv = this.tv;
+    const tie = tv.tie && tv.tie.who && tv.tie.who.joins ? ((s.party || []).some(p => p.name === tv.tie.who.name) ? `${U.esc(tv.tie.who.name)}, your ${U.esc(tv.tie.who.role)}, came through it with you.` : `${U.esc(tv.tie.who.name)}, your ${U.esc(tv.tie.who.role)}, did not see the end of it with you.`) : "";
+    const deeds = (s.deeds || []).slice(-3).map(d => d.text).filter(Boolean);
+    const epilogue = `<b class="hook">The ${U.esc(noun)} is ${s.failed ? "lost" : "over"}.</b> ${U.esc(U.cap(A.arc.endings[m]))}. ${tie}${deeds.length ? ` They will remember: ${deeds.map(U.esc).join("; ")}.` : ""} ${U.esc(A.arc.label)}: ${U.esc(A.arc.measure[m])}.`;
+    let best = null; try { best = JSON.parse((this.store && this.store.getItem(this.bestKey())) || "null"); } catch (e) { best = null; }
+    const isBest = !best || card.total > best.total;
+    if (isBest) try { this.store && this.store.setItem(this.bestKey(), JSON.stringify({ total: card.total, clock: card.clock, grade: card.grade, name: tv.name, seed: s.seed })); } catch (e) { /* no storage */ }
+    const rows = card.rows.map(r => `<tr><td>${U.esc(r.name)}${r.w > 1 ? " ★" : ""}</td><td>${AZ.Clock.fmt(r.par)}</td><td>${r.at != null ? AZ.Clock.fmt(r.at) : "—"}</td><td>${r.d != null ? (Math.abs(r.d) < 1 ? "on par" : `${span(r.d)} ${r.d < 0 ? "early" : "late"}`) : ""}</td><td>${U.esc(r.how)}</td><td>${r.p}${r.w > 1 ? ` ×${r.w}` : ""}</td></tr>`).join("");
+    const cardHtml = `<div style="font-size:1.5em"><b class="hook">Against the clock: ${card.clock} · ${card.grade}</b></div>
+      <table class="plan"><tr><th>Stop</th><th>Par</th><th>Arrived</th><th></th><th>How</th><th>Points</th></tr>${rows}</table>
+      <div>Story: ${U.esc(A.arc.measure[m])} (+${card.story}) · the plan's tasks ${card.done} of ${card.acts} (+${card.tasks}) · <b>total ${U.num(card.total)}</b>${isBest ? " · your best on this journey" : best ? ` · your best: ${U.num(best.total)} (${U.esc(best.grade)})` : ""}.</div>
+      <div class="dim">${U.esc(card.run)} · 🟡 ${U.rn(s.purse, 1)} · side stories finished: ${s.threads.filter(t => t.outcome === "done").length}. The journal (J) keeps this card; you can keep exploring.</div>`;
+    s.report = { clock: card.clock, grade: card.grade, total: card.total };
+    this.log(`Against the clock: ${card.clock} (${card.grade}); total ${card.total}.`, "hook");
+    return [epilogue, cardHtml];
+  };
+  // the journal: the race so far
+  const jh1 = G.journeyHtml;
+  G.journeyHtml = function () {
+    const h = jh1 ? jh1.call(this) : "", card = this.raceCard ? this.raceCard() : null;
+    if (!h || !card || !card.rows.length) return h;
+    return `${h}<h3>Against the clock${this.s.done ? `: ${card.clock} · ${card.grade}` : " so far"}</h3><table class="plan"><tr><th>Stop</th><th>Par</th><th>Arrived</th><th>How</th><th>Points</th></tr>${card.rows.map(r => `<tr><td>${U.esc(r.name)}</td><td>${AZ.Clock.fmt(r.par)}</td><td>${r.at != null ? AZ.Clock.fmt(r.at) : "—"}</td><td>${U.esc(r.how)}</td><td>${r.p}</td></tr>`).join("")}</table>`;
+  };
+})();
+
+// =============================================================================================
+// 26_narrator.js · Alpha 5.2: the narrator.
+//   Routine reports carry the story: a camp report tells a new country in full and a known one in a
+//   line, and always says how the race stands; the company speaks at the fire. The crew asks once
+//   how to spend the nights, and keeps your standing order. Deeds are remembered, and change how
+//   people see you. People you meet are known; companions can settle in a town and greet you there.
+// =============================================================================================
+(() => {
+  const G = AZ.Game.prototype, U = AZ.U, T = AZ.T;
+
+  // ------------------------------------------------------------------ the camp report tells the race
+  const camp1 = G.campNight;
+  G.campNight = async function () {
+    const s = this.s, w = this.w, say0 = this.ui.say.bind(this.ui);
+    const biome = w.P.biomes[w.C.biome[w.cell(s.c, s.r)]]?.name || "", cl = s.campLog = s.campLog || { biome: null, nights: 0, water: -9, n: 0 };
+    const again = cl.biome === biome && w.isLand(s.c, s.r);
+    cl.n++; cl.nights = again ? cl.nights + 1 : 1; cl.biome = biome;
+    const race = this.raceStatus ? this.raceStatus() : null, line = race ? this.raceLine() : "";
+    const band = race ? (race.ahead > (race.rule.tol || 1) * 24 ? "ahead" : race.ahead < -(race.rule.tol || 1) * 24 ? "behind" : "on") : null;
+    const talk = this.campTalk(band, race, cl.n);
+    this.ui.say = (p, who) => {
+      let t = String(p);
+      if (again) t = t.replace(/^(You(?: and the company \([^)]*\))?) camp in the ([^.]*?)\s*(<span[^>]*>[^<]*<\/span>)?\s*\./, (m0, a, b2) => `${a === "You" ? "Another night" : `${a.replace(/ camp$/, "")}: another night`} in the ${b2}.`);
+      if (/Water close by; a line in it overnight\./.test(t)) { if (cl.n - cl.water <= 2) t = t.replace(/\s*Water close by; a line in it overnight\./, ""); else cl.water = cl.n; }
+      // in a country you know, say only what changed since last night (the place line and the hours stay)
+      const norm = x => x.replace(/<[^>]+>/g, "").replace(/[\d.,°FC]+/g, "#").trim();
+      const sents = t.split(/(?<=\.)\s+(?=[A-Z<(])/), prev = new Set(cl.prev || []);
+      cl.prev = sents.map(norm);
+      if (again) t = sents.filter((x, i) => i === 0 || /^\(/.test(x.trim()) || !prev.has(norm(x))).join(" ");
+      const extra = [line ? `<span class="hook">⏱ ${U.esc(line)}</span>` : "", talk].filter(Boolean).join(" ");
+      return say0(extra ? `${t} ${extra}` : t, who);
+    };
+    try { return await camp1.call(this); } finally { this.ui.say = say0; s.campBand = band; }
+  };
+  // the company speaks at the fire: every third night, or when the race turns
+  G.campTalk = function (band, race, n) {
+    const s = this.s, party = (s.party || []).filter(p => p.name);
+    if (!party.length || !race || (n % 3 && band === s.campBand)) return "";
+    const p = party.find(x => x.tie) || party[n % party.length], name = U.esc(p.name), place = U.esc(race.cp.place.name), dl = U.esc((race.C && race.C.deadline) || "par");
+    const say = {
+      ahead: [`${name} counts the days on the fingers of one hand: “We'll make ${place} with time to spare.”`, `${name} is in good spirits: “Ahead of par, and the road is kind. Don't spend it.”`],
+      on: [`${name}, by the fire: “Steady. Keep this pace and we're in ${place} on the day.”`, `${name} looks at the sky and says only: “On time.”`],
+      behind: [`${name} is quiet by the fire, then: “If we lose another day, we miss ${dl}.”`, `${name}: “We're behind. Start before dawn tomorrow?”`],
+    }[band] || [];
+    return say.length ? `<i>${say[n % say.length]}</i>` : "";
+  };
+
+  // ------------------------------------------------------------------ the crew asks once how to spend the nights
+  const crew1 = G.crewCall;
+  G.crewCall = async function () {
+    const s = this.s, v = s.vessel;
+    if (!v) return crew1.call(this);
+    if (v.orders === "anchor" && v.morale >= 20) {
+      const t0 = s.clock; s.clock = AZ.Clock.nextDawn(s.clock, this.lat()); v.anchored = true; v.morale = Math.min(100, v.morale + 4); this.slept();
+      const act = this.doAct("anchor") || this.doAct("camp"), line = this.raceLine ? this.raceLine() : "";
+      this.ui.toast(`At anchor until dawn, by your standing order (${AZ.Clock.span(s.clock - t0)}). ${line ? `⏱ ${U.esc(line)}` : ""} ${act ? `<span class="hook">★ ${U.esc(act.label)}</span>` : ""}`, act ? "gold" : "");
+      this.dirty = true; return;
+    }
+    if (v.orders === "sail" && v.morale >= 30) {
+      v.morale -= 12;
+      const nearLand = this.w.isLand(s.c, s.r) || this.landDistance(s.c, s.r, 3) <= 2;
+      if (nearLand && U.rnd2(s.c, s.r, Math.floor(s.clock)) < 0.15) this.events.fx({ cond: "damaged", time: 3 }, "Struck in the dark, sailing on by your standing order.");
+      else this.ui.toast(`The crew sails on through the night, by your standing order. Morale ${Math.round(v.morale)}.`);
+      this.dirty = true; return;
+    }
+    const m0 = v.morale; v.anchored = false;
+    await crew1.call(this);
+    if (s.vessel !== v || v.orders === "ask") return;
+    const chose = v.anchored ? "anchor" : v.morale <= m0 - 12 ? "sail" : null;
+    if (!chose) return;
+    const k = await this.ui.choose(`Make that your standing order for the nights, so the crew need not ask? ${T("new")}`,
+      [{ label: chose === "anchor" ? "Yes: anchor at dusk until dawn" : "Yes: sail on through the night" }, { label: "No: ask me each night" }], { cancel: 1 });
+    v.orders = k === 0 ? chose : "ask";
+  };
+  const extras2 = G.townExtras;
+  G.townExtras = function (b) {
+    const out = extras2.call(this, b), s = this.s, v = s.vessel;
+    if (v && v.orders && this.vesselHere && this.vesselHere(b)) out.push({ label: `Night orders for the ${U.esc(v.kind.toLowerCase())}: ${v.orders === "anchor" ? "anchor at dusk" : v.orders === "sail" ? "sail on" : "ask each night"}`, act: { extra: async () => { const k = await this.ui.choose("Night orders", [{ label: "Anchor at dusk until dawn" }, { label: "Sail on through the night" }, { label: "Ask me each night" }], { cancel: 2 }); v.orders = ["anchor", "sail", "ask"][k]; } } });
+    if ((s.party || []).length) out.push({ label: `The company (${s.party.length}): let someone go, or settle them here`, act: { extra: () => this.manageCompany(b) } });
+    for (const p of ((s.acq || {})[b.i] || []).filter(p => p.settled)) out.push({ label: `Visit ${U.esc(p.name)} (${U.esc(p.tie || p.role)})`, act: { extra: () => this.visitKnown(b, p) } });
+    return out;
+  };
+
+  // ------------------------------------------------------------------ deeds are remembered
+  const fx2 = AZ.Events.prototype.fx;
+  AZ.Events.prototype.fx = function (e, label) {
+    const g = this.g, s = g && g.s;
+    if (s && e && Array.isArray(e.stand) && e.stand.length && !s.carefree) {
+      const b = g.townNear ? g.townNear() : null, place = b ? b.name : "the road";
+      s.deeds = s.deeds || [];
+      for (const [kind, id, n] of e.stand) if (n) s.deeds.push({ t: s.clock, kind, id, n, place, text: `${place}: ${String(label || "").replace(/<[^>]+>/g, "").replace(/\s*\(.*?\)\s*$/, "").slice(0, 90)}` });
+      if (s.deeds.length > 60) s.deeds.splice(0, s.deeds.length - 60);
+    }
+    return fx2.call(this, e, label);
+  };
+  const regard1 = G.regard;
+  G.regard = function (b, role) {
+    const R = regard1.call(this, b, role), s = this.s;
+    if (!b || !s || !s.deeds || !s.deeds.length) return R;
+    const mine = s.deeds.filter(d => (d.kind === "s" && d.id === b.state) || (d.kind === "f" && d.id === R.faith));
+    if (!mine.length) return R;
+    const sum = U.clamp(mine.reduce((a, d) => a + d.n, 0), -3, 3), last = mine[mine.length - 1];
+    if (!sum) return R;
+    const score = R.score + sum, band = score >= 3 ? "warm" : score >= 0 ? "neutral" : score >= -2 ? "cool" : "hostile";
+    return { ...R, score, band, why: [sum > 0 ? `word of what you did at ${last.place} has travelled` : `they know what you did at ${last.place}`, ...R.why] };
+  };
+
+  // ------------------------------------------------------------------ people you know, and companions who settle
+  const pl1 = G.personLines;
+  G.personLines = function (b, role, name) {
+    const s = this.s, L = pl1.call(this, b, role, name);
+    if (!name) return L;
+    s.acq = s.acq || {};
+    const list = s.acq[b.i] = s.acq[b.i] || [], k = list.find(p => p.name === name);
+    if (k && k.met < s.clock - 24 * 7) L.unshift(`${U.esc(name)} remembers you from ${AZ.Clock.fmt(k.met)} ${T("new")}.`);
+    if (!k) list.push({ name, role, met: s.clock });
+    return L;
+  };
+  const after10 = G.afterStep;
+  G.afterStep = function (...a) {
+    const r = after10.apply(this, a), s = this.s, w = this.w;
+    const b = s && w.burgAt.get(w.idx(s.c, s.r));
+    if (b && s.greetAt !== b.i) {
+      s.greetAt = b.i;
+      const home = ((s.acq || {})[b.i] || []).filter(p => p.settled);
+      if (home.length) this.ui.toast(`${home.map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(" and ")} ${home.length > 1 ? "live" : "lives"} here now, and ${home.length > 1 ? "come" : "comes"} out to meet you.`);
+    } else if (s && !b) s.greetAt = null;
+    return r;
+  };
+  G.visitKnown = async function (b, p) {
+    const s = this.s;
+    const k = await this.ui.choose(`<b>${U.esc(p.name)}</b> (${U.esc(p.tie || p.role)}) has made a home in ${U.esc(b.name)} since ${AZ.Clock.fmt(p.settled)} ${T("new")}.`,
+      [{ label: `Stay the night with ${U.esc(p.name)}` }, { label: `Ask ${U.esc(p.name)} to come with you again` }, { label: "Go" }], { cancel: 2 });
+    if (k === 0) { const t0 = s.clock; s.clock = AZ.Clock.nextDawn(s.clock, this.lat()); this.slept && this.slept(); s.partyMorale = U.clamp((s.partyMorale ?? 70) + 10, 0, 100); this.ui.toast(`A night under ${U.esc(p.name)}'s roof (${AZ.Clock.span(s.clock - t0)}).`); }
+    if (k === 1) { s.party = s.party || []; s.party.push({ name: p.name, role: p.role, tie: p.tie }); s.acq[b.i] = s.acq[b.i].filter(x => x !== p); this.log(`${U.esc(p.name)} left home in ${U.esc(b.name)} to come with you.`); }
+    this.dirty = true;
+  };
+  // the company, at any time in a town: let someone go, or settle them here
+  G.manageCompany = async function (b) {
+    const s = this.s;
+    const k = await this.ui.choose(`<b>The company</b> ${T("new")}: ${s.party.map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)})`).join(", ")}.`, [...s.party.map(p => ({ label: `${U.esc(p.name)} (${U.esc(p.tie || p.role)})` })), { label: "Back" }], { cancel: s.party.length });
+    const p = s.party[k]; if (!p) return;
+    const j = await this.ui.choose(`${U.esc(p.name)} (${U.esc(p.tie || p.role)})`, [{ label: `Settle here, in ${U.esc(b.name)}: you can visit` }, { label: "Part ways" }, { label: "Back" }], { cancel: 2 });
+    if (j === 0) { this.settleCompanion(p, b); s.party = s.party.filter(x => x !== p); }
+    if (j === 1) { this.log(`${U.esc(p.name)} went their own way.`); s.party = s.party.filter(x => x !== p); }
+    this.dirty = true;
+  };
+  // settling: a companion can make a home in this town, during or at the end of the journey
+  G.settleCompanion = function (p, b) {
+    const s = this.s; if (!b) return false;
+    s.acq = s.acq || {}; (s.acq[b.i] = s.acq[b.i] || []).push({ name: p.name, role: p.role, tie: p.tie || null, met: s.clock, settled: s.clock });
+    this.log(`${U.esc(p.name)} settled in ${U.esc(b.name)}.`, "hook");
+    return true;
+  };
+  G.knownHtml = function () {
+    const s = this.s, w = this.w, rows = Object.entries(s.acq || {}).filter(([, l]) => l.length);
+    if (!rows.length) return "";
+    return `<h3>People you know</h3>${rows.map(([bi, l]) => `<div><b>${U.esc(w.P.burgs[bi]?.name || "?")}</b>: ${l.map(p => `${U.esc(p.name)} (${U.esc(p.tie || p.role)}${p.settled ? ", lives here" : ""})`).join(", ")}</div>`).join("")}`;
+  };
+  const jh2 = G.journeyHtml;
+  G.journeyHtml = function () { return (jh2 ? jh2.call(this) : "") + (this.knownHtml ? this.knownHtml() : ""); };
+  const journal3 = G.journal;
+  G.journal = function () {
+    journal3.call(this);
+    const sheet = this.ui.el.modal && this.ui.el.modal.querySelector && this.ui.el.modal.querySelector(".sheet");
+    if (sheet && !(this.arc && this.arc()) && this.knownHtml && this.knownHtml()) { const d = document.createElement("div"); d.innerHTML = this.knownHtml(); sheet.insertBefore(d, sheet.children[1] || null); }
   };
 })();
 

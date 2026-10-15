@@ -113,9 +113,10 @@ AZ.Game = class {
       this.log(`Checkpoint ${k}: ${U.esc(cp.place.name)}, ${AZ.Clock.fmt(s.clock)} (${this.deltaTextAt(d)}).`, "hook");
       const L = [`<b class="hook">Checkpoint: ${U.esc(cp.place.name)}</b> · ${AZ.Clock.fmt(s.clock)}. Par was ${AZ.Clock.fmt(cp.parArrive)}: ${this.deltaTextAt(d)} ${AZ.T("mixed")}.`];
       if (cp.acts.length) L.push(`The plan has you do here: ${cp.acts.map(a => `<span class="hook">${U.esc(a.label)}</span>`).join("; ")}. ${cp.place.at ? "Go into town with Space." : "Press R here."}`);
-      if (k === jr.cps.length - 1) return this.finish(L);
+      const pages = this.arrivalPages ? this.arrivalPages(cp, k, d, L) : L;
+      if (k === jr.cps.length - 1 || s.failed) return this.finish(pages);
       this.saveGame();
-      this.ui.say(L);
+      this.ui.say(pages);
       return;
     }
   }
@@ -146,6 +147,7 @@ AZ.Game = class {
     s.done = true; this.saveGame();
     const acts = jr.cps.reduce((a, cp) => a + cp.acts.length, 0), done = s.cpRec.reduce((a, r) => a + Object.keys(r?.acts || {}).length, 0);
     const skipped = s.cpRec.filter(r => r && r.skipped).length;
+    if (this.finishPages) return this.ui.say([...msg, ...this.finishPages()]);
     await this.ui.say([...msg, `<b class="hook">The pilgrimage is complete.</b> ${U.esc(this.tv.name)} reaches ${U.esc(jr.dest.name)} on ${AZ.Clock.fmt(s.clock)}: ${this.deltaTextAt(s.clock - jr.planEnd)}.`,
       `Checkpoints skipped: ${skipped}. The plan's tasks done: ${done} of ${acts}. Purse: 🟡 ${U.rn(s.purse, 1)}. Side stories finished: ${s.threads.filter(t => t.outcome === "done").length}. The journal (J) has the full record; you can keep exploring.`]);
   }
@@ -388,7 +390,7 @@ AZ.Game = class {
       opts.push({ label: `Give alms at the ${b.temple ? "temple" : "shrine"} (🟡 ${P.alms(w, b)})`, act: "alms", disabled: s.purse < P.alms(w, b) });
       opts.push({ label: "Notice board: work and errands", act: "board", cls: "side" });
       // marked places in or beside the town can be visited from the town itself
-      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit the ${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
+      for (const n of w.near(b.t[0], b.t[1], 2)) if (n.kind === "marker") opts.push({ label: `Visit ${/^the /i.test(n.o.name) ? "" : "the "}${U.esc(n.o.name)} (${U.esc(n.o.type)}, ${n.d < 0.5 ? "in town" : "just outside"})`, cls: "side", act: { go: () => this.events.marker(n.o, false) } });
       for (const p of people) if (p.role !== "Notice board") opts.push({ label: `${p.role}${p.name ? `: ${U.esc(p.name)}` : ""}`, act: p });
       if (s.cond.fever || s.cond.gravely) opts.push({ label: `Ask the ${b.temple ? "priest" : "shrine-keeper"} to treat your fever (${this.healCost(b) ? "🟡 " + this.healCost(b) : "free"})`, act: "heal", disabled: s.purse < this.healCost(b) });
       opts.push(...this.townExtras(b));

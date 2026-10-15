@@ -10,14 +10,19 @@
 
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
-| to Anholdhol | harry the coast (purpose) | On the way to Anholdhol: the company strikes the villages it passes | harry at Zradrekh; harry at Altalazde |
-| to Vr'seramant | the fence (seek) | In Vr'seramant, ask a merchant about who will buy what the company has taken; the way there crosses the sea, so look for a passage | faithBorder; cultureBorder |
+| to Anholdhol | harry the coast (purpose) | On the way to Anholdhol: the company strikes the villages it passes | harry at Zradrekh; harry at Kalolotheas; harry at Altalazde; harry at Defosere |
+| to Vr'seramant | the fence (seek) | In Vr'seramant, ask a merchant about who will buy what the company has taken; the way there crosses the sea, so look for a passage | harry at Driz; harry at Zrag; harry at Tsenstalaxorga; faithBorder; cultureBorder |
 | to Negnud | scout the target (endure) | Come to Negnud unseen, and learn its walls and its watch on the way; the way there crosses the sea, so look for a passage. Then: Strike Negnud with the company | faithBorder; cultureBorder |
 
 | Where | What the player meets | First choice |
 |---|---|---|
 | on the way to Anholdhol | raid · on the wayZradrekh lies close, Uruk (Orkish) folk of the Uruk (Orkish) Religion. The raiders look to yo | Strike it |
+| on the way to Anholdhol | raid · on the wayKalolotheas lies close, Lothian (Dark Elfish) folk of the Lothian (Dark Elfish) Spirits. The  | Strike it |
 | on the way to Anholdhol | raid · on the wayAltalazde lies close, Rohand (Human) folk of the Rohand (Human) Pantheon. The raiders look to | Strike it |
+| on the way to Anholdhol | raid · on the wayDefosere lies close, Dail (Human) folk of the Greepeakism. The raiders look to you. | Strike it |
+| on the way to Vr'seramant | raid · on the wayDriz lies close, Uruk (Orkish) folk of the Greepeakism. The raiders look to you. | Strike it |
+| on the way to Vr'seramant | raid · on the wayZrag lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to you | Strike it |
+| on the way to Vr'seramant | raid · on the wayTsenstalaxorga lies close, Rake (Drakonic) folk of the Rake (Drakonic)ism. The raiders look t | Strike it |
 | on the way to Vr'seramant | On the wayThe roadside shrines change: this is the country of the Rake (Drakonic)ism. In the next town they wi | Leave something at a shrine (🟡 0.1) |
 | on the way to Vr'seramant | On the wayThe talk on the road changes: the Uruk (Orkish) give way to the Rake (Drakonic). Prices will be a st | Go on |
 | Vr'seramant | asks merchant about who will buy what the company has taken | About who will buy what the company has taken: they tell you what you came to le |
@@ -25,7 +30,7 @@
 | on the way to Negnud | On the wayThe talk on the road changes: the Rake (Drakonic) give way to the Uruk (Orkish). Prices will be a st | Go on |
 | Negnud | NegnudStrike Negnud with the company. | Strike |
 
-**The haul: a good haul.** Ending: *a good haul, and your name in the songs.*
+**The haul: a great haul.** Ending: *a great haul, sung in every hall.*
 
 ## Raid on Biragzdin
 
@@ -35,20 +40,22 @@
 
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
-| to Freys | harry the coast (purpose) | On the way to Freys: the company strikes the villages it passes | harry at Qash; harry at Khebun; faithBorder; regiment |
-| to near Brork | the fence (seek) | Near Brork, ask a merchant about who will buy what the company has taken | monster |
-| to Biragzdin | scout the target (endure) | Come to Biragzdin unseen, and learn its walls and its watch on the way. Then: Strike Biragzdin with the company | harry at Ekh-Gag; harry at Razin |
+| to Freys | harry the coast (purpose) | On the way to Freys: the company strikes the villages it passes | harry at Qash; harry at Bozgrun; harry at Khebun; faithBorder; regiment |
+| to near Brork | the fence (seek) | Near Brork, ask a merchant about who will buy what the company has taken | harry at Driz; harry at Mocrurre |
+| to Biragzdin | scout the target (endure) | Come to Biragzdin unseen, and learn its walls and its watch on the way. Then: Strike Biragzdin with the company | harry at Razin; harry at Zrag |
 
 | Where | What the player meets | First choice |
 |---|---|---|
 | on the way to Freys | raid · on the wayQash lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to you | Strike it |
+| on the way to Freys | raid · on the wayBozgrun lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to  | Strike it |
 | on the way to Freys | raid · on the wayKhebun lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to y | Strike it |
 | on the way to Freys | On the wayThe roadside shrines change: this is the country of the Uruk (Orkish) Religion. In the next town the | Leave something at a shrine (🟡 0.1) |
 | on the way to Freys | On the waySoldiers on the road: the 2nd (Mugragh) Regiment of Uzd, camped by the way. | Show your face and go on |
-| on the way to near Brork | On the waySomething on the road ahead: Pirates (pirates). | Stand and face it |
+| on the way to near Brork | raid · on the wayDriz lies close, Uruk (Orkish) folk of the Greepeakism. The raiders look to you. | Strike it |
+| on the way to near Brork | raid · on the wayMocrurre lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to | Strike it |
 | near Brork | asks merchant about who will buy what the company has taken | About who will buy what the company has taken: they tell you what you came to le |
-| on the way to Biragzdin | raid · on the wayEkh-Gag lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to  | Strike it |
 | on the way to Biragzdin | raid · on the wayRazin lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to yo | Strike it |
+| on the way to Biragzdin | raid · on the wayZrag lies close, Uruk (Orkish) folk of the Old Uruk (Orkish) Beliefs. The raiders look to you | Strike it |
 | Biragzdin | BiragzdinStrike Biragzdin with the company. | Strike |
 
 **The haul: a great haul.** Ending: *a great haul, sung in every hall.*
@@ -74,7 +81,7 @@
 | on the way to Leg | On the waySoldiers on the road: the 4th (Durzaz) Regiment of Uzd, camped by the way. | Show your face and go on |
 | on the way to Bash | On the wayA toll post: the border of Uzd and Geg. | Pay the toll (🟡 0.78) |
 | on the way to Bash | On the wayThe roadside shrines change: this is the country of the Krod Heresy. In the next town they will ask  | Leave something at a shrine (🟡 0.1) |
-| Bash | asks priest about where the thing you seek is kept | About where the thing you seek is kept: what they tell you sounds right, and is  |
+| Bash | asks priest about where the thing you seek is kept | About where the thing you seek is kept: they are sure of it, and point you on to |
 | on the way to Khorb | On the waySoldiers on the road: the 8th (Grirk) Regiment of Geg, camped by the way. | Show your face and go on |
 | Khorb | KhorbDig near Khorb. The company is not with you. | Dig (12 h) |
 
@@ -82,23 +89,23 @@
 
 ## The Road out of Azinarg
 
-[Refugee flight; the underdog; target South; 4 stops; tie: flight; follows]
+[Refugee flight; the underdog; target South; 4 stops; tie: flight; leads]
 
 > You are Garagzig, infantry sergeant of Nulbuzar, Dunirr (Dwarven) by birth and of the Dunirr (Dwarven) Beliefs by faith. You cannot go back to Nulbuzar.
 
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
-| to Narjinas | the road (purpose) | On the way to Narjinas: find food and shelter where you can; the way there crosses the sea, so look for a passage | shelter at Nulbuzar; shelter at Alergiss; stateBorder; war |
+| to Narjinas | the road (purpose) | On the way to Narjinas: find food and shelter where you can; the way there crosses the sea, so look for a passage | shelter at Alergiss; shelter at Kopjekez; stateBorder; war |
 | to near Snaterun | the long road (endure) | Reach near Snaterun with the company whole: a long crossing of temperate rainforest | hardCrossing; faithBorder |
 | to South | the last road (endure) | Reach South with the company whole. Then: Find refuge in South | none |
 
 | Where | What the player meets | First choice |
 |---|---|---|
-| on the way to Narjinas | flight · on the wayNulbuzar: the company needs food and a roof. | Ask for help |
 | on the way to Narjinas | flight · on the wayAlergiss: the company needs food and a roof. | Ask for help |
+| on the way to Narjinas | flight · on the wayKopjekez: the company needs food and a roof. | Ask for help |
 | on the way to Narjinas | On the wayA toll post: the border of Undunalbi and Males. | Pay the toll (🟡 0.83) |
 | on the way to Narjinas | On the waySoldiers on the road: Undunalbi is at war: the Undunalbi-Eagbutumnian War, since 814. | Show your face and go on |
-| on the way to near Snaterun | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to near Snaterun | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to near Snaterun | On the wayThe roadside shrines change: this is the country of the Dunirr (Dwarven) Beliefs. In the next town t | Leave something at a shrine (🟡 0.1) |
 | South | SouthFind refuge in South. | Find shelter (🟡 0.53) |
 
@@ -122,7 +129,7 @@
 
 ## The Silent Expedition
 
-[Expedition; the long voyage; target South; 6 stops; tie: contract; follows]
+[Expedition; the long voyage; target South; 6 stops; tie: contract; leads]
 
 > You are Garagzig, infantry sergeant of Nulbuzar, Dunirr (Dwarven) by birth and of the Dunirr (Dwarven) Beliefs by faith. You signed on in Azinarg for a share, and Gunalgab keeps the books.
 
@@ -138,7 +145,7 @@
 |---|---|---|
 | on the way to near Gorthiz | On the waySoldiers on the road: Undunalbi is at war: the Undunalbi-Eagbutumnian War, since 814. | Show your face and go on |
 | on the way to near Gorthiz | On the wayThe roadside shrines change: this is the country of the Zizah Beliefs. In the next town they will as | Leave something at a shrine (🟡 0.1) |
-| on the way to near Cagonsire | On the wayA long crossing of taiga. The company looks to Gunalgab. | Go slowly, and spare yourselves (24 h) |
+| on the way to near Cagonsire | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to near Cagonsire | On the wayThe talk on the road changes: the Anor (Human) give way to the Khazadur (Dwarven). Prices will be a  | Go on |
 | South | SouthSurvey the country around South. | Survey the country |
 
@@ -159,7 +166,7 @@
 
 | Where | What the player meets | First choice |
 |---|---|---|
-| on the way to Zin | pilgrimage · on the wayPilgrims gather at the shrine of Ghostvame. | Pray with them (🟡 0.62) |
+| on the way to Zin | pilgrimage · on the wayPilgrims gather at the shrine of Ghostvame. | Pray with them (🟡 0.62) · still ahead of par |
 | on the way to Zin | On the wayThe roadside shrines change: this is the country of the Southan Deities. In the next town they will  | Leave something at a shrine (🟡 0.1) |
 | on the way to Zin | On the wayThe roadside shrines change: this is the country of the Arsitesism. In the next town they will ask w | Leave something at a shrine (🟡 0.1) |
 | on the way to South | On the wayThe roadside shrines change: this is the country of the Southan Deities. In the next town they will  | Leave something at a shrine (🟡 0.1) |
@@ -177,7 +184,7 @@
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
 | to Neg | the unknown country (purpose) | On the way to Neg: record what you find; the way there crosses the sea, so look for a passage | stateBorder |
-| to Vr'seramant | the unknown country (purpose) | On the way to Vr'seramant: record what you find | hardCrossing; monster |
+| to Vr'seramant | the unknown country (purpose) | On the way to Vr'seramant: record what you find | hardCrossing; regiment |
 | to Zalb | the unknown country (purpose) | On the way to Zalb: record what you find; the way there crosses the sea, so look for a passage | hardCrossing; cultureBorder |
 | to near Qidud | the unknown country (purpose) | On the way to near Qidud: record what you find; the way there crosses the sea, so look for a passage | cultureBorder; cultureBorder |
 | to Aliotanthaco | the unknown country (purpose) | On the way to Aliotanthaco: record what you find; the way there crosses the sea, so look for a passage | hardCrossing; monster |
@@ -186,15 +193,15 @@
 | Where | What the player meets | First choice |
 |---|---|---|
 | on the way to Neg | On the wayA toll post: the border of Uzd and Neg. | Pay the toll (🟡 0.78) |
-| on the way to Vr'seramant | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) |
-| on the way to Vr'seramant | On the waySomething on the road ahead: Pirates (pirates). | Stand and face it |
-| on the way to Zalb | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Vr'seramant | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
+| on the way to Vr'seramant | On the waySoldiers on the road: the 1st (Vr'seramant) Regiment of Zimorgerex, camped by the way. | Show your face and go on |
+| on the way to Zalb | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Zalb | On the wayThe talk on the road changes: the Rake (Drakonic) give way to the Uruk (Orkish). Prices will be a st | Go on |
 | on the way to near Qidud | On the wayThe talk on the road changes: the Uruk (Orkish) give way to the Rohand (Human). Prices will be a str | Go on |
 | on the way to near Qidud | On the wayThe talk on the road changes: the Rohand (Human) give way to the Uruk (Orkish). Prices will be a str | Go on |
-| on the way to Aliotanthaco | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Aliotanthaco | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Aliotanthaco | On the waySomething on the road ahead: Aulansistamn Rats (brigands). | Stand and face it |
-| on the way to Biragzdin | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Biragzdin | On the wayA long crossing of taiga. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Biragzdin | On the waySomething on the road ahead: Aulansistamn Rats (brigands). | Stand and face it |
 | Biragzdin | BiragzdinSurvey the country around Biragzdin. | Survey the country |
 
@@ -208,17 +215,19 @@
 
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
-| to Freys | the road home (purpose) | On the way to Freys: trade where the company stops | trade at Bozgrun; trade at Khebun; faithBorder; regiment |
-| to Vr'seramant | the last market road (endure) | Reach Vr'seramant with the company whole: a long crossing of taiga; the way there crosses the sea, so look for a passage. Then: Sell the company's goods in Vr'seramant | trade at Dustmouth; trade at Chegan; stateBorder; cultureBorder |
+| to Freys | the road home (purpose) | On the way to Freys: trade where the company stops | trade at Bozgrun; trade at Khebun; trade at Chaz; faithBorder; regiment |
+| to Vr'seramant | the last market road (endure) | Reach Vr'seramant with the company whole: a long crossing of taiga; the way there crosses the sea, so look for a passage. Then: Sell the company's goods in Vr'seramant | trade at Driz; trade at Zrag; trade at Tsenstalaxorga; stateBorder; cultureBorder |
 
 | Where | What the player meets | First choice |
 |---|---|---|
 | on the way to Freys | caravan · on the wayBozgrun has a market day. The company asks whether to stop. | Stop and trade |
 | on the way to Freys | caravan · on the wayKhebun has a market day. The company asks whether to stop. | Stop and trade |
+| on the way to Freys | caravan · on the wayChaz has a market day. The company asks whether to stop. | Stop and trade |
 | on the way to Freys | On the wayThe roadside shrines change: this is the country of the Uruk (Orkish) Religion. In the next town the | Leave something at a shrine (🟡 0.1) |
 | on the way to Freys | On the waySoldiers on the road: the 3rd (Grughu) Regiment of Uzd, camped by the way. | Show your face and go on |
-| on the way to Vr'seramant | caravan · on the wayDustmouth has a market day. The company asks whether to stop. | Stop and trade |
-| on the way to Vr'seramant | caravan · on the wayChegan has a market day. The company asks whether to stop. | Stop and trade |
+| on the way to Vr'seramant | caravan · on the wayDriz has a market day. The company asks whether to stop. | Stop and trade |
+| on the way to Vr'seramant | caravan · on the wayZrag has a market day. The company asks whether to stop. | Stop and trade |
+| on the way to Vr'seramant | caravan · on the wayTsenstalaxorga has a market day. The company asks whether to stop. | Stop and trade |
 | on the way to Vr'seramant | On the wayA toll post: the border of Ghag and Zimorgerex. | Pay the toll (🟡 0.73) |
 | on the way to Vr'seramant | On the wayThe talk on the road changes: the Uruk (Orkish) give way to the Rake (Drakonic). Prices will be a st | Go on |
 | Vr'seramant | Vr'seramantSell the company's goods in Vr'seramant. | Open the market |
@@ -234,20 +243,18 @@
 | Leg | [Role] | Objective | Moments on the way |
 |---|---|---|---|
 | to near Vrugh | trace the rumour (seek) | Near Vrugh, ask the townsfolk about where the map points | none |
-| to Biragzdin | the rival (escape) | Get clear, and on to Biragzdin | monster |
-| to Khorb | the false lead (mislead) | In Khorb, ask the priests about where the thing you seek is kept | monster |
+| to Biragzdin | the rival (escape) | Get clear, and on to Biragzdin | none |
+| to Khorb | the false lead (mislead) | In Khorb, ask the priests about where the thing you seek is kept | none |
 | to near Or-Zur | the road (purpose) | On the way to near Or-Zur: search what the map shows you; the way there crosses the sea, so look for a passage | faithBorder; faithBorder |
 | to Freys | the guardian (endure) | Reach Freys with the company whole: a long crossing of temperate rainforest; the way there crosses the sea, so look for a passage. Then: Dig near Freys | hardCrossing; stateBorder |
 
 | Where | What the player meets | First choice |
 |---|---|---|
 | near Vrugh | asks townsfolk about where the map points | About where the map points: they tell you what you came to learn, and point you  |
-| on the way to Biragzdin | On the waySomething on the road ahead: Pirates (pirates). | Stand and face it |
-| on the way to Khorb | On the waySomething on the road ahead: Pirates (pirates). | Stand and face it |
-| Khorb | asks priest about where the thing you seek is kept | About where the thing you seek is kept: what they tell you sounds right, and is  |
+| Khorb | asks priest about where the thing you seek is kept | About where the thing you seek is kept: they are sure of it, and point you on to |
 | on the way to near Or-Zur | On the wayThe roadside shrines change: this is the country of the Greepeakism. In the next town they will ask  | Leave something at a shrine (🟡 0.1) |
 | on the way to near Or-Zur | On the wayThe roadside shrines change: this is the country of the Krod Heresy. In the next town they will ask  | Leave something at a shrine (🟡 0.1) |
-| on the way to Freys | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Freys | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Freys | On the wayA toll post: the border of Geg and Zalb. | Pay the toll (🟡 0.83) |
 | Freys | FreysDig near Freys. | Dig (12 h) |
 
@@ -271,14 +278,14 @@
 
 | Where | What the player meets | First choice |
 |---|---|---|
-| on the way to near Kud-Ug | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to near Kud-Ug | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to near Kud-Ug | On the wayA toll post: the border of Uzd and Khuld. | Pay the toll (🟡 0.78) |
-| on the way to Khorb | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Khorb | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Khorb | On the wayA toll post: the border of Khuld and Uzd. | Pay the toll (🟡 1.25) |
 | Khorb | asks innkeeper about a bed and the news | About a bed and the news: they tell you what you came to learn, and point you on |
-| on the way to Roneminever | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Roneminever | On the wayA long crossing of tropical rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Roneminever | On the wayA toll post: the border of Uzd and Khuld. | Pay the toll (🟡 1.33) |
-| on the way to Neg | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) |
+| on the way to Neg | On the wayA long crossing of temperate rainforest. The company looks to you. | Go slowly, and spare yourselves (24 h) · still ahe |
 | on the way to Neg | On the waySoldiers on the road: Scorc is at war: the Scorc-Rorestlian War, since 818. | Show your face and go on |
 | Neg | NegSee the deed through at Neg. | See it through |
 
@@ -286,7 +293,7 @@
 
 ## Dhez carries word to Leg
 
-[Courier ride; three acts; target Leg; 4 stops; tie: contract; follows]
+[Courier ride; three acts; target Leg; 4 stops; tie: contract; leads]
 
 > You are Dhalg, copyist of Zalb, Uruk (Orkish) by birth and of the Greepeakism by faith. You signed on in Grurgu for a share, and Egzel keeps the books.
 
@@ -294,7 +301,7 @@
 |---|---|---|---|
 | to Kharrad | the interception (escape) | Get clear, and on to Kharrad; the way there crosses the sea, so look for a passage | stateBorder; regiment |
 | to Zalb | the lame horse (endure) | Reach Zalb with the company whole; the way there crosses the sea, so look for a passage | stateBorder; faithBorder |
-| to Leg | the race (endure) | Reach Leg with the company whole. Then: Deliver the message in Leg | relay at Murguz; relay at Uthalwen |
+| to Leg | the race (endure) | Reach Leg with the company whole. Then: Deliver the message in Leg | relay at Kalolotheas; relay at Uthalwen; relay at Zradrekh |
 
 | Where | What the player meets | First choice |
 |---|---|---|
@@ -302,10 +309,11 @@
 | on the way to Kharrad | On the waySoldiers on the road: the 5th (Igin) Regiment of Geg, camped by the way. | Show your face and go on |
 | on the way to Zalb | On the wayA toll post: the border of Geg and Zalb. | Pay the toll (🟡 0.87) |
 | on the way to Zalb | On the wayThe roadside shrines change: this is the country of the Greepeakism. In the next town they will ask  | Leave something at a shrine (🟡 0.1) |
-| on the way to Leg | ride · on the wayMurguz. | Go on |
+| on the way to Leg | ride · on the wayKalolotheas. | Go on |
 | on the way to Leg | ride · on the wayUthalwen. | Go on |
+| on the way to Leg | ride · on the wayZradrekh. | Go on |
 | Leg | LegDeliver the message in Leg. | Deliver the message |
 
-**The message: on the road.** Ending: *delivered.*
+**The message: on time.** Ending: *delivered on time, and rewarded.*
 
 stories: all ok (12 journeys)

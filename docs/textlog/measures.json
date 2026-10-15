@@ -1,0 +1,2158 @@
+[
+ {
+  "run": "pilgrimage",
+  "n": 1391,
+  "ch": {
+   "LOG": 141,
+   "TOAST": 445,
+   "NOTE": 1,
+   "BANNER": 41,
+   "SAY": 376,
+   "CHOOSE": 375,
+   "MODAL": 12
+  },
+  "words": 38248,
+  "you": 356,
+  "youOf": 751,
+  "tags": 856,
+  "faults": [],
+  "sys": {
+   "journey and scenes": 35,
+   "frame": 514,
+   "story": 17,
+   "mechanics": 825
+  },
+  "stages": {
+   "ordinary world / the call": 5,
+   "mentor": 14,
+   "tests, allies, enemies": 6,
+   "crossing / approach": 5,
+   "ordeal": 2,
+   "reward / return": 7
+  },
+  "choices": 375,
+  "withReason": 315,
+  "withCost": 363,
+  "days": 338.4425910047956,
+  "dups": [
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 124,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 82,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(8 h) ⏱ Durcojhler by Day 24, 03:50 (par): on pace to arrive 29 d 24 h behind par.",
+    "n": 32,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(9 h) ⏱ near Slof by Day 61, 10:34 (par): on pace to arrive 98 d 9 h behind par.",
+    "n": 29,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "A cold night (about 32°F) with nothing to burn: you eat more and sleep little.",
+    "n": 25,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(happened Day 176, 00:00)",
+    "n": 22,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "The rain keeps you awake.",
+    "n": 21,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "A boat is hired with its crew; it sails by day, anchors at night, and reaches small ports and rivers.",
+    "n": 19,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "The plan anchors 38 times on the way (shown as small gold marks on the course) .",
+    "n": 13,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ near Wrog by Day 128, 13:56 (par): on pace to arrive 115 d 15 h behind par.",
+    "n": 12,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Durcojhler · Day 108, 08:55 · 🟡 54.98 · food 20 rations",
+    "n": 10,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Oxbreak · Day 1, 05:58 · 🟡 137.2 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Slof · Day 183, 08:40 · 🟡 0.55 · food 10 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "You cannot pay the crew (🟡 0.67 due).",
+    "n": 9,
+    "systems": [
+     "09_travel"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "(8 h) ⏱ Froi by Day 87, 15:07 (par): on pace to arrive 129 d 7 h behind par.",
+    "n": 9,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Froi · Day 228, 05:40 · 🟡 0.06 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Wrog · Day 279, 06:29 · 🟡 0.01 · food 0 rations",
+    "n": 8,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Sailing boat: 6 mph for 12 hours a day, 2,631 mi, about 37 days .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Hazards on the course: Warton Monster .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Oxbreak market · 🟡 137.2 · you have 13 rations For sale to travellers this week: 118 rations at 🟡 0.08 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Durcojhler market · 🟡 54.98 · you have 20 rations For sale to travellers this week: 62 rations at 🟡 0.13 (dry season; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "At anchor until dawn, by your standing order (12 h).",
+    "n": 4,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "⏱ near Slof by Day 61, 10:34 (par): on pace to arrive 89 d 13 h behind par.",
+    "n": 4,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "Slof market · 🟡 0.55 · you have 10 rations For sale to travellers this week: 46 rations at 🟡 0.09 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(9 h) ⏱ The holy day at Chelhazpo: par Day 165, 12:53, and you are on pace to arrive 163 d 8 h behind par.",
+    "n": 4,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   }
+  ],
+  "crossDups": 16,
+  "places": 333
+ },
+ {
+  "run": "raid",
+  "n": 1257,
+  "ch": {
+   "NOTE": 1,
+   "BANNER": 67,
+   "LOG": 129,
+   "TOAST": 328,
+   "SAY": 379,
+   "CHOOSE": 345,
+   "MODAL": 8
+  },
+  "words": 32814,
+  "you": 372,
+  "youOf": 724,
+  "tags": 660,
+  "faults": [],
+  "sys": {
+   "frame": 496,
+   "story": 29,
+   "mechanics": 698,
+   "journey and scenes": 34
+  },
+  "stages": {
+   "ordinary world / the call": 5,
+   "mentor": 9,
+   "tests, allies, enemies": 18,
+   "crossing / approach": 3,
+   "ordeal": 2,
+   "reward / return": 9
+  },
+  "choices": 345,
+  "withReason": 314,
+  "withCost": 329,
+  "days": 369.49275223847604,
+  "dups": [
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 131,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 122,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(13 h) ⏱ The alarm at Negnud: par Day 240, 13:47, and you are on pace to arrive 17 d 1 h behind par.",
+    "n": 69,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "A cold night (about -4°F) with nothing to burn: you eat more and sleep little.",
+    "n": 49,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ Anholdhol by Day 168, 07:29 (par): on pace to arrive 5 d 7 h ahead of par.",
+    "n": 38,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "A cold night (about 20°F) with nothing to burn: you eat more and sleep little.",
+    "n": 37,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(8 h) ⏱ Vr'seramant by Day 213, 11:34 (par): on pace to arrive 46 d 19 h ahead of par.",
+    "n": 19,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Leg · Day 1, 06:01 · 🟡 157.5 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "The plan anchors 45 times on the way (shown as small gold marks on the course) .",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Anholdhol · Day 156, 19:17 · 🟡 0.19 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Vr'seramant · Day 219, 15:18 · 🟡 2.56 · food 20 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(happened Day 101, 00:00)",
+    "n": 8,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "(happened Day 32, 00:00)Day 84, 08:21 News in Sunkorsere: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "At anchor until dawn, by your standing order (11 h).",
+    "n": 6,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "⏱ Anholdhol by Day 168, 07:29 (par): on pace to arrive 82 d 15 h ahead of par.",
+    "n": 6,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "(6 h) ⏱ Anholdhol by Day 168, 07:29 (par): on pace to arrive 9 d 14 h behind par.",
+    "n": 5,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Overland: walk it, ride, or take a coach where one runs; any road will do.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Leg market · 🟡 157.5 · you have 13 rations For sale to travellers this week: 306 rations at 🟡 0.05 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(happened Day 34, 00:00)Day 92, 09:04 News in Ghagrugh: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 4,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Vr'seramant market · 🟡 2.56 · you have 20 rations For sale to travellers this week: 2 rations at 🟡 0.07 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "News in Sunkorsere: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "Anholdhol market · 🟡 0.19 · you have 0 rations For sale to travellers this week: 14 rations at 🟡 0.07 (winter; the market's food stock, of which a town this size spares a share)",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "The snow keeps you awake.",
+    "n": 3,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Leg: goods · 🟡 157.5 · carrying 0/6 units A day's food here costs 🟡 0.05; a day's work is worth 🟡 0.13.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Leg with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   }
+  ],
+  "crossDups": 12,
+  "places": 295
+ },
+ {
+  "run": "treasure",
+  "n": 334,
+  "ch": {
+   "NOTE": 1,
+   "BANNER": 22,
+   "LOG": 35,
+   "TOAST": 37,
+   "SAY": 123,
+   "CHOOSE": 106,
+   "MODAL": 10
+  },
+  "words": 11635,
+  "you": 91,
+  "youOf": 229,
+  "tags": 314,
+  "faults": [],
+  "sys": {
+   "frame": 200,
+   "story": 19,
+   "mechanics": 89,
+   "journey and scenes": 26
+  },
+  "stages": {
+   "ordinary world / the call": 5,
+   "mentor": 11,
+   "tests, allies, enemies": 8,
+   "a shortcut": 4,
+   "crossing / approach": 4,
+   "ordeal": 2,
+   "reward / return": 5
+  },
+  "choices": 106,
+  "withReason": 70,
+  "withCost": 103,
+  "days": 34.48683165860375,
+  "dups": [
+   {
+    "sen": "Overland: walk it, ride, or take a coach where one runs; any road will do.",
+    "n": 17,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 14,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "The plan anchors 24 times on the way (shown as small gold marks on the course) .",
+    "n": 12,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Vr'seramant · Day 1, 06:02 · 🟡 104.2 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Another night in the grassland.",
+    "n": 9,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ near Mazzuz by Day 38, 07:29 (par): on pace to arrive 60 d 18 h behind par.",
+    "n": 9,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Leg · Day 19, 17:39 · 🟡 93.28 · food 16 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Mazzuz · Day 3, 06:51 · 🟡 104.2 · food 12 rations",
+    "n": 8,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Bash · Day 33, 18:28 · 🟡 91.92 · food 11 rations",
+    "n": 8,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "On foot (light): 5 mph for 8 hours a day, 609 mi, about 15 days .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Geg stands to your people as “Friendly” .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "The course crosses the Krod Crusade .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Vr'seramant market · 🟡 104.2 · you have 13 rations For sale to travellers this week: 3 rations at 🟡 0.08 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Leg market · 🟡 93.28 · you have 16 rations For sale to travellers this week: 265 rations at 🟡 0.05 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Mazzuz market · 🟡 104.2 · you have 12 rations For sale to travellers this week: 24 rations at 🟡 0.06 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Bash market · 🟡 91.92 · you have 11 rations For sale to travellers this week: 29 rations at 🟡 0.06 (wet season; the market's food stock, of which a town this size spares a share)",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Vr'seramant: goods · 🟡 104.2 · carrying 0/6 units A day's food here costs 🟡 0.08; a day's work is worth 🟡 0.22.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Vr'seramant with its own; buyers pay 12% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Mazzuz: goods · 🟡 104.2 · carrying 0/6 units A day's food here costs 🟡 0.06; a day's work is worth 🟡 0.17.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Mazzuz with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Leg / Capital · Kingdom of Uzd",
+    "n": 2,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "BANNER"
+    ]
+   },
+   {
+    "sen": "Leg: goods · 🟡 93.28 · carrying 0/6 units A day's food here costs 🟡 0.05; a day's work is worth 🟡 0.13.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Leg with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Bash: goods · 🟡 91.92 · carrying 0/6 units A day's food here costs 🟡 0.06; a day's work is worth 🟡 0.19.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Bash with its own; buyers pay 13% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   }
+  ],
+  "crossDups": 0,
+  "places": 215
+ },
+ {
+  "run": "caravan",
+  "n": 456,
+  "ch": {
+   "NOTE": 1,
+   "BANNER": 20,
+   "LOG": 52,
+   "TOAST": 111,
+   "SAY": 133,
+   "CHOOSE": 133,
+   "MODAL": 6
+  },
+  "words": 11360,
+  "you": 121,
+  "youOf": 266,
+  "tags": 246,
+  "faults": [],
+  "sys": {
+   "frame": 195,
+   "story": 23,
+   "mechanics": 211,
+   "journey and scenes": 27
+  },
+  "stages": {
+   "ordinary world / the call": 4,
+   "mentor": 6,
+   "tests, allies, enemies": 18,
+   "crossing / approach": 2,
+   "ordeal": 2,
+   "reward / return": 9
+  },
+  "choices": 133,
+  "withReason": 110,
+  "withCost": 120,
+  "days": 82.4467489293789,
+  "dups": [
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 45,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(6 h) ⏱ Market day at Vr'seramant: par Day 84, 10:46, and you are on pace to arrive 42 d 7 h ahead of par.",
+    "n": 36,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 35,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "You and the company (Domramaruma, Dirdgez, Khalalithongan, Gurkug): another night in the grassland.",
+    "n": 16,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Freys by Day 42, 09:59 (par): on pace to arrive 2 d 23 h ahead of par.",
+    "n": 10,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Leg · Day 1, 06:01 · 🟡 62.5 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Freys · Day 28, 06:24 · 🟡 53.01 · food 14 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "You and the company (Domramaruma, Dirdgez, Khalalithongan, Gurkug): another night in the taiga.",
+    "n": 8,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Market day at Vr'seramant: par Day 84, 10:46, and you are on pace to arrive 13 d 20 h ahead of par.",
+    "n": 7,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Freys by Day 42, 09:59 (par): on pace for par.",
+    "n": 6,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Food low: about 2 days left.",
+    "n": 6,
+    "systems": [
+     "09_travel"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "The rain keeps you awake.",
+    "n": 5,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "News in Vr'seramant: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 5,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "(happened Day 34, 00:00)Day 83, 10:08 News in Vr'seramant: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Leg market · 🟡 62.5 · you have 13 rations For sale to travellers this week: 306 rations at 🟡 0.05 (spring; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Carriage: 6 mph for 10 hours a day, 2,419 mi, about 40 days .",
+    "n": 4,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Overland: walk it, ride, or take a coach where one runs; any road will do.",
+    "n": 4,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "The plan anchors 40 times on the way (shown as small gold marks on the course) .",
+    "n": 4,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Freys market · 🟡 53.01 · you have 14 rations For sale to travellers this week: 235 rations at 🟡 0.04 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "A cold night (about 31°F), but there is wood for a fire.",
+    "n": 3,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Leg: goods · 🟡 62.5 · carrying 0/6 units A day's food here costs 🟡 0.05; a day's work is worth 🟡 0.13.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Leg with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ Freys by Day 42, 09:59 (par): on pace to arrive 4 d 23 h behind par.",
+    "n": 2,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Freys by Day 42, 09:59 (par): on pace to arrive 3 d 9 h behind par.",
+    "n": 2,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "You and the company (Domramaruma, Dirdgez, Khalalithongan, Gurkug): another night in the temperate deciduous forest.",
+    "n": 2,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   }
+  ],
+  "crossDups": 2,
+  "places": 198
+ },
+ {
+  "run": "courier",
+  "n": 773,
+  "ch": {
+   "NOTE": 1,
+   "BANNER": 35,
+   "LOG": 89,
+   "CHOOSE": 213,
+   "SAY": 233,
+   "TOAST": 194,
+   "MODAL": 8
+  },
+  "words": 19630,
+  "you": 206,
+  "youOf": 446,
+  "tags": 472,
+  "faults": [],
+  "sys": {
+   "frame": 317,
+   "journey and scenes": 26,
+   "story": 13,
+   "mechanics": 417
+  },
+  "stages": {
+   "ordinary world / the call": 4,
+   "mentor": 8,
+   "tests, allies, enemies": 8,
+   "crossing / approach": 4,
+   "ordeal": 2,
+   "reward / return": 5
+  },
+  "choices": 213,
+  "withReason": 186,
+  "withCost": 209,
+  "days": 190.0524693863731,
+  "dups": [
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 71,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 54,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(16 h) ⏱ The deadline at Leg: par Day 69, 15:08, and you are on pace to arrive 63 d 2 h behind par.",
+    "n": 51,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "A cold night (about 20°F) with nothing to burn: you eat more and sleep little.",
+    "n": 26,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(happened Day 101, 00:00)",
+    "n": 11,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "The plan anchors 5 times on the way (shown as small gold marks on the course) .",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Kharrad · Day 20, 21:59 · 🟡 41.53 · food 18 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Zalb · Day 56, 15:05 · 🟡 40.41 · food 11 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Grurgu · Day 1, 07:59 · 🟡 42.4 · food 13 rations",
+    "n": 8,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "The rain keeps you awake.",
+    "n": 7,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Horseback (spare horse): 12 mph for 10 hours a day, 687 mi, about 6 days .",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Overland: walk it, ride, or take a coach where one runs; any road will do.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "The course crosses the Krod Crusade .",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(15 h) ⏱ Zalb by Day 10, 13:22 (par): on pace to arrive 42 d 10 h behind par.",
+    "n": 5,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "At anchor until dawn, by your standing order (17 h).",
+    "n": 5,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "⏱ The deadline at Leg: par Day 69, 15:08, and you are on pace to arrive 102 d 24 h behind par.",
+    "n": 5,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "(happened Day 34, 00:00)Day 92, 08:02 News in Aksunkay: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Grurgu market · 🟡 42.4 · you have 13 rations For sale to travellers this week: 328 rations at 🟡 0.06 (wet season; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Zalb market · 🟡 40.41 · you have 11 rations For sale to travellers this week: 3 rations at 🟡 0.04 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Kharrad market · 🟡 41.53 · you have 18 rations For sale to travellers this week: 46 rations at 🟡 0.04 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "News in Aksunkay: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 3,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "(happened Day 31, 00:00)Day 84, 08:16 News in Sazkeli: Battle near Whiron: the 5th (Shathundin) Regiment of Undunalbi beat the 4th (Edwoodtown) Regiment of Eagbutumnia, who fall back.",
+    "n": 3,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Grurgu: goods · 🟡 42.4 · carrying 0/6 units A day's food here costs 🟡 0.06; a day's work is worth 🟡 0.19.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Grurgu with its own; buyers pay 12% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Kharrad: goods · 🟡 41.53 · carrying 0/6 units A day's food here costs 🟡 0.04; a day's work is worth 🟡 0.14.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   }
+  ],
+  "crossDups": 9,
+  "places": 241
+ },
+ {
+  "run": "quest",
+  "n": 2298,
+  "ch": {
+   "LOG": 185,
+   "TOAST": 702,
+   "NOTE": 1,
+   "BANNER": 99,
+   "SAY": 666,
+   "CHOOSE": 629,
+   "MODAL": 16
+  },
+  "words": 65723,
+  "you": 559,
+  "youOf": 1295,
+  "tags": 1380,
+  "faults": [],
+  "sys": {
+   "journey and scenes": 67,
+   "frame": 902,
+   "mechanics": 1293,
+   "story": 36
+  },
+  "stages": {
+   "ordinary world / the call": 5,
+   "mentor": 23,
+   "tests, allies, enemies": 24,
+   "crossing / approach": 8,
+   "ordeal": 2,
+   "reward / return": 5
+  },
+  "choices": 629,
+  "withReason": 561,
+  "withCost": 615,
+  "days": 565.5606465091103,
+  "dups": [
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 220,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 132,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Another night in the temperate rainforest.",
+    "n": 45,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ Hosisiaq by Day 86, 16:50 (par): on pace to arrive 17 d 9 h behind par.",
+    "n": 34,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ Rhecad by Day 288, 08:25 (par): on pace to arrive 131 d 10 h behind par.",
+    "n": 34,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "The plan anchors 181 times on the way (shown as small gold marks on the course) .",
+    "n": 33,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "⏱ Hosisiaq by Day 86, 16:50 (par): on pace to arrive 12 d 6 h behind par.",
+    "n": 31,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST",
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(happened Day 40, 00:00)Day 139, 08:00 News in Rezuthaih: Battle near Shrantacha: the 6th (Yith'arzur) Regiment of Seivex beat the 4th (Szezsezad) Regiment of Zir, who fall back.",
+    "n": 29,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "A cold night (about 31°F) with nothing to burn: you eat more and sleep little.",
+    "n": 26,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ Unzinb by Day 105, 17:44 (par): on pace to arrive 102 d 5 h behind par.",
+    "n": 24,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(13 h) ⏱ The appointed time at Sunsirere: par Day 400, 06:22, and you are on pace to arrive 72 d 1 h behind par.",
+    "n": 22,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Caven by Day 346, 12:42 (par): on pace to arrive 59 d 22 h behind par.",
+    "n": 19,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Another night in the taiga.",
+    "n": 18,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ The appointed time at Sunsirere: par Day 400, 06:22, and you are on pace to arrive 126 d 21 h behind par.",
+    "n": 18,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Hazards on the course: Pirates .",
+    "n": 17,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Overland: walk it, ride, or take a coach where one runs; any road will do.",
+    "n": 17,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(9 h) ⏱ near Grath'tiss by Day 96, 17:12 (par): on pace to arrive 75 d 10 h behind par.",
+    "n": 17,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "The rain keeps you awake.",
+    "n": 14,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "At anchor until dawn, by your standing order (11 h).",
+    "n": 13,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "(9 h) ⏱ Highgulch by Day 330, 10:10 (par): on pace to arrive 41 d 15 h behind par.",
+    "n": 11,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Ma'kan'ji · Day 1, 06:00 · 🟡 215.5 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "A ship keeps the sea day and night and is booked as a passenger.",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "A boat is hired with its crew; it sails by day, anchors at night, and reaches small ports and rivers.",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "On foot (light): 5 mph for 8 hours a day, 633 mi, about 16 days .",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Raven stands to your people as “Neutral” .",
+    "n": 9,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   }
+  ],
+  "crossDups": 7,
+  "places": 480
+ },
+ {
+  "run": "airship",
+  "n": 1015,
+  "ch": {
+   "NOTE": 1,
+   "BANNER": 133,
+   "LOG": 190,
+   "TOAST": 218,
+   "SAY": 224,
+   "CHOOSE": 237,
+   "MODAL": 12
+  },
+  "words": 34288,
+  "you": 166,
+  "youOf": 461,
+  "tags": 544,
+  "faults": [],
+  "sys": {
+   "frame": 447,
+   "story": 29,
+   "mechanics": 484,
+   "journey and scenes": 55
+  },
+  "stages": {
+   "ordinary world / the call": 5,
+   "mentor": 15,
+   "tests, allies, enemies": 26,
+   "crossing / approach": 5,
+   "ordeal": 2,
+   "reward / return": 5
+  },
+  "choices": 237,
+  "withReason": 189,
+  "withCost": 224,
+  "days": 147.04090019810664,
+  "dups": [
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 61,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Another night in the temperate deciduous forest.",
+    "n": 28,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ Pres by Day 5, 04:36 (par): on pace to arrive 64 d 15 h behind par.",
+    "n": 16,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "⏱ The timetable at Balmastarc: par Day 11, 14:00, and you are on pace to arrive 108 d 21 h behind par.",
+    "n": 15,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Dirigible: 20 mph for 24 hours a day, 1,028 mi, about 2 days .",
+    "n": 13,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "The company's own craft flies it, over land and sea alike.",
+    "n": 13,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "You cannot pay the crew (🟡 0.58 due).",
+    "n": 13,
+    "systems": [
+     "09_travel"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "(happened Day 68, 00:00)Day 88, 19:10 News in Psychra: Battle near Altaleki: the 2nd (Obaman) Regiment of Esenkoryurt beat the 2nd (Kutyurt) Regiment of Beytekyurt, who fall back.",
+    "n": 10,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(7 h) ⏱ The timetable at Balmastarc: par Day 11, 14:00, and you are on pace to arrive 116 d 21 h behind par.",
+    "n": 10,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "Pulum · Day 1, 05:59 · 🟡 5.6 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Vepara · Day 16, 11:44 · 🟡 0.04 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Ayruk · Day 53, 12:42 · 🟡 0.01 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Pres · Day 83, 18:57 · 🟡 0 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Duzunte · Day 105, 19:55 · 🟡 0 · food 0 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Food low: about 1 day left.",
+    "n": 8,
+    "systems": [
+     "09_travel"
+    ],
+    "chans": [
+     "TOAST"
+    ]
+   },
+   {
+    "sen": "Teleport: 10000 mph for 24 hours a day, 2,054 mi, about 0 days .",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "A teleport circle crosses it at once.",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(happened Day 66, 00:00)Day 88, 19:10 News in Psychra: Battle near Altaleki: the 2nd (Obaman) Regiment of Esenkoryurt beat the 1st (Alteli) Regiment of Beytekyurt, who fall back.",
+    "n": 7,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "You sleep aboard, at anchor.",
+    "n": 7,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   },
+   {
+    "sen": "(happened Day 18, 00:00)Day 53, 11:50 News in Ayruk: Battle near Bjerklaus: the 1st (Madrocia) Regiment of Padamia beat the 4th (Ludequejar) Regiment of Alverenia, who fall back.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "(happened Day 90, 00:00)Day 105, 18:40 News in Duzunte: Battle near Altaleki: the 1st (Sateli) Regiment of Esenkoryurt beat the 1st (Alteli) Regiment of Beytekyurt, who fall back.",
+    "n": 5,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Pulum market · 🟡 5.6 · you have 13 rations For sale to travellers this week: 72 rations at 🟡 0.04 (autumn; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "News in Psychra: Battle near Altaleki: the 2nd (Obaman) Regiment of Esenkoryurt beat the 2nd (Kutyurt) Regiment of Beytekyurt, who fall back.",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "LOG"
+    ]
+   },
+   {
+    "sen": "It keeps clear of the Pink Fever .",
+    "n": 4,
+    "systems": [
+     "11_screens"
+    ],
+    "chans": [
+     "MODAL"
+    ]
+   },
+   {
+    "sen": "Another night in the savanna.",
+    "n": 4,
+    "systems": [
+     "26_narrator"
+    ],
+    "chans": [
+     "SAY"
+    ]
+   }
+  ],
+  "crossDups": 16,
+  "places": 466
+ },
+ {
+  "run": "sandbox",
+  "n": 113,
+  "ch": {
+   "BANNER": 4,
+   "LOG": 8,
+   "TOAST": 13,
+   "CHOOSE": 43,
+   "SAY": 43,
+   "NOTE": 1,
+   "MODAL": 1
+  },
+  "words": 2185,
+  "you": 34,
+  "youOf": 86,
+  "tags": 60,
+  "faults": [],
+  "sys": {
+   "frame": 72,
+   "journey and scenes": 10,
+   "mechanics": 31
+  },
+  "stages": {
+   "mentor": 6
+  },
+  "choices": 43,
+  "withReason": 25,
+  "withCost": 40,
+  "days": 6.001417466556759,
+  "dups": [
+   {
+    "sen": "Sharnarthi · Day 1, 14:00 · 🟡 61.8 · food 13 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Andnacwen · Day 6, 08:19 · 🟡 30.34 · food 18 rations",
+    "n": 9,
+    "systems": [
+     "06_game"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Make camp, wait, or look for food?",
+    "n": 5,
+    "systems": [
+     "12_provisions"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Sharnarthi market · 🟡 61.8 · you have 13 rations For sale to travellers this week: 95 rations at 🟡 0.12 (wet season; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Andnacwen market · 🟡 30.34 · you have 18 rations For sale to travellers this week: 16 rations at 🟡 0.13 (wet season; the market's food stock, of which a town this size spares a share)",
+    "n": 4,
+    "systems": [
+     "14_living"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Sharnarthi: goods · 🟡 61.8 · carrying 4/6 units A day's food here costs 🟡 0.12; a day's work is worth 🟡 0.29.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Sharnarthi with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Andnacwen: goods · 🟡 30.34 · carrying 4/6 units A day's food here costs 🟡 0.13; a day's work is worth 🟡 0.28.",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   },
+   {
+    "sen": "Prices blend the markets around Andnacwen with its own; buyers pay 15% tax .",
+    "n": 2,
+    "systems": [
+     "21_markets"
+    ],
+    "chans": [
+     "CHOOSE"
+    ]
+   }
+  ],
+  "crossDups": 0,
+  "places": 89
+ }
+]

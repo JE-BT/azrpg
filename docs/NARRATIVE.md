@@ -411,7 +411,13 @@ suspicion in detail.
 
 ---
 
-## 13. Decisions, and what Alpha 5.1 built
+## 13. Decisions, and what Alpha 5.1 and 5.2 built
+
+**Alpha 5.2.** The clock is the first layer: a journey is a race against its plan, and each journey
+type reads early and late in its own way (DESIGN.md, Alpha 5.2). You always lead; leading or following
+is set aside while the clock is the challenge. The opposition is the clock; named opposition waits
+for Alpha 6 and 7.
+
 
 1. **Ties** are part of the character, with leading or following: accept the traveller, or roll
    another.

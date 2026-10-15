@@ -97,6 +97,13 @@ structures and leg roles with objectives in the corner; moments on the way; peop
 story and help with the systems; regard and suspicion as one system, brought forward from Alpha 7;
 provisions for the road; side stories you can pick.
 
+## Alpha 5.2: the clock (released)
+
+The journey as a race against its plan: clock rules for every journey type, scoring, the arrival page,
+waiting for the day, journeys lost to the clock, the report card and your best, the race in the corner
+and at camp. The player leads. The narrator's first rules, deeds remembered, the false lead, people you
+know. Named opposition waits for Alpha 6 and 7.
+
 ## Alpha 6: traffic and knowledge
 
 1. **Traffic.** The ships, coaches and wagons of every passenger line and trade flow are drawn

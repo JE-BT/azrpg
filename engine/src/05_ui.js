@@ -12,7 +12,9 @@ AZ.UI = class {
   }
   busy() { return !!this.active || !!this.modalKey; }
   say(pages, who) {
-    pages = (Array.isArray(pages) ? pages : [pages]).filter(Boolean);
+    pages = (Array.isArray(pages) ? pages : [pages]).flat().filter(p => p != null && p !== "").map(String);
+    // a string spread into characters by mistake reads as one page, never one letter at a time
+    if (pages.length > 3 && pages.every(p => p.length <= 1)) pages = [pages.join("")];
     if (!pages.length) return Promise.resolve();
     return new Promise(res => {
       let i = 0;
