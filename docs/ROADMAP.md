@@ -1,22 +1,21 @@
 # Roadmap
 
-azrpg is in alpha. These are the directions planned for the next versions. Each is designed on
-paper before it is built. The design notes, with a control table and a worked example for each
+azrpg is in alpha. These are the directions planned for the next versions. 
+The design notes, with a control table and a worked example for each
 version, are in [DESIGN.md](DESIGN.md).
 
-The order follows what each version needs from the ones before it. Control of vessels comes first,
-because the economy's carriers, the company's decisions and the army's orders all use it; war comes
-last, because it uses everything else. Each version ends in a playable release and a round of
-public tests.
+Each version ends in a playable release and a round of public tests.
 
-## Alpha 2.1: the bridge
+## Alpha 1: The basic game
 
-Fixes from the public tests of Alpha 2, released ahead of Alpha 3: damage that belongs to the
-vessel, F following the plan's course from anywhere, the vessel's hold and the crew left aboard,
-watches for round-the-clock crews, waking hours that count, harbours and markets in a fixed world.
+Getting an RPG look and feel to Azgaar maps with a basic day and night cycle and info layers
+
+## Alpha 2
+
+Watches for round-the-clock crews, waking hours that count, harbours and markets in a fixed world.
 See [CHANGELOG.md](../CHANGELOG.md).
 
-## Alpha 3: vessels and control (released)
+## Alpha 3: vessels and control
 
 Every vessel, and every land vehicle, is described by its **class** (what she is), her
 **realisation** (what the culture of her port calls her and how she looks) and her **control** (who
@@ -32,7 +31,7 @@ what you cannot carry can be stored for a deposit and a weekly fee.
 
 *Control table: who decides aboard. Worked example: a hired boat on the pilgrimage to Chelhazpo.*
 
-## Alpha 4: markets (released)
+## Alpha 4: markets
 
 Built on the economy the map already has: markets, which work like watersheds with a centre of
 gravity, and goods, spread over the land by Azgaar's spread functions and each cell's bonus good.
@@ -57,13 +56,13 @@ The economy that comes out of them is emergent; the game balances money.
 *Control tables: what moves a price; what costs and what pays. Worked examples: four towns on
 Pyeongak; the mine, the boat, and a stranded start.*
 
-## Alpha 4.1 (released)
+## Alpha 4.1
 
 Fixes and people: goods are sold where the map has them; skiffs stay in the water unless carried;
 the merchant reads the markets for you; the harbourmaster gives directions and watches vessels; the
 wainwright reads the road and sells riding horses; animals go aboard small ships and larger.
 
-## Alpha 5: stories (released)
+## Alpha 5: stories
 
 Built: story types, hook finders, story shapes, the builder that fits a story to any number of
 stops, beat scenes played through the game's systems, out-of-order stops, and the end of a journey.
@@ -89,7 +88,7 @@ faiths and cultures, a caravan's from markets and goods, a campaign's from state
 *Control table: who decides in the company. Worked example: Culzan and the road through the
 forest.*
 
-## Alpha 5.1: the story, hidden (released)
+## Alpha 5.1: Story UI
 
 The narrative design in [NARRATIVE.md](NARRATIVE.md), built: the premise (tie, lead or follow) as part
 of the character; any journey from the title screen; the company at the start; arcs, weighted
@@ -97,14 +96,14 @@ structures and leg roles with objectives in the corner; moments on the way; peop
 story and help with the systems; regard and suspicion as one system, brought forward from Alpha 7;
 provisions for the road; side stories you can pick.
 
-## Alpha 5.2: the clock (released)
+## Alpha 5.2: the clock
 
 The journey as a race against its plan: clock rules for every journey type, scoring, the arrival page,
 waiting for the day, journeys lost to the clock, the report card and your best, the race in the corner
 and at camp. The player leads. The narrator's first rules, deeds remembered, the false lead, people you
 know. Named opposition waits for Alpha 6 and 7.
 
-## Alpha 6: traffic and knowledge
+## Alpha 6: traffic, knowledge, and streamlining
 
 1. **Traffic.** The ships, coaches and wagons of every passenger line and trade flow are drawn
    where their timetables put them, carry stock between markets, and can be hailed for their
@@ -116,13 +115,12 @@ know. Named opposition waits for Alpha 6 and 7.
    drawn, and can be traded with captains; some are wrong. Lenses show your chart; Sandbox adds a
    view of the true world.
 4. **Rumours of prices** from real gaps between markets, older and vaguer with distance.
-5. **Caches.** Goods buried away from towns, marked on your own chart and nowhere else; the longer
-   they lie, the likelier someone finds them.
-6. **News of the unseen:** a crew sailing off, a carrier robbed, a town falling, all heard at news
+5. **Purchase records** from real deals between markets and towns, summarized in a way that helps identify the best nearby market to buy or sell critical goods
+6. **Caches.** Goods buried away from towns, marked on your own chart and nowhere else; the longer
+   they lie, the likelier someone finds them. Become a pirate!
+7. **News of the unseen:** a crew sailing off, a carrier robbed, a town falling, all heard at news
    speed.
-
-*Control table: what you know, and how old it is. Worked example: is wood worth carrying from Froi
-to Bres?*
+8. **Streamlining the experience:** the interface is decluttured and primary systems are centered with others turned off by default. The feeling of movement in the world is refined.
 
 ## Alpha 7: war
 
