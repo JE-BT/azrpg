@@ -157,8 +157,8 @@
   G.awakeTick = function (h) {
     const s = this.s, wasEx = !!s.cond.exhausted, before = s.awake || 0;
     awake0.call(this, h);
-    if (!wasEx && s.cond.exhausted && !this.ui.busy()) this.ui.say(`<b class="late">Exhausted.</b> You have been awake ${Math.round(s.awake)} hours. Everything takes longer (×1.4), and at 44 hours you will fall asleep wherever you are. Camp, take a room, or rest six hours (R).`);
-    if (before + h >= 44 && (s.awake || 0) === 0 && !this.ui.busy()) this.ui.say(`<b class="late">You fell asleep where you stood</b> and woke ten hours later${s.vessel && s.aboard && s.vessel.crew ? "; the crew kept the watch, and did not like it" : ""}.`);
+    if (!wasEx && s.cond.exhausted && !this.ui.busy()) this.ui.say(`<b class="late">Exhausted.</b> You have been awake ${Math.round(s.awake)} hours. Everything takes longer (×1.4), and at ${AZ.COLLAPSE_H} hours you will fall asleep wherever you are. Camp, take a room, or rest six hours (R).`);
+    if (before + h >= AZ.COLLAPSE_H && (s.awake || 0) === 0 && !this.ui.busy()) this.ui.say(`<b class="late">You fell asleep where you stood</b> and woke ten hours later${s.vessel && s.aboard && s.vessel.crew ? "; the crew kept the watch, and did not like it" : ""}.`);
   };
 
   // ------------------------------------------------------------------ the company

@@ -5,13 +5,7 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 5.2**.
-
-Online demo: https://je-bt.github.io/azrpg/
-
-Online demo: https://je-bt.github.io/azrpg/
-
-Online demo: https://je-bt.github.io/azrpg/
+Current version: **Alpha 6** (first playtest). The online demo is still Alpha 5.2.
 
 Online demo: https://je-bt.github.io/azrpg/
 
@@ -31,22 +25,29 @@ Then choose a traveller. Each kind of traveller is drawn from the map: natives o
 route, soldiers of states at war, envoys, traders, scholars, refugees, and the roles of the journey's
 own type (a raider on a raid, a courtier on a royal progress).
 
-### Keys
+### Screens and keys
+
+Five screens sit on buttons along the bottom and on keys 1 to 5: **Memory** (what your traveller knows),
+**Inventory** (what you carry), **Story** (every choice open to you, and what each one answers),
+**World** (the tiles, and zoomed out the mental map) and **Journey** (the race, the vehicle and the
+viewing window).
+
+Time has three levels. On Memory and Inventory the clock stands still. On Story it runs at one second a
+second. On World and Journey it runs at the pace you set (❚❚ ▶ ▶▶ ▶▶▶, or Play a day), and only there do
+pop-ups and warnings appear.
 
 | Key | Action |
 |---|---|
-| Arrows / WASD | Walk, or steer your own boat or craft |
-| Space / Enter | Act on what is here: enter a town, visit a place, hail a unit, board or go ashore, talk, look |
-| F | Follow a path to your waypoint, or the planned course; aboard a booked ship, switch pace |
-| P | Aboard a booked ship: hold, so time passes only when you act |
-| R | Camp, anchor, wait, fish, forage, recover |
-| I | Inspector: every map layer for the tile you stand on |
-| L | Lens: colour the map by biome, height, effort on foot, temperature, rain, state, province, culture, religion, population, market, resource or zone |
-| M | World map; click to set a waypoint, N to show the passenger lines you know |
-| J | Journal: what you carry, checkpoints and reasons, side stories, leads, news, timetables |
-| + / −, Esc, H | Zoom, menu, help |
+| Arrows / WASD | Step one tile (the clock runs for the step, then stops). Aboard your own vessel, take the helm |
+| Space | The Story screen; there, arrows and Enter choose |
+| 1–5 | Memory, Inventory, Story, World, Journey |
+| P · [ ] · G | Pause or play · slower or faster · Play a day |
+| F · T · N | Walk to your target (aboard: the crew sails the course) · take or hand back the helm · make a note |
+| M · + / − · L · I | Mental map · zoom · lens · info for the tile you stand on |
+| Esc, H | Menu (settings, help, about), help |
 
-Touch screens get an on-screen pad.
+Click or tap a tile on World for hours on foot and Walk there. Every option and pop-up is listed in
+[docs/OPTIONS.md](docs/OPTIONS.md).
 
 ### What you will find
 
@@ -130,7 +131,7 @@ the map.
 azrpg/      converter (Python): reads the map, builds tiles, writes the world pack and the HTML
 engine/     the game (JavaScript), one module per file, joined in name order
   shell.html
-  src/00_util.js … 18_carry.js
+  src/00_util.js … 35_shell.js   (30–35: Alpha 6's timeline, narrator, knowledge, viewing window, World, screens)
 tests/      converter tests (Python) and game tests (Node)
 docs/       journeys key, roadmap, design notes
 ```
@@ -142,7 +143,7 @@ python -m unittest discover -s tests -t .           # converter; needs the Pyeon
 node tests/text.js out/Pyeongak_rpg.html            # every screen's text, for writing faults
 node tests/features.js out/Presia_rpg.html          # air legs, wild starts, carrying, alerts
 node tests/play.js out/Pyeongak_rpg.html            # a scripted journey
-node tests/browser.js out/Pyeongak_rpg.html         # the page in a simulated browser
+node tests/browser.js out/Pyeongak_rpg.html         # the Alpha 6 page in a simulated browser: the clock, the screens, a voyage
 node tests/vessels.js out/Pyeongak_rpg.html         # damage, the hold, crews ashore, watches, F's course
 node tests/alpha3.js out/Pyeongak_rpg.html          # classes, control, shipwright, porters, stables, warehouse
 node tests/alpha4.js out/Pyeongak_rpg.html          # the market field, money, trading, starting money
@@ -151,6 +152,7 @@ node tests/stories.js out/Pyeongak_rpg.html         # the story of every journey
 node tests/alpha51.js out/Bernoy_rpg.html          # the premise, the company, regard, provisions, side-story focus
 node tests/alpha52.js out/Bernoy_rpg.html          # the clock, the report card, the narrator, deeds, people you know
 node tests/textlog.js out                           # logs and measures the text of eight games (docs/textlog, docs/TEXT_REVIEW.md)
+node tests/alpha6.js out/Pyeongak_rpg.html          # what you know, the blur rules, the notebook, the feed, day cards, the viewing window
 ```
 
 The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.
