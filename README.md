@@ -5,7 +5,8 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 6** (first playtest). The online demo is still Alpha 5.2.
+Current version: **Alpha 6** (first playtest). 
+
 
 Online demo: https://je-bt.github.io/azrpg/
 
