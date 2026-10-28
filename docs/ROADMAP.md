@@ -105,6 +105,13 @@ know. Named opposition waits for Alpha 6 and 7.
 
 ## Alpha 6: traffic, knowledge, and streamlining
 
+The design is in [ALPHA6.md](ALPHA6.md). The first playtest version builds the screens, the clock and
+what you know (point 8 below, with the knowledge base for points 3 to 5): the timeline, the narrator and
+day cards, the five screens, the knowledge store with its blur rules, the notebook and handbills, the
+fogged World and the mental map, the Journey screen and its viewing window, and the Story screen with
+the planning window. Traffic, carriers, charts, price rumours, purchase records, caches and news of the
+unseen follow on that base. See [CHANGELOG.md](../CHANGELOG.md).
+
 1. **Traffic.** The ships, coaches and wagons of every passenger line and trade flow are drawn
    where their timetables put them, carry stock between markets, and can be hailed for their
    timetables, prices and news; a density limit and a switch keep the map readable. Following the

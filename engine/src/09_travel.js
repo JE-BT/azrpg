@@ -1,3 +1,4 @@
+AZ.COLLAPSE_H = 52; // hours awake before you fall asleep where you stand (Alpha 6: a warning comes four hours before)
 // ---------------------------------------------------------------------------------------------
 // Travel, supplies and money.
 //   Booked ship: a captain with his own itinerary (a cargo to land, ports to call at); a fixed
@@ -174,7 +175,7 @@ Object.assign(AZ.Game.prototype, {
     const s = this.s;
     if (s.watchBelow) { if (s.clock < s.watchBelow && s.aboard && s.vessel && !this.riding()) return; delete s.watchBelow; }
     s.awake = (s.awake || 0) + h;
-    if (s.awake >= 44 && !this.ui.busy()) {
+    if (s.awake >= AZ.COLLAPSE_H && !this.ui.busy()) {
       this.ui.toast("You fall asleep where you stand, and wake ten hours later.");
       s.clock += 10; this.slept();
       if (s.vessel && s.aboard && s.vessel.crew) s.vessel.morale -= 5;
@@ -272,7 +273,7 @@ Object.assign(AZ.Game.prototype, {
       const h = Math.max(2, until - s.clock);
       s.clock = until;
       this.log(`Storm: ${U.esc(s.voyage.ship)} hove to for ${Math.round(h)} h.`);
-      return this.ui.say(`<b>Storm.</b> The captain of the ${U.esc(s.voyage.ship)} heaves to and rides it out: ${Math.round(h)} hours lost ${AZ.T("mixed")}.`);
+      return this.ui.say(`<b>Storm.</b> The captain of ${U.esc(s.voyage.ship)} heaves to and rides it out: ${Math.round(h)} hours lost ${AZ.T("mixed")}.`);
     }
     const v = s.vessel;
     if (!v) return;

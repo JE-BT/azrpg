@@ -1,5 +1,124 @@
 # Changelog
 
+## Alpha 6, playtest round 1: three levels of time, one Story screen
+
+**Three levels.** Memory and Inventory are the inner world: the clock stands still. Story is the
+world you can touch: the clock runs at one second a second and cannot be changed. World and Journey
+are the planned world: the clock runs at the pace you set and can be paused, and only there do
+pop-ups and warnings appear; a pop-up that arises on Story brings up World (on foot) or Journey
+(carried). Coming back to World or Journey from another screen pauses the clock. The play buttons
+start the clock at once: standing still, time passes in place. The pace buttons are greyed out
+on Memory, Inventory and Story.
+
+**Screens in a new order:** 1 Memory, 2 Inventory, 3 Story, 4 World, 5 Journey. The bottom bar is the
+same on every screen, with the leg's progress on all of them. Space opens Story.
+
+**Moving.** An arrow steps one tile: the clock runs for that step and stops. Walk there, F and the
+crew's course still run on at the pace.
+
+**Story.** The viewing window sits above the Decision panel, which gathers options from every system:
+the town, the vehicle, the company, what is here, food from the land, documents and the day
+(docs/OPTIONS.md lists them all). Arrow keys move through the options from top to bottom. Each
+option answers in the Information panel, where sub-menus such as the market and the harbour are
+chosen, and Make a note (N) copies the answer into the notebook. At night most of a town is asleep.
+
+**The end of the day.** End the day shows the day's summary and heads to bed at the hour of the sleep
+routine (eight hours before dawn by default); asleep, the Decision panel holds one option, Wake up;
+you wake at the hour you set (dawn by default). The inn, camp, sleeping aboard while she sails on,
+and the crew's night (anchor, or sail on in watches) are its forms. Set the default sleep routine
+chooses bedtime, waking, the crew at night and the company at night. The day card at dusk has three
+forms: carried (Carry on), on your own vessel (End the day), walking (Camp); each with Options (Story)
+and Pause here.
+
+**Tasks** (writing in the notebook, copying a board, planning with the captain, gossip) wait for the
+clock and are named in the clock's status line. Carried, the vehicle goes on; on foot, you stop by
+the road, and when the task is done a card asks whether to walk on. A short note marks the end.
+
+**Warnings**, a new class, stop the clock and come with options: food (two days left on land, five at
+sea), health (hurt, fevered, gravely ill), exhaustion (a note at 20 hours awake, a warning at 48;
+collapse moves from 44 to 52 hours), the crew's patience.
+
+**Sleep and waking.** The clock window always shows awake or asleep and for how long; hours awake now
+follow the clock through waits and voyages.
+
+**A short beginning.** The introduction is five cards: the title, who you are, where you stand, the
+goal, and what to do first. The full introduction and the story's opening are in Memory, under The
+beginning.
+
+**A damaged vessel** shows on the Journey screen and in the viewing window (a torn sail, a gap in the
+rail, water on the deck).
+
+**Tests.** `tests/browser.js` follows the new rules: one tile per arrow, time in place, Memory stopping
+the clock, Story at one second a second, the town and harbour on Story, the inn's night with Wake up
+as the only option, the day cards aboard.
+
+## Alpha 6 (first playtest): five screens, the clock and what you know
+
+The design is in `docs/ALPHA6.md`. This first version builds steps 1 to 7 of its build order; traffic,
+carriers, caches, charts and the spread of news (step 8) come later.
+
+**The timeline.** Only the player controls time. The clock on screen runs at the pace on the timeline
+(a game day in 24, 12 or 6 seconds, set in Settings) and plays out what each step, wait or task costs:
+a step lasts its hours at that pace, and a night at the inn plays out in place under a waiting card.
+When you stand still, the clock waits for you. ❚❚ ▶ ▶▶ ▶▶▶ set the pace; Play a day runs the next 24
+hours and stops. Nothing in the game changes the pace. Holding a key no longer runs time away.
+
+**Moving.** An arrow sets a heading, and you keep going at the timeline's pace until you stop, turn,
+or a stop you chose fires; the opposite arrow or Space stops; pressing an arrow while paused starts the
+clock again. Click or tap a tile on World for the hours on foot by the paths you know, and Walk there.
+Aboard your own vessel the crew sails the agreed course (the plan's next stop, or a place you name);
+T or an arrow takes the helm, and "Sail on to…" names the next course. Booked ships and coaches keep
+their own course.
+
+**Stops you choose.** A check-in (every 6 hours, at dusk by default, at dawn, at the next town or
+port, or only when needed) shows the day card and asks how to go on. Settings choose what else stops
+the clock: arriving at a town, scenes, two days of food left, 16 hours awake, the crew's patience,
+notes. Each alarm fires once and stays on screen. There is no alarm for falling behind par.
+
+**One voice.** Every message passes the narrator: decisions are cards over the open screen, scenes
+are cards (or, with scenes off, lines in the feed), notes and routine go to the feed. A day card is
+filed at dusk: miles, where, weather, food eaten, one story line and the race. No sentence is filed
+twice in a day, and one sighting reported by two systems is filed once. Toasts are gone.
+
+**Five screens** on buttons and keys 1 to 5, inside a frame that never changes: the next stop and its
+par and the side story in focus at the top; the clock, sunrise and sunset, the pace, food and purse at
+the bottom.
+- *Memory:* the journey, documents you carry or stand by, prices and sailings you know, news, gossip,
+  places, side stories and leads (click to make a target), people, the traveller, the log.
+- *Inventory:* what you carry and the vehicle's hold; write prices into the notebook; copy a sailings
+  board onto a handbill.
+- *World:* the tiles, fogged by what you know; zoomed out (− or M), the mental map; lens, info, today's
+  reach and hours to here. The minimap is retired.
+- *Journey:* the race (par, your pace, slack, every stop), the leg strip, the vehicle card, stores
+  ahead, the days, and the viewing window.
+- *Story:* towns and camp as grouped cards, pastimes and tasks, the arrival result, the planning
+  window for the next leg (the ways you know, with arrival, par, food and source), and the story so far.
+
+**What you know.** Every place carries a level (in sight, seen, heard of), a date and a source. Ground
+you have seen is dimmed on the map and fades with age; places heard of are a dashed ring and a name.
+Fog has three settings: land shown with the changing world hidden (default), full fog, none. Prices
+you have seen stay exact for three weeks and then read as cheap, usual or dear; sailings stay exact
+for two weeks and then read as "about weekly"; news keeps its date. The notebook and handbills keep
+figures exact. Units and vessels are drawn only in sight.
+
+**Pastimes and tasks** play out over their hours; carried, the vessel goes on meanwhile: plan with the
+captain, gossip with the passengers, talk to the crew, dice on deck, write up the notebook, copy a
+sailings board, rest, sleep until dawn, wait aboard until she sails.
+
+**The viewing window.** A pixel scene drawn from the moment: the deck, a small boat, the quay, a town
+street, a road through the country by biome, the back of a wagon, camp, an airship's rail; its light
+follows sunrise and sunset at your latitude, with weather, snow in winter, roofs in the culture's
+colour and the state's flag on the citadel.
+
+**Sandbox** keeps all five screens; Journey shows the map's journey as a view only, and the menu's
+Atlas mode shows the true world. The game runs offline: there is no link out to the generator.
+
+**Fixes.** "The captain of the the …" loses its doubled article.
+
+**Tests.** `tests/alpha6.js` (knowledge, blur, notebook and handbills, the feed, day cards, saves,
+every viewing-window scene); `tests/browser.js` rewritten for the Alpha 6 shell (the clock against the
+pace, the town on the Story screen, a voyage with day cards and check-ins, the five screens).
+
 ## Alpha 5.2: the clock
 
 **The race.** A journey is a race against its plan. Every stop has a par time, and each journey type
