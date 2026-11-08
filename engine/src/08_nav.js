@@ -9,10 +9,11 @@
 //   latitude. Prices come from the town's market (cheapest food, sales tax of the state).
 // ---------------------------------------------------------------------------------------------
 AZ.NAV = { boat: 40, ship: 400 };
-AZ.vesselClass = kind => (/ship|steam|modern/i.test(kind || "") ? "ship" : "boat");
+AZ.vesselClass = kind => (AZ.airNames.has(kind) || /airship|dirigible|balloon|teleport|aircraft|airplane|flying/i.test(kind || "") ? "air" : /ship|steam|modern/i.test(kind || "") ? "ship" : "boat");
 
 Object.assign(AZ.World.prototype, {
   navigable(c, r, cls = "boat") {
+    if (cls === "air") return this.inb(c, r);
     if (!this.inb(c, r)) return false;
     if (!this.isLand(c, r)) return true;
     if (!(this.R.cwater[r * this.cols + c] >> 4)) return false;
@@ -20,6 +21,7 @@ Object.assign(AZ.World.prototype, {
     return (rv?.discharge || 0) >= AZ.NAV[cls];
   },
   harbour(b, cls = "boat") {
+    if (cls === "air") return { t: b.t, walk: 0 };
     this._harb = this._harb || new Map();
     const key = `${b.i}:${cls}`;
     if (this._harb.has(key)) return this._harb.get(key);
@@ -116,6 +118,7 @@ AZ.Journey.prototype.fixCourses = function () {
     if (!seg.moving) continue;
     const cls = AZ.vesselClass(seg.transport);
     seg.cls = cls;
+    if (cls === "air") { seg.fromHarbour = seg.toHarbour = null; seg.chainPos = new Map(seg.chain.map(([c, r], i) => [w.idx(c, r), i])); seg.chain.forEach(([c, r]) => this.course.add(w.idx(c, r))); continue; } // air legs fly the plan's line
     const fromB = w.P.burgs[w.C.burg[seg.from]], toB = seg.place.at ? seg.place.burg : null;
     const fromH = fromB && fromB.port ? w.harbour(fromB, cls) : null, toH = toB && toB.port ? w.harbour(toB, cls) : null;
     seg.fromHarbour = fromH ? fromH.t : null; seg.toHarbour = toH ? toH.t : null;

@@ -116,7 +116,7 @@ Object.assign(AZ.Game.prototype, {
 // R: rest, wait, fish or forage
 AZ.Game.prototype.rest = async function () {
   const s = this.s, U = AZ.U, w = this.w;
-  if (this.riding()) return this.shipTalk();
+  if (this.riding()) return this.rideMenu();
   const sick = s.cond.fever || s.cond.gravely || s.cond.hurt;
   const atSea = s.aboard && !w.isLand(s.c, s.r);
   const fy = this.fishYield(s.c, s.r), fo = !s.aboard ? this.forageYield(s.c, s.r) : { why: "aboard" };

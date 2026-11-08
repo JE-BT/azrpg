@@ -152,7 +152,7 @@ Object.assign(AZ.Game.prototype, {
     const m = w.near(b.t[0], b.t[1], 80).filter(n => n.kind === "marker" && /monster|ruin|dungeon|necrop|burial|rift|cave|portal|statue/.test(n.o.type) && !s.done_m.includes(n.o.i)).sort(() => rnd() - 0.5)[0];
     if (m) out.push({ title: `The truth about the ${m.o.name}`, pay: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)), cost: 0, why: `${b.name} wants to know what is at the ${m.o.name}, ${this.know.dirDist(b.t[0], b.t[1], m.o.t).txt} ${T("data")}.`,
       dist: Math.round(m.d * w.miles), deadline: s.clock + (Math.ceil((m.d * w.miles * 2) / 30) + 6) * 24, giver: b.i,
-      steps: [{ text: `See the ${m.o.name} for yourself (walk there and press Space beside it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)) } }] });
+      steps: [{ text: `See the ${m.o.name} for yourself (walk up to it)`, goal: { marker: m.o.i } }, { text: `Tell them in ${b.name} what you found`, goal: { burg: b.i, role: "Townsfolk" }, reward: { coin: (AZ.money ? AZ.money("truth", b, m.d * w.miles) : U.rn(1.5 + m.d * w.miles * 0.004, 1)) } }] });
     // an offering for the faith's seat
     const rel = P.religions[w.C.religion[b.cell]], seat = rel && P.burgs.find(x => x && x.cell === rel.center);
     if (seat && seat !== b && d(seat) < 300) out.push({ title: `An offering for ${seat.name}`, pay: 0, cost: 0, why: `${b.name} keeps the ${rel.name}; its seat is ${seat.name} ${T("data")}.`,

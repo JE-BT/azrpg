@@ -5,7 +5,7 @@ into a tile-based role-playing game in the style of RPG Maker. You walk, sail an
 map itself: every tile carries the map's biome, height, climate, state, culture, faith, rivers,
 roads and markets, and you can read all of it as you go.
 
-Current version: **Alpha 6** (first playtest). The online demo is still Alpha 5.2.
+Current version: **Alpha 7** (the pivot back to the RPG Maker feel; see `docs/ALPHA7.md`).
 
 Online demo: https://je-bt.github.io/azrpg/
 
@@ -14,62 +14,45 @@ Online demo: https://je-bt.github.io/azrpg/
 A built world is a single HTML file. Open it in a recent browser (Chrome, Firefox, Safari or Edge);
 nothing else is needed, and games are saved in the browser.
 
-Choose a mode on the title screen:
+On the title screen, start the map's journey (or choose another journey in the world), explore
+freely without one, or continue a saved game. Then choose a traveller: each kind is drawn from the
+map (natives of the places on the route, soldiers of states at war, envoys, traders, scholars,
+refugees, and the roles of the journey's own type).
 
-- **Journey** follows the journey saved in the map: its checkpoints, par times and tasks. Any route
-  and any means will do; arriving at the last checkpoint completes the journey.
-- **Sandbox** lets you explore the world from a town of your choice, in a changing world (markets,
-  passenger lines, disease and war run on) or a fixed one.
+### How it plays
 
-Then choose a traveller. Each kind of traveller is drawn from the map: natives of the places on the
-route, soldiers of states at war, envoys, traders, scholars, refugees, and the roles of the journey's
-own type (a raider on a raid, a courtier on a royal progress).
+- **Time follows your actions.** A step costs its hours (terrain, road, river, weather, the dark,
+  your condition); standing still costs nothing. Camping, sleeping at an inn and waiting skip ahead.
+- **Towns open when you step into them**: inn, market, temple, harbour or coach office, notice
+  board, warehouse, stables, and the people who live there. Ask anyone about your journey: the
+  harbourmaster finds a sailing, the merchant reckons your food, the watch knows the borders, the
+  priest the faiths, the townsfolk the way.
+- **The journey is your quest log.** Its checkpoints are quest steps; what the plan does at each stop
+  (book passage, give alms, rest, gather the company) appears as ★ in that town.
+- **Journeys.** Book a passage or a coach, or plan a journey yourself with F and walk or sail there on
+  your own. Boarding and arriving play as a scene in the viewing window; under way you watch the
+  world map, and Space pauses with the journey's options.
+- **The company speaks** when you are tired, hungry, low on food or out after dark.
+- **The living world runs on**: markets, passenger lines, disease and the map's wars. You hear of it
+  from innkeepers, timetables and notice boards.
+- **The atlas** fills as you travel: peoples, faiths, realms, towns, trade, marked places and lands.
 
-### Screens and keys
-
-Five screens sit on buttons along the bottom and on keys 1 to 5: **Memory** (what your traveller knows),
-**Inventory** (what you carry), **Story** (every choice open to you, and what each one answers),
-**World** (the tiles, and zoomed out the mental map) and **Journey** (the race, the vehicle and the
-viewing window).
-
-Time has three levels. On Memory and Inventory the clock stands still. On Story it runs at one second a
-second. On World and Journey it runs at the pace you set (❚❚ ▶ ▶▶ ▶▶▶, or Play a day), and only there do
-pop-ups and warnings appear.
+### Keys
 
 | Key | Action |
 |---|---|
-| Arrows / WASD | Step one tile (the clock runs for the step, then stops). Aboard your own vessel, take the helm |
-| Space | The Story screen; there, arrows and Enter choose |
-| 1–5 | Memory, Inventory, Story, World, Journey |
-| P · [ ] · G | Pause or play · slower or faster · Play a day |
-| F · T · N | Walk to your target (aboard: the crew sails the course) · take or hand back the helm · make a note |
-| M · + / − · L · I | Mental map · zoom · lens · info for the tile you stand on |
-| Esc, H | Menu (settings, help, about), help |
+| Arrows / WASD | Walk one tile; aboard your own vessel, steer |
+| Space / Enter | Whatever is here: a town, a marked place, your vessel; on a journey, its options |
+| F | Plan a journey (on a journey: its options) |
+| R | Camp, wait, fish or forage |
+| L | Look around: the land, and the hours a step takes each way |
+| V | The viewing window |
+| Esc · M · J · I | The menu: Status, Items, Journal, Map, Atlas (1 to 5 inside it) |
+| + / − | Zoom |
+| H | How to play |
 
-Click or tap a tile on World for hours on foot and Walk there. Every option and pop-up is listed in
-[docs/OPTIONS.md](docs/OPTIONS.md).
-
-### What you will find
-
-- **Travel.** Walking pace follows the ground; wide rivers need a bridge or a boat. Booked ships,
-  coaches and wagons keep fixed timetables and their own itineraries. A hired boat is yours to
-  steer, with a crew who draw wages, eat your food and call for stops; overruling them costs
-  morale. Your own vessel has a hold: what you cannot carry on foot stays aboard, and the hands left
-  with her eat from it while you are away, as long as food and patience last. Vessels come in eight
-  classes, from the skiff you row to the great ship, named and rigged by the culture of the port
-  that built them; shipwrights hire and sell them. Pack animals, carts and wagons carry more on
-  land, and every town keeps a warehouse. Prices blend the markets around each town with what the
-  town makes, and every cost and payment follows the local price of food and a day's work.
-  Air journeys fly in the company's own craft, and teleport circles cross a leg at once.
-- **Supplies and money.** Prices come from the markets around each town and the state's sales tax. Towns sell
-  a share of their food each week, varying with the harvest and with famine. Hunger, fever and lack
-  of sleep slow you and, in the end, bring you down.
-- **A changing world.** Market stocks and prices move, passenger lines stop in war and quarantine,
-  disease travels along the trade routes, and the wars already under way in the map are fought out.
-  News travels about 60 miles a day and reaches you in towns.
-- **Side stories.** Notice boards post errands drawn from the world: trade runs, relief for stricken
-  towns, letters along alliances and enmities, dispatches and scouting for armies, strange places,
-  offerings for faith seats. Rumours, sightings and libraries add leads.
+On the Map tab, arrows move a cursor; Enter plans a journey there and W marks it. In the Journal,
+Enter sets out for a quest step or tracks a side quest.
 
 ### Tags
 
@@ -106,7 +89,7 @@ content, so its file name does not matter. Maps saved by Azgaar 1.153 and 1.154 
 20 miles across; otherwise tiles are 5 miles square. A square overlay lines the game up exactly with
 the map.
 
-**Journeys.** The first journey in the map becomes the game's journey. See
+**Journeys.** Every journey in the map can be played; the title screen offers the first and lets you choose another. See
 [docs/JOURNEYS.md](docs/JOURNEYS.md) for how journeys are read and how to write your own.
 
 ## How the map becomes a game
@@ -131,31 +114,21 @@ the map.
 azrpg/      converter (Python): reads the map, builds tiles, writes the world pack and the HTML
 engine/     the game (JavaScript), one module per file, joined in name order
   shell.html
-  src/00_util.js … 35_shell.js   (30–35: Alpha 6's timeline, narrator, knowledge, viewing window, World, screens)
-tests/      converter tests (Python) and game tests (Node)
-docs/       journeys key, roadmap, design notes
+  src/00_util.js … 36_atlas.js   (module map in docs/ALPHA7.md)
+tests/      converter tests (Python) and the game test (Node); legacy/ holds the Alpha 1 to 6 tests
+docs/       Alpha 7 design notes, journeys key, roadmap; legacy/ holds the Alpha 6 documents
 ```
 
 ## Tests
 
 ```
-python -m unittest discover -s tests -t .           # converter; needs the Pyeongak world
-node tests/text.js out/Pyeongak_rpg.html            # every screen's text, for writing faults
-node tests/features.js out/Presia_rpg.html          # air legs, wild starts, carrying, alerts
-node tests/play.js out/Pyeongak_rpg.html            # a scripted journey
-node tests/browser.js out/Pyeongak_rpg.html         # the Alpha 6 page in a simulated browser: the clock, the screens, a voyage
-node tests/vessels.js out/Pyeongak_rpg.html         # damage, the hold, crews ashore, watches, F's course
-node tests/alpha3.js out/Pyeongak_rpg.html          # classes, control, shipwright, porters, stables, warehouse
-node tests/alpha4.js out/Pyeongak_rpg.html          # the market field, money, trading, starting money
-node tests/alpha41.js out/Pyeongak_rpg.html         # goods where the map has them, skiffs, the harbourmaster, horses
-node tests/stories.js out/Pyeongak_rpg.html         # the story of every journey in the world, built and played
-node tests/alpha51.js out/Bernoy_rpg.html          # the premise, the company, regard, provisions, side-story focus
-node tests/alpha52.js out/Bernoy_rpg.html          # the clock, the report card, the narrator, deeds, people you know
-node tests/textlog.js out                           # logs and measures the text of eight games (docs/textlog, docs/TEXT_REVIEW.md)
-node tests/alpha6.js out/Pyeongak_rpg.html          # what you know, the blur rules, the notebook, the feed, day cards, the viewing window
+python -m unittest discover -s tests -t .      # converter; needs the Pyeongak world
+node tests/alpha7.js out/Pyeongak_rpg.html     # a journey played headless: towns, quest help, a booked
+                                               # voyage, a journey of your own, the atlas, save and load
+node tests/alpha7.js out/Bernoy_rpg.html       # the same on a raid: the company's own vessel
 ```
 
-The Node tests need `@napi-rs/canvas`, and the browser test also `jsdom`.
+The Node test uses only Node; the drawing code is not exercised.
 
 ## Credits
 

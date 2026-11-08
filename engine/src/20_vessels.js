@@ -344,7 +344,7 @@
         s.vessel = nv; this.doAct("book");
         this.log(`${o.act === "hire" ? "Hired" : "Bought"} a ${U.esc(nv.kind.toLowerCase())} (${C.name}) in ${U.esc(b.name)}.`, "hook");
         await this.ui.say([`The ${U.esc(nv.kind.toLowerCase())} is yours to command${nv.crew ? `, with ${nv.crew} hands` : ""} ${T("new")}. ${o.act === "hire" ? `You pay 🟡 ${o.first} now; hire and wages come due each dawn.` : nv.crew ? "" : C.oars ? "You row her yourself: rowing tires you faster than walking." : `She needs ${C.hands[0]} hands or more before she can sail far: hire them here.`}`,
-          `A ${C.name}: ${C.sheet} ${T("mixed")}. She holds ${C.hold.food} rations and ${C.hold.goods} units of goods. Board from town (Space), then steer or press F.`]);
+          `A ${C.name}: ${C.sheet} ${T("mixed")}. She holds ${C.hold.food} rations and ${C.hold.goods} units of goods. Board her from the harbour, then steer her yourself or plan a journey (F).`]);
         continue;
       }
       if (o.act === "hands") { s.purse = U.rn(s.purse - o.cost, 2); v.crew += o.n; v.morale = v.morale ?? 70; v.wage = wage; this.ui.toast(`${o.n} hand${o.n > 1 ? "s" : ""} sign${o.n > 1 ? "" : "s"} on.`); continue; }
@@ -533,16 +533,4 @@
     });
   };
 
-  // ------------------------------------------------------------------ the journal: who decides, what she is, what is stored
-  const carry0 = G.carryHtml;
-  G.carryHtml = function () {
-    const s = this.s, w = this.w, v = s.vessel, key = this.ctlKey(), R = key && AZ.CONTROL[key];
-    let h = carry0.call(this);
-    if (s.beast) { const L = AZ.LANDV[s.beast.vc]; h += `<p>Your ${U.esc(s.beast.kind.toLowerCase())} (${L.name}): ${L.hold.food} rations and ${L.hold.goods} units more on land${s.beast.hungry ? `; hungry ${s.beast.hungry} day${s.beast.hungry > 1 ? "s" : ""}` : ""}.</p>`; }
-    if (v && AZ.VCLASS[v.vc]) { const C = AZ.VCLASS[v.vc]; h += `<p class="dim">Your ${U.esc(v.kind.toLowerCase())} is a ${C.name}: ${C.sheet}. Hands ${C.hands[0]}–${C.hands[1]}; she holds ${C.hold.food} rations and ${C.hold.goods} units ${T("mixed")}.</p>`; }
-    const lots = Object.entries(s.stores || {});
-    if (lots.length) h += `<h3>Stored</h3><ul>${lots.map(([bi, S]) => { const b = w.P.burgs[bi]; return `<li>${U.esc(b.name)}: ${U.esc(this.storeDesc(S.lots))} · 🟡 ${this.storeDue(b)} due</li>`; }).join("")}</ul>`;
-    if (R) h += `<h3>Who decides aboard: ${R.label}</h3><table>${AZ.CONTROL_COLS.map(([k, l]) => `<tr><td class="dim">${l}</td><td>${U.esc(R.text[k])}</td></tr>`).join("")}</table>`;
-    return h;
-  };
 })();
