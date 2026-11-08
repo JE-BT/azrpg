@@ -1,5 +1,40 @@
 # Changelog
 
+## Alpha 7: the pivot
+
+azrpg goes back to the RPG Maker feel of Alpha 1. The design and module map are in `docs/ALPHA7.md`.
+
+**Time follows your actions.** The continuous clock, the three levels of time, the pace buttons,
+Play a day and the timeline are gone. A step adds its hours at once; standing still costs nothing;
+choices that take time say how long. Dawn, dusk, seasons and weather follow the clock.
+
+**One screen and a menu.** The tile map is always on screen, with the objective, a minimap, the
+clock, purse and food, and the viewing window on a toggle (V). Esc opens the menu: Status, Items,
+Journal, Map and Atlas. The five screens, the Story screen and the planning aids are gone.
+
+**The journey is the quest log.** Checkpoints are quest steps with the plan's day beside them; the
+plan's tasks appear as ★ options where they are done. Side quests can be tracked from the Journal.
+The race against par and the report card are gone; the end of the journey gives a short summary.
+
+**Towns are menus drawn from the data**, opened by stepping into them: places with a detail column
+and a help line, and people who help with your quests (sailings, provisions, borders, faiths, the
+way). The merchant reads the markets around him for you.
+
+**One journey system.** Booked passages and journeys you plan yourself (F) share scenes and menus.
+Boarding and arrival fill the screen with the viewing window while the captain, the mate or a
+companion speaks; under way the world map watches you move, and Space pauses with options. Events
+at marked places, in zones and aboard play as scenes too.
+
+**The company speaks.** Companions (or your own thoughts, travelling alone) say when you are tired,
+exhausted, hungry, running low on food or out in the dark.
+
+**The atlas.** A collector's book of peoples, faiths, realms (with a diagram of their relations),
+towns, trade lines and markets, marked places and lands, each counted against the world.
+
+**Removed:** the narrative engine (stories, premises, arcs, the narrator, day cards and the feed),
+regard and suspicion, the knowledge and blur layer, the notebook, people-you-know, free-roam hooks,
+and the Alpha 6 shell. The Alpha 1 to 6 tests are in `tests/legacy`; `tests/alpha7.js` replaces them.
+
 ## Alpha 6, playtest round 1: three levels of time, one Story screen
 
 **Three levels.** Memory and Inventory are the inner world: the clock stands still. Story is the

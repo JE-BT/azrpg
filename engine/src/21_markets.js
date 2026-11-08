@@ -291,27 +291,16 @@
   G.restCall = async function (night) {
     const s = this.s, aboard = !!(s.aboard && s.vessel);
     const k = await this.ui.choose(`<b>${night ? "Night falls." : "You are tired."}</b> You have been awake ${Math.round(s.awake || 0)} hours ${T("mixed")}. ${aboard ? "Anchor and sleep until dawn?" : "Make camp and sleep until dawn?"}`,
-      [{ label: aboard ? "Anchor until dawn" : "Make camp until dawn" }, { label: night ? "Go on through the night" : "Go on" }], { cancel: 1 });
+      [{ label: aboard ? "Anchor until dawn" : "Make camp until dawn" }, { label: night ? "Go on through the night" : "Go on" }], { cancel: 1, who: this.voiceName() });
     if (k === 0) {
       if (aboard) { s.clock = AZ.Clock.nextDawn(s.clock, this.lat()); this.slept(); this.ui.toast("You anchor and sleep until dawn."); this.dirty = true; }
       else await this.campNight();
     }
-    if (this.s && !this.ui.busy()) this.setAuto(true);
+    if (this.s && !this.ui.busy()) this.resumeTrip();
   };
 
   // ------------------------------------------------------------------ the days: old trades fall away
   const nd5 = G.newDay;
   G.newDay = function (...a) { const r = nd5.apply(this, a), s = this.s; if (s.trades && s.trades.length) s.trades = s.trades.filter(t => s.clock - t.t < 35 * 24); return r; };
 
-  // ------------------------------------------------------------------ the journal: money here
-  const carry1 = G.carryHtml;
-  G.carryHtml = function () {
-    const w = this.w, b = this.townNear();
-    let h = carry1.call(this);
-    if (b) {
-      const row = (id, x, label) => `<tr><td class="dim">${label || AZ.MONEY[id].label}</td><td>🟡 ${AZ.money(id, b, x)}</td></tr>`;
-      h += `<h3>Money at ${U.esc(b.name)} ${T("mixed")}</h3><table>${row("ration")}${row("wage", null, "A day's work")}${row("inn")}${row("fare", 100, "A sea passage, 100 miles")}${row("alms")}</table>`;
-    }
-    return h;
-  };
 })();

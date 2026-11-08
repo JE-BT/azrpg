@@ -106,7 +106,7 @@
         this.doAct("book");
         this.log(`${crew ? "Signed on" : "Booked"} ${U.esc(L.ship)} to ${U.esc(dest.name)}, leaving ${AZ.Clock.fmt(o.d.t)}.`, "hook");
         await this.ui.say([`${crew ? "You sign the articles" : `🟡 ${o.fare} buys a place`} on ${U.esc(L.ship)} (${U.esc(L.transport)}), ${U.esc(captain)} ${L.mode === "sea" ? "master" : "driving"}: ${U.esc(L.why)} ${AZ.T("mixed")}.`,
-          `It leaves <b>${AZ.Clock.fmt(o.d.t)}</b>, in ${AZ.Clock.span(o.d.t - s.clock)}, and does not wait. Bring your own food.${this.foodHint ? " " + this.foodHint() : ""} Board from town (Space) before it leaves.`]);
+          `It leaves <b>${AZ.Clock.fmt(o.d.t)}</b>, in ${AZ.Clock.span(o.d.t - s.clock)}, and does not wait. Bring your own food.${this.foodHint ? " " + this.foodHint() : ""} Board it from the harbour before it leaves.`]);
         return;
       }
       if (o.act === "yard") { await this.shipwright(b); continue; }
@@ -115,7 +115,7 @@
         s.purse = U.rn(s.purse - first, 2);
         s.vessel = { mode: "hired", kind: "Sailing boat", cls: "boat", speed: 6, hpd: 12, crew, morale: 70, c: boatH.t[0], r: boatH.t[1], wage: P.wage(w, b), hire: P.hire(w, b), home: b.i };
         this.doAct("book"); this.log(`Hired a sailing boat in ${U.esc(b.name)}.`, "hook");
-        await this.ui.say([`The boat is yours to command, with ${crew} hands ${AZ.T("new")}. You pay 🟡 ${first} now; wages and hire come due each dawn.`, `They sail from dawn and anchor at night, as boats do ${AZ.T("data")}. They eat from your stores. Board from town (Space), then steer or press F.`]);
+        await this.ui.say([`The boat is yours to command, with ${crew} hands ${AZ.T("new")}. You pay 🟡 ${first} now; wages and hire come due each dawn.`, `They sail from dawn and anchor at night, as boats do ${AZ.T("data")}. They eat from your stores. Board her from the harbour, then steer her yourself or plan a journey (F).`]);
         continue;
       }
       if (o.act === "crewup") { const cost = U.rn(3 * P.wage(w, b) * 3, 2); s.purse = U.rn(s.purse - cost, 2); s.vessel.crew = 3; s.vessel.morale = 70; s.vessel.strikes = 0; this.ui.toast("Three hands sign on."); continue; }
@@ -142,7 +142,7 @@
     if (!course) { s.voyage = null; s.aboard = false; s.purse = U.rn(s.purse + (v.fare || 0), 2); return this.ui.say("There is no road. The fare is returned."); }
     v.course = course; v.pos = 0; v.state = "sea"; v.milesPerStep = course.mps;
     this.log(`${U.esc(v.ship)} left for ${U.esc(tb.name)}.`);
-    this.ui.toast(`${U.esc(v.ship)} sets off for ${U.esc(tb.name)}. Space for the coach, F for faster days, P to pause.`);
+    this.ui.toast(`${U.esc(v.ship)} sets off for ${U.esc(tb.name)}. Space for the journey's options.`);
     this.dirty = true;
   };
   G.voyageStep = function () {
